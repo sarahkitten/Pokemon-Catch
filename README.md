@@ -1,54 +1,84 @@
-# React + TypeScript + Vite
+# Pokemon Catch Game
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A fun and interactive web application where you can catch Pokemon by guessing their names! Test your Pokemon knowledge and try to catch them all.
 
-Currently, two official plugins are available:
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen)](https://sarahkitten.github.io/pokemon-app)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## Expanding the ESLint configuration
+- 🎮 Interactive Pokemon catching game
+- 🎯 Type Pokemon names to catch them
+- 🎉 Visual feedback with confetti animations
+- 📊 Progress tracking
+- 🎨 Responsive design
+- 🌈 Colorful UI with Pokemon-themed styling
+- 🏆 Completion celebration when all Pokemon are caught
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## How to Play
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+1. Type the name of a Pokemon you want to catch
+2. If the name is correct, the Pokemon will be added to your collection
+3. Try to catch all Pokemon to complete the game!
+4. You can give up at any time to see the remaining Pokemon
+
+## Technologies Used
+
+- React
+- TypeScript
+- Vite
+- CSS3
+- Pokemon API
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v14 or higher)
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/sarahkitten/pokemon-app.git
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+2. Install dependencies:
+```bash
+cd pokemon-app
+npm install
 ```
+
+3. Start the development server:
+```bash
+npm run dev
+```
+
+4. Build for production:
+```bash
+npm run build
+```
+
+## Deployment
+
+This project is deployed using GitHub Pages. To deploy your own version:
+
+1. Fork this repository
+2. Update the `homepage` field in `package.json` with your GitHub username
+3. Run:
+```bash
+npm run deploy
+```
+
+## Contributing
+
+Contributions are welcome! Feel free to open an issue or submit a pull request.
+
+## License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## Acknowledgments
+
+- Pokemon data provided by the Pokemon API
+- Inspired by the classic Pokemon games
