@@ -56,6 +56,25 @@ function App() {
   const [isFetchingData, setIsFetchingData] = useState(false);
   const [spriteCache, setSpriteCache] = useState<Record<string, string>>({});
   const [isMuted, setIsMuted] = useState(false);
+  const [noResults, setNoResults] = useState(false);
+
+  const fetchSprite = async (pokemonName: string): Promise<string> => {
+    // Check cache first
+    if (spriteCache[pokemonName]) {
+      return spriteCache[pokemonName];
+    }
+    
+    // Fetch from API
+    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`);
+    if (response.ok) {
+      const data = await response.json();
+      const sprite = data.sprites.front_default;
+      // Update cache
+      setSpriteCache(prev => ({ ...prev, [pokemonName]: sprite }));
+      return sprite;
+    }
+    return '';
+  };
 
   useEffect(() => {
     updateTotalCount(selectedGeneration, selectedType);
@@ -102,11 +121,9 @@ function App() {
     
     setIsTotalLoading(true);
     setIsFetchingData(true);
+    setNoResults(false);
     
     try {
-      const pokemonList: PokemonData[] = [];
-      let typeCount = 0;
-
       // Filter Pokemon based on generation and type using local data
       const filteredPokemon = POKEMON_DATA.filter(pokemon => {
         const inGeneration = generation.name === "All Generations" || 
@@ -115,31 +132,14 @@ function App() {
           pokemon.types.some(t => t.toLowerCase() === type.toLowerCase());
         return inGeneration && matchesType;
       });
-
-      // Fetch sprites for the filtered Pokemon
-      for (const pokemon of filteredPokemon) {
-        try {
-          const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon.id}`);
-          if (response.ok) {
-            const data = await response.json();
-            pokemonList.push({
-              name: pokemon.name,
-              id: pokemon.id,
-              types: pokemon.types,
-              spriteUrl: data.sprites.front_default,
-              forms: pokemon.forms,
-              generation: pokemon.generation
-            });
-            typeCount++;
-          }
-        } catch (err) {
-          console.error('Error fetching Pokemon sprite:', err);
-        }
-      }
       
-      console.log('Fetched Pokemon list:', pokemonList);
-      setTotalPokemon(typeCount);
-      setPokemonData(pokemonList);
+      console.log('Filtered Pokemon list:', filteredPokemon);
+      setTotalPokemon(filteredPokemon.length);
+      setPokemonData(filteredPokemon);
+      
+      if (filteredPokemon.length === 0) {
+        setNoResults(true);
+      }
     } catch (err) {
       console.error('Error updating Pokemon data:', err);
     } finally {
@@ -149,10 +149,10 @@ function App() {
   };
 
   const handleStartOver = () => {
-    if (caughtPokemon.length === 0) return;
+    if (caughtPokemon.length === 0 && remainingPokemon.length === 0) return;
     
     const confirmReset = window.confirm(
-      `Are you sure you want to release all ${caughtPokemon.length} Pokemon and start over?`
+      `Are you sure you want to start over?${caughtPokemon.length > 0 ? ` This will release all ${caughtPokemon.length} Pokemon.` : ''}`
     );
     
     if (confirmReset) {
@@ -169,7 +169,7 @@ function App() {
       setIsLoading(true);
       setError('');
       
-      const result = await handleNidoranInput(pokemonData, caughtPokemon, spriteCache);
+      const result = await handleNidoranInput(pokemonData, caughtPokemon);
       
       if (!result.success) {
         setError(result.error || 'Error catching Nidoran!');
@@ -229,7 +229,31 @@ function App() {
       );
       
       if (!pokemon) {
-        setError('That\'s not a valid Pokemon name!');
+        // Check if the Pokemon exists in POKEMON_DATA but not in current selection
+        const pokemonExists = POKEMON_DATA.find(p => 
+          p.name.toLowerCase() === pokemonName.toLowerCase() || 
+          p.forms.some(f => f.name.toLowerCase() === pokemonName.toLowerCase())
+        );
+
+        if (pokemonExists) {
+          // Check if it's a generation mismatch
+          const inGeneration = selectedGeneration.name === "All Generations" || 
+            (pokemonExists.id >= selectedGeneration.startId && pokemonExists.id <= selectedGeneration.endId);
+          
+          // Check if it's a type mismatch
+          const matchesType = selectedType === "All Types" || 
+            pokemonExists.types.some(t => t.toLowerCase() === selectedType.toLowerCase());
+
+          if (!inGeneration) {
+            setError(`That Pokemon is not in ${selectedGeneration.name}!`);
+          } else if (!matchesType) {
+            setError(`That Pokemon is not a ${selectedType} type!`);
+          } else {
+            setError('That\'s not a valid Pokemon name!');
+          }
+        } else {
+          setError('That\'s not a valid Pokemon name!');
+        }
         setTimeout(() => inputRef.current?.focus(), 10);
         return;
       }
@@ -266,17 +290,8 @@ function App() {
         return;
       }
 
-      // Check if we have the sprite cached
-      let sprite = spriteCache[form.name];
-      if (!sprite) {
-        // Fetch the sprite if not cached
-        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${form.name}`);
-        if (response.ok) {
-          const data = await response.json();
-          sprite = data.sprites.front_default;
-          setSpriteCache(prev => ({ ...prev, [form.name]: sprite }));
-        }
-      }
+      // Fetch sprite using the enhanced function
+      const sprite = await fetchSprite(form.name);
 
       // Fetch and play the Pokemon's cry if not muted
       if (!isMuted) {
@@ -406,25 +421,28 @@ function App() {
             {error && <p className="error">{error}</p>}
             {isLoading && <p className="loading">Searching for Pokemon...</p>}
             {isFetchingData && <p className="loading">Loading Pokemon data...</p>}
+            {noResults && <p className="error">No Pokemon found matching these filters!</p>}
             {remainingPokemon.length > 0 && (
               <p className="info">Click 'Start Over' to try catching Pokemon again!</p>
             )}
           </div>
           
           <div className="controls">
-            <p className={`counter ${caughtPokemon.length === totalPokemon ? 'success' : ''}`}>
-              {isTotalLoading ? (
-                <span className="loading-dots">
-                  <span>.</span><span>.</span><span>.</span>
-                </span>
-              ) : caughtPokemon.length === totalPokemon ? (
-                `Congratulations! You've caught all ${totalPokemon} Pokemon!`
-              ) : (
-                `You've caught ${caughtPokemon.length} Pokemon! ${totalPokemon - caughtPokemon.length} to go!`
-              )}
-            </p>
+            {!noResults && (
+              <p className={`counter ${caughtPokemon.length === totalPokemon ? 'success' : ''}`}>
+                {isTotalLoading ? (
+                  <span className="loading-dots">
+                    <span>.</span><span>.</span><span>.</span>
+                  </span>
+                ) : caughtPokemon.length === totalPokemon ? (
+                  `Congratulations! You've caught all ${totalPokemon} Pokemon!`
+                ) : (
+                  `You've caught ${caughtPokemon.length} Pokemon! ${totalPokemon - caughtPokemon.length} to go!`
+                )}
+              </p>
+            )}
             <div className="button-group">
-              {caughtPokemon.length > 0 && (
+              {(caughtPokemon.length > 0 || remainingPokemon.length > 0) && (
                 <button onClick={handleStartOver} className="start-over-button">
                   Start Over
                 </button>
@@ -433,7 +451,7 @@ function App() {
                 <button
                   className="give-up-button"
                   onClick={handleGiveUp}
-                  disabled={caughtPokemon.length === 0 || isGivingUp}
+                  disabled={isGivingUp}
                 >
                   {isGivingUp ? "Loading..." : "Give Up"}
                 </button>

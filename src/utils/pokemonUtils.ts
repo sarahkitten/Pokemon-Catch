@@ -11,66 +11,57 @@ interface NidoranHandlingResult {
 export async function handleNidoranInput(
   pokemonData: PokemonData[],
   caughtPokemon: CaughtPokemon[],
-  spriteCache: Record<string, string>,
 ): Promise<NidoranHandlingResult> {
   // Check if either form is already caught
-  const hasNidoranF = caughtPokemon.some(p => p.name.toLowerCase() === 'nidoran-f');
-  const hasNidoranM = caughtPokemon.some(p => p.name.toLowerCase() === 'nidoran-m');
-  
-  if (hasNidoranF && hasNidoranM) {
+  const hasNidoranF = caughtPokemon.some(p => p.name === 'nidoran-f');
+  const hasNidoranM = caughtPokemon.some(p => p.name === 'nidoran-m');
+
+  // Find Nidoran data
+  const nidoranF = pokemonData.find(p => p.name === 'nidoran-f');
+  const nidoranM = pokemonData.find(p => p.name === 'nidoran-m');
+
+  if (!nidoranF || !nidoranM) {
     return {
       success: false,
-      error: 'You already caught both Nidoran forms!'
+      error: 'Error finding Nidoran data!'
     };
   }
 
   try {
-    // Find both Nidoran forms
-    const nidoranF = pokemonData.find(p => p.name.toLowerCase() === 'nidoran-f');
-    const nidoranM = pokemonData.find(p => p.name.toLowerCase() === 'nidoran-m');
-    
-    if (!nidoranF || !nidoranM) {
-      return {
-        success: false,
-        error: 'Error finding Nidoran forms!'
-      };
-    }
-
     // Add both forms if neither is caught
     if (!hasNidoranF && !hasNidoranM) {
       const newCaughtPokemon: CaughtPokemon[] = [];
       
       // Add Nidoran-F
-      let spriteF = spriteCache['nidoran-f'];
-      if (!spriteF) {
-        const responseF = await fetch(`https://pokeapi.co/api/v2/pokemon/nidoran-f`);
-        if (responseF.ok) {
-          const dataF = await responseF.json();
-          spriteF = dataF.sprites.front_default;
-        }
+      const responseF = await fetch(`https://pokeapi.co/api/v2/pokemon/nidoran-f`);
+      if (responseF.ok) {
+        const dataF = await responseF.json();
+        const spriteF = dataF.sprites.front_default;
+        newCaughtPokemon.push({
+          name: 'nidoran-f',
+          sprite: spriteF,
+          types: nidoranF.types
+        });
       }
-      
-      newCaughtPokemon.push({
-        name: 'nidoran-f',
-        sprite: spriteF || '',
-        types: nidoranF.types
-      });
 
       // Add Nidoran-M
-      let spriteM = spriteCache['nidoran-m'];
-      if (!spriteM) {
-        const responseM = await fetch(`https://pokeapi.co/api/v2/pokemon/nidoran-m`);
-        if (responseM.ok) {
-          const dataM = await responseM.json();
-          spriteM = dataM.sprites.front_default;
-        }
+      const responseM = await fetch(`https://pokeapi.co/api/v2/pokemon/nidoran-m`);
+      if (responseM.ok) {
+        const dataM = await responseM.json();
+        const spriteM = dataM.sprites.front_default;
+        newCaughtPokemon.push({
+          name: 'nidoran-m',
+          sprite: spriteM,
+          types: nidoranM.types
+        });
       }
-      
-      newCaughtPokemon.push({
-        name: 'nidoran-m',
-        sprite: spriteM || '',
-        types: nidoranM.types
-      });
+
+      if (newCaughtPokemon.length === 0) {
+        return {
+          success: false,
+          error: 'Error fetching Nidoran sprites!'
+        };
+      }
 
       return {
         success: true,
@@ -83,18 +74,20 @@ export async function handleNidoranInput(
       const missingForm = hasNidoranF ? nidoranM : nidoranF;
       const formName = hasNidoranF ? 'nidoran-m' : 'nidoran-f';
       
-      let sprite = spriteCache[formName];
-      if (!sprite) {
-        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${formName}`);
-        if (response.ok) {
-          const data = await response.json();
-          sprite = data.sprites.front_default;
-        }
+      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${formName}`);
+      if (!response.ok) {
+        return {
+          success: false,
+          error: 'Error fetching Nidoran sprite!'
+        };
       }
+
+      const data = await response.json();
+      const sprite = data.sprites.front_default;
 
       const caughtPokemon: CaughtPokemon = {
         name: formName,
-        sprite: sprite || '',
+        sprite: sprite,
         types: missingForm.types
       };
 
@@ -110,22 +103,6 @@ export async function handleNidoranInput(
       success: false,
       error: 'Error catching Nidoran!'
     };
-  }
-}
-
-export async function fetchPokemonForms(baseName: string) {
-  try {
-    const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${baseName}`);
-    if (!response.ok) return null;
-    const speciesData = await response.json();
-    const forms = speciesData.varieties.map((variety: any) => ({
-      name: variety.pokemon.name,
-      isDefault: variety.is_default
-    }));
-    return forms;
-  } catch (err) {
-    console.error('Error fetching Pokemon forms:', err);
-    return null;
   }
 }
 
