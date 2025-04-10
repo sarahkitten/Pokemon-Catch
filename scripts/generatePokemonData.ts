@@ -3,9 +3,13 @@ import path from 'path';
 
 interface PokemonData {
   id: number;
-  name: string;
+  name: string;  // This will be the base name (e.g., "keldeo")
   types: string[];
   generation: number;
+  forms: {
+    name: string;  // Full form name (e.g., "keldeo-ordinary")
+    isDefault: boolean;
+  }[];
 }
 
 const GENERATIONS = [
@@ -20,26 +24,88 @@ const GENERATIONS = [
   { name: "Gen 9 (Paldea)", startId: 906, endId: 1008 },
 ];
 
-async function fetchPokemonData(id: number): Promise<PokemonData | null> {
+// List of Pokemon that should keep their dashes in their base name
+const DASHED_NAMES = new Set([
+  'mr-mime',
+  'mime-jr',
+  'ho-oh',
+  'porygon-z',
+  'mr-rime',
+  'jangmo-o',
+  'hakamo-o',
+  'kommo-o',
+  'tapu-koko',
+  'tapu-lele',
+  'tapu-bulu',
+  'tapu-fini',
+  'type-null',
+  'nidoran-m',
+  'nidoran-f',
+]);
+
+async function fetchPokemonSpeciesData(name: string): Promise<{ forms: { name: string; isDefault: boolean }[] } | null> {
   try {
-    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+    const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${name}`);
     if (!response.ok) {
-      console.error(`Failed to fetch Pokemon ${id}: ${response.statusText}`);
+      console.error(`Failed to fetch Pokemon species ${name}: ${response.statusText}`);
       return null;
     }
 
     const data = await response.json();
-    const generation = GENERATIONS.findIndex(gen => id >= gen.startId && id <= gen.endId) + 1;
+    const forms = data.varieties.map((variety: any) => ({
+      name: variety.pokemon.name,
+      isDefault: variety.is_default
+    }));
+
+    return { forms };
+  } catch (error) {
+    console.error(`Error fetching Pokemon species ${name}:`, error);
+    return null;
+  }
+}
+
+async function fetchPokemonData(id: number): Promise<PokemonData> {
+  try {
+    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch Pokemon ${id}`);
+    }
+    const data = await response.json();
+    
+    // Get the base name, keeping dashes for special cases
+    let baseName = data.name;
+    if (!DASHED_NAMES.has(data.name)) {
+      baseName = data.name.split('-')[0];
+    }
+    
+    // Get the species data for forms
+    const speciesResponse = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`);
+    if (!speciesResponse.ok) {
+      throw new Error(`Failed to fetch species data for ${id}`);
+    }
+    const speciesData = await speciesResponse.json();
+    
+    // Get all forms
+    const forms = speciesData.varieties.map((variety: any) => ({
+      name: variety.pokemon.name,
+      isDefault: variety.is_default
+    }));
+
+    // Determine generation based on ID
+    const generation = GENERATIONS.findIndex(gen => 
+      id >= gen.startId && id <= gen.endId
+    ) + 1;
 
     return {
-      id: data.id,
-      name: data.name,
-      types: data.types.map((t: any) => t.type.name),
-      generation: generation || 1,
+      id,
+      name: baseName,  // Store the base name (with dashes for special cases)
+      types: data.types.map((type: any) => type.type.name),
+      generation,
+      forms
     };
   } catch (error) {
     console.error(`Error fetching Pokemon ${id}:`, error);
-    return null;
+    throw error;
   }
 }
 
@@ -69,10 +135,20 @@ async function generatePokemonData() {
   name: string;
   types: string[];
   generation: number;
+  forms: {
+    name: string;
+    isDefault: boolean;
+  }[];
 }
 
 export const POKEMON_DATA: PokemonData[] = [
-${pokemonData.map(pokemon => `  { id: ${pokemon.id}, name: "${pokemon.name}", types: [${pokemon.types.map(t => `"${t}"`).join(', ')}], generation: ${pokemon.generation} },`).join('\n')}
+${pokemonData.map(pokemon => `  {
+    id: ${pokemon.id},
+    name: "${pokemon.name}",
+    types: [${pokemon.types.map(t => `"${t}"`).join(', ')}],
+    generation: ${pokemon.generation},
+    forms: [${pokemon.forms.map(form => `{ name: "${form.name}", isDefault: ${form.isDefault} }`).join(', ')}]
+  },`).join('\n')}
 ];`;
 
   // Write to file

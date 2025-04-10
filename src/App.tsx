@@ -2,12 +2,8 @@ import { useState, useRef, useEffect } from 'react'
 import './App.css'
 import PokemonConfetti from './PokemonConfetti'
 import { POKEMON_DATA } from './data/pokemonData'
-
-interface CaughtPokemon {
-  name: string;
-  sprite: string;
-  types: string[];
-}
+import { handleNidoranInput } from './utils/pokemonUtils'
+import { PokemonData, CaughtPokemon } from './types'
 
 interface Generation {
   name: string;
@@ -21,13 +17,6 @@ interface Pokemon {
   sprite: string;
   types: string[];
   id: number;
-}
-
-interface PokemonData {
-  name: string;
-  id: number;
-  types: string[];
-  spriteUrl?: string;
 }
 
 const POKEMON_TYPES = [
@@ -66,6 +55,7 @@ function App() {
   const [pokemonData, setPokemonData] = useState<PokemonData[]>([]);
   const [isFetchingData, setIsFetchingData] = useState(false);
   const [spriteCache, setSpriteCache] = useState<Record<string, string>>({});
+  const [isMuted, setIsMuted] = useState(false);
 
   useEffect(() => {
     updateTotalCount(selectedGeneration, selectedType);
@@ -136,7 +126,9 @@ function App() {
               name: pokemon.name,
               id: pokemon.id,
               types: pokemon.types,
-              spriteUrl: data.sprites.front_default
+              spriteUrl: data.sprites.front_default,
+              forms: pokemon.forms,
+              generation: pokemon.generation
             });
             typeCount++;
           }
@@ -188,21 +180,63 @@ function App() {
     e.preventDefault();
     const pokemonName = inputValue.trim().toLowerCase().replace(/\s+/g, '-');
     
-    console.log('Searching for Pokemon:', pokemonName);
-    console.log('Available Pokemon:', pokemonData);
-    
-    // Check if this exact Pokemon is already caught
-    if (caughtPokemon.some(p => p.name === pokemonName)) {
-      setError('You already caught this Pokemon!');
-      setTimeout(() => inputRef.current?.focus(), 10);
-      return;
-    }
+    // Special case for Nidoran
+    if (pokemonName === 'nidoran') {
+      setIsLoading(true);
+      setError('');
+      
+      const result = await handleNidoranInput(pokemonData, caughtPokemon, spriteCache, isMuted);
+      
+      if (!result.success) {
+        setError(result.error || 'Error catching Nidoran!');
+        setTimeout(() => inputRef.current?.focus(), 10);
+        setIsLoading(false);
+        return;
+      }
 
-    // Get the base name (without form suffix) for comparison
-    const baseName = pokemonName.split('-')[0];
-    if (caughtPokemon.some(p => p.name.split('-')[0] === baseName)) {
-      setError('You already caught a form of this Pokemon!');
-      setTimeout(() => inputRef.current?.focus(), 10);
+      if (result.caughtPokemon) {
+        // Update sprite cache with new sprites
+        result.caughtPokemon.forEach(pokemon => {
+          if (pokemon.sprite) {
+            setSpriteCache(prev => ({ ...prev, [pokemon.name]: pokemon.sprite }));
+          }
+        });
+
+        setCaughtPokemon(prev => [...result.caughtPokemon!, ...prev]);
+        setInputValue('');
+        setError('');
+        
+        // Play cry if not muted
+        if (!isMuted && result.cryId) {
+          try {
+            const cryUrl = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${result.cryId}.ogg`;
+            const audio = new Audio(cryUrl);
+            audio.play().catch(err => console.log('Error playing cry:', err));
+          } catch (err) {
+            console.log('Error playing cry:', err);
+          }
+        }
+        
+        // Get position for confetti
+        const rect = inputRef.current?.getBoundingClientRect();
+        if (rect && result.sprite) {
+          const centerX = rect.left + (rect.width / 2);
+          const centerY = rect.top + (rect.height / 2);
+          
+          setConfettiProps({
+            sprite: result.sprite,
+            position: {
+              x: centerX + window.scrollX,
+              y: centerY + window.scrollY
+            }
+          });
+          
+          setTimeout(() => inputRef.current?.focus(), 10);
+          setTimeout(() => setConfettiProps(null), 2000);
+        }
+      }
+      
+      setIsLoading(false);
       return;
     }
 
@@ -211,9 +245,10 @@ function App() {
 
     try {
       // Find the Pokemon in our pre-fetched data
-      const pokemon = pokemonData.find(p => p.name.toLowerCase() === pokemonName.toLowerCase());
-      
-      console.log('Found Pokemon:', pokemon);
+      const pokemon = pokemonData.find(p => 
+        p.name.toLowerCase() === pokemonName.toLowerCase() ||  // Match base name
+        p.forms.some(f => f.name.toLowerCase() === pokemonName.toLowerCase())  // Match specific form
+      );
       
       if (!pokemon) {
         setError('That\'s not a valid Pokemon name!');
@@ -221,25 +256,68 @@ function App() {
         return;
       }
 
+      // Check if any form of this Pokemon is already caught
+      const existingPokemon = caughtPokemon.find(p => {
+        const pokemonInData = pokemonData.find(pd => 
+          pd.forms.some(f => f.name.toLowerCase() === p.name.toLowerCase())
+        );
+        return pokemonInData?.name === pokemon.name;
+      });
+
+      if (existingPokemon) {
+        setError(`You already caught a different form of ${pokemon.name}!`);
+        setTimeout(() => inputRef.current?.focus(), 10);
+        return;
+      }
+
+      // Determine which form to use
+      let form;
+      if (pokemonName.includes('-')) {
+        // If input includes a form, try to find that specific form
+        form = pokemon.forms.find(f => f.name.toLowerCase() === pokemonName.toLowerCase());
+      }
+      
+      // If no specific form found or no form specified, use the default form
+      if (!form) {
+        form = pokemon.forms.find(f => f.isDefault);
+      }
+
+      if (!form) {
+        setError('Could not find a valid form for this Pokemon!');
+        setTimeout(() => inputRef.current?.focus(), 10);
+        return;
+      }
+
       // Check if we have the sprite cached
-      let sprite = spriteCache[pokemonName];
+      let sprite = spriteCache[form.name];
       if (!sprite) {
         // Fetch the sprite if not cached
-        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon.id}`);
+        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${form.name}`);
         if (response.ok) {
           const data = await response.json();
           sprite = data.sprites.front_default;
-          setSpriteCache(prev => ({ ...prev, [pokemonName]: sprite }));
+          setSpriteCache(prev => ({ ...prev, [form.name]: sprite }));
         }
       }
 
-      const caughtPokemon: CaughtPokemon = {
-        name: pokemon.name,
-        sprite: sprite || pokemon.spriteUrl || '',
+      // Fetch and play the Pokemon's cry if not muted
+      if (!isMuted) {
+        try {
+          const cryUrl = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${pokemon.id}.ogg`;
+          const audio = new Audio(cryUrl);
+          audio.play().catch(err => console.log('Error playing cry:', err));
+        } catch (err) {
+          console.log('Error fetching cry:', err);
+        }
+      }
+
+      const newCaughtPokemon: CaughtPokemon = {
+        name: form.name,
+        sprite: sprite || '',
         types: pokemon.types
       };
 
-      setCaughtPokemon(prev => [caughtPokemon, ...prev]);
+      setCaughtPokemon(prev => [newCaughtPokemon, ...prev]);
       setInputValue('');
       setError('');
       
@@ -250,7 +328,7 @@ function App() {
         const centerY = rect.top + (rect.height / 2);
         
         setConfettiProps({
-          sprite: caughtPokemon.sprite,
+          sprite: newCaughtPokemon.sprite,
           position: {
             x: centerX + window.scrollX,
             y: centerY + window.scrollY
@@ -314,6 +392,30 @@ function App() {
     }
   };
 
+  const playPokemonCry = async (pokemonId: number) => {
+    if (isMuted) return;
+    
+    try {
+      const cryUrl = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${pokemonId}.ogg`;
+      const audio = new Audio(cryUrl);
+      audio.play().catch(err => console.log('Error playing cry:', err));
+    } catch (err) {
+      console.log('Error playing cry:', err);
+    }
+  };
+
+  const handlePokemonClick = async (pokemon: CaughtPokemon | Pokemon) => {
+    // Find the Pokemon in our data to get its ID
+    const pokemonData = POKEMON_DATA.find(p => 
+      p.name.toLowerCase() === pokemon.name.toLowerCase() || 
+      p.forms.some(f => f.name.toLowerCase() === pokemon.name.toLowerCase())
+    );
+    
+    if (pokemonData) {
+      await playPokemonCry(pokemonData.id);
+    }
+  };
+
   return (
     <div className="app">
       <div className="main-content">
@@ -369,6 +471,13 @@ function App() {
                   {isGivingUp ? "Loading..." : "Give Up"}
                 </button>
               )}
+              <button
+                className={`mute-button ${isMuted ? 'muted' : ''}`}
+                onClick={() => setIsMuted(!isMuted)}
+                title={isMuted ? "Unmute Pokemon cries" : "Mute Pokemon cries"}
+              >
+                {isMuted ? "🔇" : "🔊"}
+              </button>
             </div>
           </div>
 
@@ -377,7 +486,11 @@ function App() {
               <h3>Pokemon Collection:</h3>
               <div className="pokemon-list">
                 {caughtPokemon.map((pokemon) => (
-                  <div key={pokemon.name} className="pokemon-card">
+                  <div 
+                    key={pokemon.name} 
+                    className="pokemon-card"
+                    onClick={() => handlePokemonClick(pokemon)}
+                  >
                     <img src={pokemon.sprite} alt={pokemon.name} className="pokemon-sprite" />
                     <span>{pokemon.name}</span>
                     <div className="pokemon-types">
@@ -388,7 +501,11 @@ function App() {
                   </div>
                 ))}
                 {remainingPokemon.map((pokemon) => (
-                  <div key={pokemon.name} className="pokemon-card uncaught">
+                  <div 
+                    key={pokemon.name} 
+                    className="pokemon-card uncaught"
+                    onClick={() => handlePokemonClick(pokemon)}
+                  >
                     <img src={pokemon.sprite} alt={pokemon.name} className="pokemon-sprite" />
                     <span>{pokemon.name}</span>
                     <div className="pokemon-types">

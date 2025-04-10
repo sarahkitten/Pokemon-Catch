@@ -292,12 +292,18 @@ input:disabled {
   flex-direction: column;
   align-items: center;
   transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
 }
 
 .pokemon-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   background-color: #1565c0;
+}
+
+.pokemon-card:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .pokemon-sprite {
@@ -489,9 +495,8 @@ input:disabled {
 
 .button-group {
   display: flex;
-  gap: 1em;
-  justify-content: center;
-  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
 }
 
 .give-up-button {
@@ -558,5 +563,23 @@ input:disabled {
 
 .caught-list.success .pokemon-card:hover {
   animation: none;
+}
+
+.mute-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.mute-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.mute-button.muted {
+  opacity: 0.7;
 }
 
