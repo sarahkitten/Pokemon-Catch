@@ -14,4 +14,11 @@ export interface PokemonData {
     isDefault: boolean;
   }[];
   spriteUrl?: string;
+}
+
+export interface Pokemon {
+  id: number;
+  name: string;
+  sprite: string;
+  types: string[];
 } 

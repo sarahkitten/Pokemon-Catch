@@ -1,4 +1,4 @@
-import { CaughtPokemon, PokemonData } from "../types";
+import { CaughtPokemon, PokemonData, Pokemon } from "../types";
 
 interface NidoranHandlingResult {
   success: boolean;
@@ -12,7 +12,6 @@ export async function handleNidoranInput(
   pokemonData: PokemonData[],
   caughtPokemon: CaughtPokemon[],
   spriteCache: Record<string, string>,
-  isMuted: boolean
 ): Promise<NidoranHandlingResult> {
   // Check if either form is already caught
   const hasNidoranF = caughtPokemon.some(p => p.name.toLowerCase() === 'nidoran-f');
@@ -111,5 +110,45 @@ export async function handleNidoranInput(
       success: false,
       error: 'Error catching Nidoran!'
     };
+  }
+}
+
+export async function fetchPokemonForms(baseName: string) {
+  try {
+    const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${baseName}`);
+    if (!response.ok) return null;
+    const speciesData = await response.json();
+    const forms = speciesData.varieties.map((variety: any) => ({
+      name: variety.pokemon.name,
+      isDefault: variety.is_default
+    }));
+    return forms;
+  } catch (err) {
+    console.error('Error fetching Pokemon forms:', err);
+    return null;
+  }
+}
+
+export async function playPokemonCry(pokemonId: number, isMuted: boolean) {
+  if (isMuted) return;
+  
+  try {
+    const cryUrl = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${pokemonId}.ogg`;
+    const audio = new Audio(cryUrl);
+    audio.play().catch(err => console.log('Error playing cry:', err));
+  } catch (err) {
+    console.log('Error playing cry:', err);
+  }
+}
+
+export async function handlePokemonClick(pokemon: CaughtPokemon | Pokemon, pokemonData: PokemonData[], isMuted: boolean) {
+  // Find the Pokemon in our data to get its ID
+  const pokemonInData = pokemonData.find(p => 
+    p.name.toLowerCase() === pokemon.name.toLowerCase() || 
+    p.forms.some(f => f.name.toLowerCase() === pokemon.name.toLowerCase())
+  );
+  
+  if (pokemonInData) {
+    await playPokemonCry(pokemonInData.id, isMuted);
   }
 } 

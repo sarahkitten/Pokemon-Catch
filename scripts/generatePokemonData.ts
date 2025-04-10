@@ -78,18 +78,11 @@ async function fetchPokemonData(id: number): Promise<PokemonData> {
       baseName = data.name.split('-')[0];
     }
     
-    // Get the species data for forms
-    const speciesResponse = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`);
-    if (!speciesResponse.ok) {
-      throw new Error(`Failed to fetch species data for ${id}`);
+    // Get the species data for forms using the dedicated function
+    const speciesData = await fetchPokemonSpeciesData(data.name);
+    if (!speciesData) {
+      throw new Error(`Failed to fetch species data for ${data.name}`);
     }
-    const speciesData = await speciesResponse.json();
-    
-    // Get all forms
-    const forms = speciesData.varieties.map((variety: any) => ({
-      name: variety.pokemon.name,
-      isDefault: variety.is_default
-    }));
 
     // Determine generation based on ID
     const generation = GENERATIONS.findIndex(gen => 
@@ -101,7 +94,7 @@ async function fetchPokemonData(id: number): Promise<PokemonData> {
       name: baseName,  // Store the base name (with dashes for special cases)
       types: data.types.map((type: any) => type.type.name),
       generation,
-      forms
+      forms: speciesData.forms
     };
   } catch (error) {
     console.error(`Error fetching Pokemon ${id}:`, error);

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import './App.css'
 import PokemonConfetti from './PokemonConfetti'
 import { POKEMON_DATA } from './data/pokemonData'
-import { handleNidoranInput } from './utils/pokemonUtils'
+import { handleNidoranInput, playPokemonCry } from './utils/pokemonUtils'
 import { PokemonData, CaughtPokemon } from './types'
 
 interface Generation {
@@ -45,10 +45,10 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isTotalLoading, setIsTotalLoading] = useState(false);
   const [confettiProps, setConfettiProps] = useState<{ sprite: string; position: { x: number; y: number } } | null>(null);
-  const [selectedGenerationIndex, setSelectedGenerationIndex] = useState<number>(1);
+  const [selectedGenerationIndex, setSelectedGenerationIndex] = useState<number>(0);
   const selectedGeneration = GENERATIONS[selectedGenerationIndex];
   const [selectedType, setSelectedType] = useState<string>(POKEMON_TYPES[0]);
-  const [totalPokemon, setTotalPokemon] = useState<number>(GENERATIONS[1].total);
+  const [totalPokemon, setTotalPokemon] = useState<number>(GENERATIONS[0].total);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isGivingUp, setIsGivingUp] = useState(false);
   const [remainingPokemon, setRemainingPokemon] = useState<Pokemon[]>([]);
@@ -160,22 +160,6 @@ function App() {
     }
   };
 
-  const fetchPokemonForms = async (baseName: string) => {
-    try {
-      const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${baseName}`);
-      if (!response.ok) return null;
-      const speciesData = await response.json();
-      const forms = speciesData.varieties.map((variety: any) => ({
-        name: variety.pokemon.name,
-        isDefault: variety.is_default
-      }));
-      return forms;
-    } catch (err) {
-      console.error('Error fetching Pokemon forms:', err);
-      return null;
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const pokemonName = inputValue.trim().toLowerCase().replace(/\s+/g, '-');
@@ -185,7 +169,7 @@ function App() {
       setIsLoading(true);
       setError('');
       
-      const result = await handleNidoranInput(pokemonData, caughtPokemon, spriteCache, isMuted);
+      const result = await handleNidoranInput(pokemonData, caughtPokemon, spriteCache);
       
       if (!result.success) {
         setError(result.error || 'Error catching Nidoran!');
@@ -208,13 +192,7 @@ function App() {
         
         // Play cry if not muted
         if (!isMuted && result.cryId) {
-          try {
-            const cryUrl = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${result.cryId}.ogg`;
-            const audio = new Audio(cryUrl);
-            audio.play().catch(err => console.log('Error playing cry:', err));
-          } catch (err) {
-            console.log('Error playing cry:', err);
-          }
+          await playPokemonCry(result.cryId, isMuted);
         }
         
         // Get position for confetti
@@ -265,7 +243,7 @@ function App() {
       });
 
       if (existingPokemon) {
-        setError(`You already caught a different form of ${pokemon.name}!`);
+        setError(`You already caught a different form of ${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}!`);
         setTimeout(() => inputRef.current?.focus(), 10);
         return;
       }
@@ -358,6 +336,7 @@ function App() {
     if (!confirmGiveUp) return;
 
     setIsGivingUp(true);
+    setError(''); // Clear any error messages
     const remaining: Pokemon[] = [];
     
     try {
@@ -392,27 +371,15 @@ function App() {
     }
   };
 
-  const playPokemonCry = async (pokemonId: number) => {
-    if (isMuted) return;
-    
-    try {
-      const cryUrl = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${pokemonId}.ogg`;
-      const audio = new Audio(cryUrl);
-      audio.play().catch(err => console.log('Error playing cry:', err));
-    } catch (err) {
-      console.log('Error playing cry:', err);
-    }
-  };
-
   const handlePokemonClick = async (pokemon: CaughtPokemon | Pokemon) => {
     // Find the Pokemon in our data to get its ID
-    const pokemonData = POKEMON_DATA.find(p => 
+    const pokemonInData = POKEMON_DATA.find(p => 
       p.name.toLowerCase() === pokemon.name.toLowerCase() || 
       p.forms.some(f => f.name.toLowerCase() === pokemon.name.toLowerCase())
     );
     
-    if (pokemonData) {
-      await playPokemonCry(pokemonData.id);
+    if (pokemonInData) {
+      await playPokemonCry(pokemonInData.id, isMuted);
     }
   };
 
