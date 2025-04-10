@@ -55,7 +55,7 @@ function App() {
   const [pokemonData, setPokemonData] = useState<PokemonData[]>([]);
   const [isFetchingData, setIsFetchingData] = useState(false);
   const [spriteCache, setSpriteCache] = useState<Record<string, string>>({});
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [noResults, setNoResults] = useState(false);
 
   const fetchSprite = async (pokemonName: string): Promise<string> => {
@@ -267,7 +267,14 @@ function App() {
       });
 
       if (existingPokemon) {
-        setError(`You already caught a different form of ${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}!`);
+        // Check if they're trying to catch the exact same form
+        const isSameForm = caughtPokemon.some(p => p.name.toLowerCase() === pokemonName.toLowerCase());
+        
+        if (isSameForm) {
+          setError(`You already caught ${pokemonName.charAt(0).toUpperCase() + pokemonName.slice(1)}!`);
+        } else {
+          setError(`You already caught a different form of ${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}!`);
+        }
         setTimeout(() => inputRef.current?.focus(), 10);
         return;
       }
@@ -352,6 +359,7 @@ function App() {
 
     setIsGivingUp(true);
     setError(''); // Clear any error messages
+    setInputValue(''); // Clear the input field
     const remaining: Pokemon[] = [];
     
     try {
