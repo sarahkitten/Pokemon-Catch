@@ -148,11 +148,19 @@ function App() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const pokemonName = inputValue.trim().toLowerCase();
+    const pokemonName = inputValue.trim().toLowerCase().replace(/\s+/g, '-');
     
     // Check if this exact Pokemon is already caught
     if (caughtPokemon.some(p => p.name === pokemonName)) {
       setError('You already caught this Pokemon!');
+      setTimeout(() => inputRef.current?.focus(), 10);
+      return;
+    }
+
+    // Get the base name (without form suffix) for comparison
+    const baseName = pokemonName.split('-')[0];
+    if (caughtPokemon.some(p => p.name.split('-')[0] === baseName)) {
+      setError('You already caught a form of this Pokemon!');
       setTimeout(() => inputRef.current?.focus(), 10);
       return;
     }
