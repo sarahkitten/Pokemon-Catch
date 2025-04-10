@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import './App.css'
 import PokemonConfetti from './PokemonConfetti'
+import { POKEMON_DATA } from './data/pokemonData'
 
 interface CaughtPokemon {
   name: string;
@@ -20,6 +21,13 @@ interface Pokemon {
   sprite: string;
   types: string[];
   id: number;
+}
+
+interface PokemonData {
+  name: string;
+  id: number;
+  types: string[];
+  spriteUrl?: string;
 }
 
 const POKEMON_TYPES = [
@@ -48,13 +56,20 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isTotalLoading, setIsTotalLoading] = useState(false);
   const [confettiProps, setConfettiProps] = useState<{ sprite: string; position: { x: number; y: number } } | null>(null);
-  const [selectedGenerationIndex, setSelectedGenerationIndex] = useState<number>(0);
+  const [selectedGenerationIndex, setSelectedGenerationIndex] = useState<number>(1);
   const selectedGeneration = GENERATIONS[selectedGenerationIndex];
   const [selectedType, setSelectedType] = useState<string>(POKEMON_TYPES[0]);
-  const [totalPokemon, setTotalPokemon] = useState<number>(GENERATIONS[0].total);
+  const [totalPokemon, setTotalPokemon] = useState<number>(GENERATIONS[1].total);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isGivingUp, setIsGivingUp] = useState(false);
   const [remainingPokemon, setRemainingPokemon] = useState<Pokemon[]>([]);
+  const [pokemonData, setPokemonData] = useState<PokemonData[]>([]);
+  const [isFetchingData, setIsFetchingData] = useState(false);
+  const [spriteCache, setSpriteCache] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    updateTotalCount(selectedGeneration, selectedType);
+  }, []);
 
   const resetProgress = () => {
     setCaughtPokemon([]);
@@ -93,29 +108,52 @@ function App() {
   };
 
   const updateTotalCount = async (generation: Generation, type: string) => {
-    if (type === "All Types") {
-      setTotalPokemon(generation.total);
-      return;
-    }
-
+    console.log('Updating total count for:', generation.name, type);
+    
     setIsTotalLoading(true);
-    // Fetch all Pokemon in the generation range to count types
-    let typeCount = 0;
-    for (let id = generation.startId; id <= generation.endId; id++) {
-      try {
-        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.types.some((t: any) => t.type.name.toLowerCase() === type.toLowerCase())) {
+    setIsFetchingData(true);
+    
+    try {
+      const pokemonList: PokemonData[] = [];
+      let typeCount = 0;
+
+      // Filter Pokemon based on generation and type using local data
+      const filteredPokemon = POKEMON_DATA.filter(pokemon => {
+        const inGeneration = generation.name === "All Generations" || 
+          (pokemon.id >= generation.startId && pokemon.id <= generation.endId);
+        const matchesType = type === "All Types" || 
+          pokemon.types.some(t => t.toLowerCase() === type.toLowerCase());
+        return inGeneration && matchesType;
+      });
+
+      // Fetch sprites for the filtered Pokemon
+      for (const pokemon of filteredPokemon) {
+        try {
+          const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon.id}`);
+          if (response.ok) {
+            const data = await response.json();
+            pokemonList.push({
+              name: pokemon.name,
+              id: pokemon.id,
+              types: pokemon.types,
+              spriteUrl: data.sprites.front_default
+            });
             typeCount++;
           }
+        } catch (err) {
+          console.error('Error fetching Pokemon sprite:', err);
         }
-      } catch (err) {
-        console.error('Error fetching Pokemon:', err);
       }
+      
+      console.log('Fetched Pokemon list:', pokemonList);
+      setTotalPokemon(typeCount);
+      setPokemonData(pokemonList);
+    } catch (err) {
+      console.error('Error updating Pokemon data:', err);
+    } finally {
+      setIsTotalLoading(false);
+      setIsFetchingData(false);
     }
-    setTotalPokemon(typeCount);
-    setIsTotalLoading(false);
   };
 
   const handleStartOver = () => {
@@ -150,6 +188,9 @@ function App() {
     e.preventDefault();
     const pokemonName = inputValue.trim().toLowerCase().replace(/\s+/g, '-');
     
+    console.log('Searching for Pokemon:', pokemonName);
+    console.log('Available Pokemon:', pokemonData);
+    
     // Check if this exact Pokemon is already caught
     if (caughtPokemon.some(p => p.name === pokemonName)) {
       setError('You already caught this Pokemon!');
@@ -169,115 +210,55 @@ function App() {
     setError('');
 
     try {
-      let forms: {name: string, isDefault: boolean}[] | null = null;
-      let baseData: any = null;
+      // Find the Pokemon in our pre-fetched data
+      const pokemon = pokemonData.find(p => p.name.toLowerCase() === pokemonName.toLowerCase());
       
-      // First try to fetch the Pokemon directly
-      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`);
-      if (response.ok) {
-        baseData = await response.json();
-        
-        // Check generation
-        if (selectedGeneration.name !== "All Generations" &&
-            (baseData.id < selectedGeneration.startId || baseData.id > selectedGeneration.endId)) {
-          setError(`That Pokemon is not from ${selectedGeneration.name}!`);
-          setIsLoading(false);
-          setTimeout(() => inputRef.current?.focus(), 10);
-          return;
-        }
-
-        // Check type
-        const types = baseData.types.map((t: any) => t.type.name);
-        if (selectedType !== "All Types" && 
-            !types.includes(selectedType.toLowerCase())) {
-          setError(`That's not a ${selectedType} type Pokemon!`);
-          setIsLoading(false);
-          setTimeout(() => inputRef.current?.focus(), 10);
-          return;
-        }
-      }
+      console.log('Found Pokemon:', pokemon);
       
-      // Get all forms of this Pokemon
-      forms = await fetchPokemonForms(pokemonName);
-      
-      if (!forms && !baseData) {
-        console.log('No forms found');
+      if (!pokemon) {
         setError('That\'s not a valid Pokemon name!');
         setTimeout(() => inputRef.current?.focus(), 10);
         return;
       }
 
-      let caughtAny = false;
-      let caughtPokemon: CaughtPokemon | null = null;
-
-      // If the input matches exactly a form name, only catch that form
-      if (forms && forms.some(f => f.name === pokemonName)) {
-        try {
-          const formResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`);
-          if (formResponse.ok) {
-            const formData = await formResponse.json();
-            const sprite = formData.sprites.front_default;
-            const types = formData.types.map((t: any) => t.type.name);
-            caughtPokemon = { name: pokemonName, sprite, types };
-            setCaughtPokemon(prev => [caughtPokemon!, ...prev]);
-            caughtAny = true;
-          }
-        } catch (err) {
-          console.error('Error fetching specific form:', err);
+      // Check if we have the sprite cached
+      let sprite = spriteCache[pokemonName];
+      if (!sprite) {
+        // Fetch the sprite if not cached
+        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          sprite = data.sprites.front_default;
+          setSpriteCache(prev => ({ ...prev, [pokemonName]: sprite }));
         }
-      } else if (forms) {
-        // If input is just the base name, find and catch the default form
-        console.log('Forms found:', forms);
-        const defaultForm = forms.find(form => form.isDefault);
-        if (defaultForm) {
-          console.log('Fetching default form:', defaultForm.name);
-          try {
-            const formResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${defaultForm.name}`);
-            if (formResponse.ok) {
-              const formData = await formResponse.json();
-              const sprite = formData.sprites.front_default;
-              const types = formData.types.map((t: any) => t.type.name);
-              caughtPokemon = { name: defaultForm.name, sprite, types };
-              setCaughtPokemon(prev => [caughtPokemon!, ...prev]);
-              caughtAny = true;
-            }
-          } catch (err) {
-            console.error('Error fetching default form:', err);
-          }
-        }
-      } else if (baseData) {
-        // If we have base data and no forms, just use that
-        const sprite = baseData.sprites.front_default;
-        const types = baseData.types.map((t: any) => t.type.name);
-        caughtPokemon = { name: pokemonName, sprite, types };
-        setCaughtPokemon(prev => [caughtPokemon!, ...prev]);
-        caughtAny = true;
       }
+
+      const caughtPokemon: CaughtPokemon = {
+        name: pokemon.name,
+        sprite: sprite || pokemon.spriteUrl || '',
+        types: pokemon.types
+      };
+
+      setCaughtPokemon(prev => [caughtPokemon, ...prev]);
+      setInputValue('');
+      setError('');
       
-      if (caughtAny && caughtPokemon) {
-        setInputValue('');
-        setError('');
+      // Get position for confetti
+      const rect = inputRef.current?.getBoundingClientRect();
+      if (rect) {
+        const centerX = rect.left + (rect.width / 2);
+        const centerY = rect.top + (rect.height / 2);
         
-        // Get position for confetti
-        const rect = inputRef.current?.getBoundingClientRect();
-        if (rect) {
-          const centerX = rect.left + (rect.width / 2);
-          const centerY = rect.top + (rect.height / 2);
-          
-          setConfettiProps({
-            sprite: caughtPokemon.sprite,
-            position: {
-              x: centerX + window.scrollX,
-              y: centerY + window.scrollY
-            }
-          });
-          
-          setTimeout(() => inputRef.current?.focus(), 10);
-          setTimeout(() => setConfettiProps(null), 2000);
-        }
-      } else {
-        setError('That\'s not a valid Pokemon name!');
+        setConfettiProps({
+          sprite: caughtPokemon.sprite,
+          position: {
+            x: centerX + window.scrollX,
+            y: centerY + window.scrollY
+          }
+        });
+        
         setTimeout(() => inputRef.current?.focus(), 10);
+        setTimeout(() => setConfettiProps(null), 2000);
       }
     } catch (err) {
       setError('That\'s not a valid Pokemon name!');
@@ -347,14 +328,15 @@ function App() {
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder={remainingPokemon.length > 0 ? "Click 'Start Over' to catch more Pokemon" : "Enter a Pokemon name"}
-              disabled={isLoading || remainingPokemon.length > 0}
+              placeholder={isFetchingData ? "Loading Pokemon data..." : remainingPokemon.length > 0 ? "Click 'Start Over' to catch more Pokemon" : "Enter a Pokemon name"}
+              disabled={isLoading || remainingPokemon.length > 0 || isFetchingData}
             />
           </form>
 
           <div className="message-container">
             {error && <p className="error">{error}</p>}
             {isLoading && <p className="loading">Searching for Pokemon...</p>}
+            {isFetchingData && <p className="loading">Loading Pokemon data...</p>}
             {remainingPokemon.length > 0 && (
               <p className="info">Click 'Start Over' to try catching Pokemon again!</p>
             )}
@@ -463,7 +445,7 @@ function App() {
         />
       )}
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
