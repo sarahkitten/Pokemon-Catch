@@ -57,6 +57,8 @@ function App() {
   const [spriteCache, setSpriteCache] = useState<Record<string, string>>({});
   const [isMuted, setIsMuted] = useState(true);
   const [noResults, setNoResults] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 700);
 
   const fetchSprite = async (pokemonName: string): Promise<string> => {
     // Check cache first
@@ -78,6 +80,21 @@ function App() {
 
   useEffect(() => {
     updateTotalCount(selectedGeneration, selectedType);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSmallScreen(window.innerWidth <= 700);
+    };
+
+    // Initial check
+    handleResize();
+
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const resetProgress = () => {
@@ -408,7 +425,7 @@ function App() {
 
   return (
     <div className="app">
-      <div className="main-content">
+      <div className={`main-content ${isSidebarCollapsed ? 'expanded' : ''}`}>
         <h1>Catch them all!</h1>
         
         <div className="pokemon-section">
@@ -514,7 +531,18 @@ function App() {
         </div>
       </div>
 
-      <div className="sidebar">
+      <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
+        <button 
+          className="sidebar-toggle"
+          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isSmallScreen ? (
+            isSidebarCollapsed ? "▲" : "▼"
+          ) : (
+            isSidebarCollapsed ? "▶" : "◀"
+          )}
+        </button>
         <div className="filters">
           <div className="generation-selector">
             <label htmlFor="generation">Choose your region:</label>
