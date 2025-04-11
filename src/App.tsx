@@ -20,6 +20,8 @@ interface Pokemon {
   id: number;
 }
 
+const MAX_MATCH_DISTANCE = 1; // Maximum distance for fuzzy matching
+
 const POKEMON_TYPES = [
   "All Types", "Normal", "Fire", "Water", "Electric", "Grass", "Ice", 
   "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug", 
@@ -259,7 +261,7 @@ function App() {
     const normalizedInput = input.toLowerCase().trim();
     let closestMatch: PokemonData | undefined = undefined;
     let minDistance = Infinity;
-    let maxDistance = 3; // Maximum "distance" to consider a match
+    let maxDistance = MAX_MATCH_DISTANCE; // Maximum "distance" to consider a match
 
     for (const pokemon of pokemonData) {
       // Check base name
