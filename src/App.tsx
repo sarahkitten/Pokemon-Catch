@@ -5,13 +5,7 @@ import PokemonConfetti from './PokemonConfetti'
 import { POKEMON_DATA } from './data/pokemonData'
 import { handleNidoranInput, playPokemonCry } from './utils/pokemonUtils'
 import { PokemonData, CaughtPokemon } from './types'
-
-interface Generation {
-  name: string;
-  startId: number;
-  endId: number;
-  total: number;
-}
+import { MAX_MATCH_DISTANCE, POKEMON_TYPES, GENERATIONS, Generation, UI_CONSTANTS } from './constants'
 
 interface Pokemon {
   name: string;
@@ -19,27 +13,6 @@ interface Pokemon {
   types: string[];
   id: number;
 }
-
-const MAX_MATCH_DISTANCE = 2; // Maximum distance for fuzzy matching
-
-const POKEMON_TYPES = [
-  "All Types", "Normal", "Fire", "Water", "Electric", "Grass", "Ice", 
-  "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug", 
-  "Rock", "Ghost", "Dragon", "Dark", "Steel", "Fairy"
-];
-
-const GENERATIONS: Generation[] = [
-  { name: "All Generations", startId: 1, endId: 1008, total: 1008 },
-  { name: "Gen 1 (Kanto)", startId: 1, endId: 151, total: 151 },
-  { name: "Gen 2 (Johto)", startId: 152, endId: 251, total: 100 },
-  { name: "Gen 3 (Hoenn)", startId: 252, endId: 386, total: 135 },
-  { name: "Gen 4 (Sinnoh)", startId: 387, endId: 493, total: 107 },
-  { name: "Gen 5 (Unova)", startId: 494, endId: 649, total: 156 },
-  { name: "Gen 6 (Kalos)", startId: 650, endId: 721, total: 72 },
-  { name: "Gen 7 (Alola)", startId: 722, endId: 809, total: 88 },
-  { name: "Gen 8 (Galar)", startId: 810, endId: 905, total: 96 },
-  { name: "Gen 9 (Paldea)", startId: 906, endId: 1008, total: 103 },
-];
 
 function App() {
   const [caughtPokemon, setCaughtPokemon] = useState<CaughtPokemon[]>([]);
@@ -62,7 +35,7 @@ function App() {
   const [isMuted, setIsMuted] = useState(false);
   const [noResults, setNoResults] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 700);
+  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT);
   const [isEasyMode, setIsEasyMode] = useState(false);
 
   const fetchFormSprite = async (pokemonForm: string): Promise<string> => {
@@ -104,7 +77,7 @@ function App() {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsSmallScreen(window.innerWidth <= 700);
+      setIsSmallScreen(window.innerWidth <= UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT);
     };
 
     // Initial check
@@ -115,6 +88,11 @@ function App() {
     
     // Cleanup
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Add effect to set CSS variable
+  useEffect(() => {
+    document.documentElement.style.setProperty('--small-screen-breakpoint', `${UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT}px`);
   }, []);
 
   const resetProgress = () => {
@@ -313,7 +291,7 @@ function App() {
       
       if (!result.success) {
         setError(result.error || 'Error catching Nidoran!');
-        setTimeout(() => inputRef.current?.focus(), 10);
+        setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
         setIsLoading(false);
         return;
       }
@@ -349,8 +327,8 @@ function App() {
             }
           });
           
-          setTimeout(() => inputRef.current?.focus(), 10);
-          setTimeout(() => setConfettiProps(null), 2000);
+          setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
+          setTimeout(() => setConfettiProps(null), UI_CONSTANTS.CONFETTI_ANIMATION_DURATION);
         }
       }
       
@@ -411,7 +389,7 @@ function App() {
         } else {
           setError('That\'s not a valid Pokemon name!');
         }
-        setTimeout(() => inputRef.current?.focus(), 10);
+        setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
         return;
       }
 
@@ -432,7 +410,7 @@ function App() {
         } else {
           setError(`You already caught a different form of ${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}!`);
         }
-        setTimeout(() => inputRef.current?.focus(), 10);
+        setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
         return;
       }
 
@@ -450,7 +428,7 @@ function App() {
 
       if (!form) {
         setError('Could not find a valid form for this Pokemon!');
-        setTimeout(() => inputRef.current?.focus(), 10);
+        setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
         return;
       }
 
@@ -491,12 +469,12 @@ function App() {
           }
         });
         
-        setTimeout(() => inputRef.current?.focus(), 10);
-        setTimeout(() => setConfettiProps(null), 2000);
+        setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
+        setTimeout(() => setConfettiProps(null), UI_CONSTANTS.CONFETTI_ANIMATION_DURATION);
       }
     } catch (err) {
       setError('That\'s not a valid Pokemon name!');
-      setTimeout(() => inputRef.current?.focus(), 10);
+      setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
     } finally {
       setIsLoading(false);
     }
@@ -642,7 +620,7 @@ function App() {
 
     let validCombinationFound = false;
     let attempts = 0;
-    const maxAttempts = 50; // Prevent infinite loop if something goes wrong
+    const maxAttempts = UI_CONSTANTS.MAX_FILTER_ATTEMPTS; // Prevent infinite loop if something goes wrong
     
     while (!validCombinationFound && attempts < maxAttempts) {
       // Random generation (excluding "All Generations")
