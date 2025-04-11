@@ -56,7 +56,7 @@ function App() {
   const [pokemonData, setPokemonData] = useState<PokemonData[]>([]);
   const [isFetchingData, setIsFetchingData] = useState(false);
   const [spriteCache, setSpriteCache] = useState<Record<string, string>>({});
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const [noResults, setNoResults] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 700);
@@ -146,6 +146,64 @@ function App() {
     setSelectedLetter(newLetter);
     resetProgress();
     await updateTotalCount(selectedGeneration, selectedType, newLetter);
+  };
+
+  const handleGenerationReset = async () => {
+    if (selectedGenerationIndex === 0) return; // Already at default
+    if (caughtPokemon.length > 0) {
+      const confirmChange = window.confirm(
+        "Resetting generation will reset your current progress. Are you sure?"
+      );
+      if (!confirmChange) return;
+    }
+    setSelectedGenerationIndex(0);
+    resetProgress();
+    await updateTotalCount(GENERATIONS[0], selectedType, selectedLetter);
+  };
+
+  const handleTypeReset = async () => {
+    if (selectedType === POKEMON_TYPES[0]) return; // Already at default
+    if (caughtPokemon.length > 0) {
+      const confirmChange = window.confirm(
+        "Resetting type will reset your current progress. Are you sure?"
+      );
+      if (!confirmChange) return;
+    }
+    setSelectedType(POKEMON_TYPES[0]);
+    resetProgress();
+    await updateTotalCount(selectedGeneration, POKEMON_TYPES[0], selectedLetter);
+  };
+
+  const handleLetterReset = async () => {
+    if (selectedLetter === "All") return; // Already at default
+    if (caughtPokemon.length > 0) {
+      const confirmChange = window.confirm(
+        "Resetting letter filter will reset your current progress. Are you sure?"
+      );
+      if (!confirmChange) return;
+    }
+    setSelectedLetter("All");
+    resetProgress();
+    await updateTotalCount(selectedGeneration, selectedType, "All");
+  };
+
+  const handleResetAllFilters = async () => {
+    if (selectedGenerationIndex === 0 && selectedType === POKEMON_TYPES[0] && selectedLetter === "All") {
+      return; // Already at default values
+    }
+    
+    if (caughtPokemon.length > 0) {
+      const confirmChange = window.confirm(
+        "Resetting all filters will reset your current progress. Are you sure?"
+      );
+      if (!confirmChange) return;
+    }
+
+    setSelectedGenerationIndex(0);
+    setSelectedType(POKEMON_TYPES[0]);
+    setSelectedLetter("All");
+    resetProgress();
+    await updateTotalCount(GENERATIONS[0], POKEMON_TYPES[0], "All");
   };
 
   const updateTotalCount = async (generation: Generation, type: string, letter: string = selectedLetter) => {
@@ -454,6 +512,63 @@ function App() {
     return filteredPokemon.length > 0;
   };
 
+  const getValidOptions = (filterType: 'generation' | 'type' | 'letter'): number[] | string[] => {
+    switch (filterType) {
+      case 'generation':
+        return GENERATIONS.map((_, index) => index).filter(genIndex => {
+          const gen = GENERATIONS[genIndex];
+          return isValidCombination(gen, selectedType, selectedLetter);
+        });
+      case 'type':
+        return POKEMON_TYPES.filter(type => 
+          isValidCombination(selectedGeneration, type, selectedLetter)
+        );
+      case 'letter':
+        const letters = ["All", ...Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ')];
+        return letters.filter(letter => 
+          isValidCombination(selectedGeneration, selectedType, letter)
+        );
+      default:
+        return [];
+    }
+  };
+
+  const randomizeGeneration = () => {
+    const validGenerations = getValidOptions('generation') as number[];
+    if (validGenerations.length <= 1) return; // No other valid options
+
+    let randomIndex;
+    do {
+      randomIndex = validGenerations[Math.floor(Math.random() * validGenerations.length)];
+    } while (randomIndex === selectedGenerationIndex && validGenerations.length > 1);
+
+    handleGenerationChange({ target: { value: randomIndex.toString() } } as React.ChangeEvent<HTMLSelectElement>);
+  };
+
+  const randomizeType = () => {
+    const validTypes = getValidOptions('type') as string[];
+    if (validTypes.length <= 1) return; // No other valid options
+
+    let randomType;
+    do {
+      randomType = validTypes[Math.floor(Math.random() * validTypes.length)];
+    } while (randomType === selectedType && validTypes.length > 1);
+
+    handleTypeChange({ target: { value: randomType } } as React.ChangeEvent<HTMLSelectElement>);
+  };
+
+  const randomizeLetter = () => {
+    const validLetters = getValidOptions('letter') as string[];
+    if (validLetters.length <= 1) return; // No other valid options
+
+    let randomLetter;
+    do {
+      randomLetter = validLetters[Math.floor(Math.random() * validLetters.length)];
+    } while (randomLetter === selectedLetter && validLetters.length > 1);
+
+    handleLetterChange({ target: { value: randomLetter } } as React.ChangeEvent<HTMLSelectElement>);
+  };
+
   const handleRandomize = async () => {
     if (caughtPokemon.length > 0) {
       const confirmChange = window.confirm(
@@ -624,48 +739,102 @@ function App() {
         <div className="filters">
           <div className="generation-selector">
             <label htmlFor="generation">Choose your region:</label>
-            <select 
-              id="generation" 
-              onChange={handleGenerationChange}
-              value={selectedGenerationIndex}
-            >
-              {GENERATIONS.map((gen, index) => (
-                <option key={gen.name} value={index}>
-                  {gen.name}
-                </option>
-              ))}
-            </select>
+            <div className="filter-row">
+              <select 
+                id="generation" 
+                onChange={handleGenerationChange}
+                value={selectedGenerationIndex}
+              >
+                {GENERATIONS.map((gen, index) => (
+                  <option key={gen.name} value={index}>
+                    {gen.name}
+                  </option>
+                ))}
+              </select>
+              <button 
+                className="randomize-filter" 
+                onClick={randomizeGeneration}
+                disabled={getValidOptions('generation').length <= 1}
+                title={getValidOptions('generation').length <= 1 ? "No other valid options" : "Random generation"}
+              >
+                🎲
+              </button>
+              <button 
+                className="reset-filter" 
+                onClick={handleGenerationReset}
+                disabled={selectedGenerationIndex === 0}
+                title={selectedGenerationIndex === 0 ? "Already at default" : "Reset to All Generations"}
+              >
+                ↺
+              </button>
+            </div>
           </div>
 
           <div className="type-selector">
             <label htmlFor="type">Choose Pokemon type:</label>
-            <select 
-              id="type" 
-              onChange={handleTypeChange}
-              value={selectedType}
-            >
-              {POKEMON_TYPES.map(type => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
+            <div className="filter-row">
+              <select 
+                id="type" 
+                onChange={handleTypeChange}
+                value={selectedType}
+              >
+                {POKEMON_TYPES.map(type => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+              <button 
+                className="randomize-filter" 
+                onClick={randomizeType}
+                disabled={getValidOptions('type').length <= 1}
+                title={getValidOptions('type').length <= 1 ? "No other valid options" : "Random type"}
+              >
+                🎲
+              </button>
+              <button 
+                className="reset-filter" 
+                onClick={handleTypeReset}
+                disabled={selectedType === POKEMON_TYPES[0]}
+                title={selectedType === POKEMON_TYPES[0] ? "Already at default" : "Reset to All Types"}
+              >
+                ↺
+              </button>
+            </div>
           </div>
 
           <div className="letter-selector">
             <label htmlFor="letter">First letter must be:</label>
-            <select 
-              id="letter" 
-              onChange={handleLetterChange}
-              value={selectedLetter}
-            >
-              <option value="All">All Letters</option>
-              {Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ').map(letter => (
-                <option key={letter} value={letter}>
-                  {letter}
-                </option>
-              ))}
-            </select>
+            <div className="filter-row">
+              <select 
+                id="letter" 
+                onChange={handleLetterChange}
+                value={selectedLetter}
+              >
+                <option value="All">All Letters</option>
+                {Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ').map(letter => (
+                  <option key={letter} value={letter}>
+                    {letter}
+                  </option>
+                ))}
+              </select>
+              <button 
+                className="randomize-filter" 
+                onClick={randomizeLetter}
+                disabled={getValidOptions('letter').length <= 1}
+                title={getValidOptions('letter').length <= 1 ? "No other valid options" : "Random letter"}
+              >
+                🎲
+              </button>
+              <button 
+                className="reset-filter" 
+                onClick={handleLetterReset}
+                disabled={selectedLetter === "All"}
+                title={selectedLetter === "All" ? "Already at default" : "Reset to All Letters"}
+              >
+                ↺
+              </button>
+            </div>
           </div>
 
           <button 
@@ -674,6 +843,15 @@ function App() {
             title="Randomly set all filters"
           >
             🎲 Randomize Filters
+          </button>
+          <button 
+            className="reset-all-button"
+            onClick={handleResetAllFilters}
+            disabled={selectedGenerationIndex === 0 && selectedType === POKEMON_TYPES[0] && selectedLetter === "All"}
+            title={selectedGenerationIndex === 0 && selectedType === POKEMON_TYPES[0] && selectedLetter === "All" ? 
+              "All filters are already at default values" : "Reset all filters to default values"}
+          >
+            ↺ Reset All Filters
           </button>
         </div>
       </div>

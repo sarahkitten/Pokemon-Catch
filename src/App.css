@@ -146,6 +146,63 @@
   gap: 0.5em;
 }
 
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.filter-row select {
+  flex: 1;
+  padding: 0.5em;
+  border-radius: 0.5em;
+  border: 1px solid #ccc;
+  background-color: white;
+  font-size: 1em;
+  cursor: pointer;
+  color: #1976d2;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7em top 50%;
+  background-size: 0.65em auto;
+  padding-right: 2em;
+}
+
+.filter-row select:hover {
+  border-color: #2196f3;
+  box-shadow: 0 0 0 1px rgba(33, 150, 243, 0.3);
+}
+
+.filter-row select:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.3);
+}
+
+.randomize-filter {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5em;
+  color: #1976d2;
+  font-size: 1.2em;
+  border-radius: 0.3em;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.randomize-filter:hover {
+  background-color: rgba(25, 118, 210, 0.1);
+  transform: rotate(15deg);
+}
+
 .generation-selector select,
 .type-selector select,
 .letter-selector select {
@@ -330,6 +387,33 @@ input:disabled {
 
 .randomize-button:active {
   transform: scale(0.98);
+}
+
+.reset-all-button {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  background-color: #f5f5f5;
+  color: #666;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.reset-all-button:hover:not(:disabled) {
+  background-color: #e0e0e0;
+  color: #2196f3;
+}
+
+.reset-all-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .caught-list {
@@ -666,5 +750,29 @@ input:disabled {
 
 .mute-button.muted {
   opacity: 0.7;
+}
+
+.reset-filter {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2em;
+  padding: 4px;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.reset-filter:hover:not(:disabled) {
+  color: #2196f3;
+}
+
+.reset-filter:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Ensure proper spacing between buttons */
+.filter-row button:not(:last-child) {
+  margin-right: 4px;
 }
 
