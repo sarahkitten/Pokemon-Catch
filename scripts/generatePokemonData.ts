@@ -42,6 +42,9 @@ const DASHED_NAMES = new Set([
   'nidoran-m',
   'nidoran-f',
   'chi-yu',
+  'ting-lu',
+  'chien-pao',
+  'wo-chien',
 ]);
 
 async function fetchPokemonSpeciesData(name: string): Promise<{ forms: { name: string; isDefault: boolean }[] } | null> {

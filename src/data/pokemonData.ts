@@ -7012,21 +7012,21 @@ export const POKEMON_DATA: PokemonData[] = [
   },
   {
     id: 1001,
-    name: "wo",
+    name: "wo-chien",
     types: ["dark", "grass"],
     generation: 9,
     forms: [{ name: "wo-chien", isDefault: true }]
   },
   {
     id: 1002,
-    name: "chien",
+    name: "chien-pao",
     types: ["dark", "ice"],
     generation: 9,
     forms: [{ name: "chien-pao", isDefault: true }]
   },
   {
     id: 1003,
-    name: "ting",
+    name: "ting-lu",
     types: ["dark", "ground"],
     generation: 9,
     forms: [{ name: "ting-lu", isDefault: true }]
