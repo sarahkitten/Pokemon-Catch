@@ -20,7 +20,7 @@ interface Pokemon {
   id: number;
 }
 
-const MAX_MATCH_DISTANCE = 1; // Maximum distance for fuzzy matching
+const MAX_MATCH_DISTANCE = 2; // Maximum distance for fuzzy matching
 
 const POKEMON_TYPES = [
   "All Types", "Normal", "Fire", "Water", "Electric", "Grass", "Ice", 

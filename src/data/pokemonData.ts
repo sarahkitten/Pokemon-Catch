@@ -7033,7 +7033,7 @@ export const POKEMON_DATA: PokemonData[] = [
   },
   {
     id: 1004,
-    name: "chi",
+    name: "chi-yu",
     types: ["dark", "fire"],
     generation: 9,
     forms: [{ name: "chi-yu", isDefault: true }]

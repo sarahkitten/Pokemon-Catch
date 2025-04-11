@@ -59,6 +59,23 @@ npm run dev
 npm run build
 ```
 
+### Generating Pokemon Data
+
+The app uses a local TypeScript file containing Pokemon data. To refresh this data:
+
+1. Run the generation script:
+```bash
+npx ts-node scripts/generatePokemonData.ts
+```
+
+This script will:
+- Fetch the latest Pokemon data from the PokeAPI
+- Generate an updated `pokemonData.ts` file in `src/data`
+- Include information about Pokemon IDs, names, types, generations, and forms
+- Display progress as it fetches data for each Pokemon
+
+Note: The script includes a rate limiter to avoid overwhelming the PokeAPI. The full generation process may take a few minutes.
+
 ## Deployment
 
 This project is deployed using GitHub Pages. To deploy your own version:
