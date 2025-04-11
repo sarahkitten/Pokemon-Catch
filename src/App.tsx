@@ -48,6 +48,7 @@ function App() {
   const [selectedGenerationIndex, setSelectedGenerationIndex] = useState<number>(0);
   const selectedGeneration = GENERATIONS[selectedGenerationIndex];
   const [selectedType, setSelectedType] = useState<string>(POKEMON_TYPES[0]);
+  const [selectedLetter, setSelectedLetter] = useState<string>("All");
   const [totalPokemon, setTotalPokemon] = useState<number>(GENERATIONS[0].total);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isGivingUp, setIsGivingUp] = useState(false);
@@ -116,7 +117,7 @@ function App() {
     
     setSelectedGenerationIndex(newIndex);
     resetProgress();
-    await updateTotalCount(newGen, selectedType);
+    await updateTotalCount(newGen, selectedType, selectedLetter);
   };
 
   const handleTypeChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -130,24 +131,40 @@ function App() {
     
     setSelectedType(newType);
     resetProgress();
-    await updateTotalCount(selectedGeneration, newType);
+    await updateTotalCount(selectedGeneration, newType, selectedLetter);
   };
 
-  const updateTotalCount = async (generation: Generation, type: string) => {
-    console.log('Updating total count for:', generation.name, type);
+  const handleLetterChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newLetter = event.target.value;
+    if (caughtPokemon.length > 0) {
+      const confirmChange = window.confirm(
+        "Changing starting letter will reset your current progress. Are you sure?"
+      );
+      if (!confirmChange) return;
+    }
+    
+    setSelectedLetter(newLetter);
+    resetProgress();
+    await updateTotalCount(selectedGeneration, selectedType, newLetter);
+  };
+
+  const updateTotalCount = async (generation: Generation, type: string, letter: string = selectedLetter) => {
+    console.log('Updating total count for:', generation.name, type, letter);
     
     setIsTotalLoading(true);
     setIsFetchingData(true);
     setNoResults(false);
     
     try {
-      // Filter Pokemon based on generation and type using local data
+      // Filter Pokemon based on generation, type, and starting letter using local data
       const filteredPokemon = POKEMON_DATA.filter(pokemon => {
         const inGeneration = generation.name === "All Generations" || 
           (pokemon.id >= generation.startId && pokemon.id <= generation.endId);
         const matchesType = type === "All Types" || 
           pokemon.types.some(t => t.toLowerCase() === type.toLowerCase());
-        return inGeneration && matchesType;
+        const matchesLetter = letter === "All" || 
+          pokemon.name.toLowerCase().startsWith(letter.toLowerCase());
+        return inGeneration && matchesType && matchesLetter;
       });
       
       console.log('Filtered Pokemon list:', filteredPokemon);
@@ -261,7 +278,13 @@ function App() {
           const matchesType = selectedType === "All Types" || 
             pokemonExists.types.some(t => t.toLowerCase() === selectedType.toLowerCase());
 
-          if (!inGeneration) {
+          // Check if it's a letter mismatch
+          const matchesLetter = selectedLetter === "All" || 
+            pokemonExists.name.toLowerCase().startsWith(selectedLetter.toLowerCase());
+
+          if (!matchesLetter) {
+            setError(`That Pokemon doesn't start with the letter ${selectedLetter}!`);
+          } else if (!inGeneration) {
             setError(`That Pokemon is not in ${selectedGeneration.name}!`);
           } else if (!matchesType) {
             setError(`That Pokemon is not a ${selectedType} type!`);
@@ -380,27 +403,22 @@ function App() {
     const remaining: Pokemon[] = [];
     
     try {
-      for (let id = selectedGeneration.startId; id <= selectedGeneration.endId; id++) {
-        // Skip if already caught
-        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+      // Instead of fetching all Pokemon again, filter the existing pokemonData
+      // This ensures we only show Pokemon that match all current filters
+      const remainingPokemon = pokemonData.filter(pokemon => 
+        !caughtPokemon.some(caught => caught.name === pokemon.name)
+      );
+
+      for (const pokemon of remainingPokemon) {
+        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon.name}`);
         if (response.ok) {
           const data = await response.json();
-          const types = data.types.map((t: any) => t.type.name);
-          
-          // Skip if this Pokemon is already caught
-          if (caughtPokemon.some(p => p.name === data.name)) {
-            continue;
-          }
-          
-          // Check if Pokemon matches selected type
-          if (selectedType === "All Types" || types.includes(selectedType.toLowerCase())) {
-            remaining.push({
-              id: data.id,
-              name: data.name,
-              sprite: data.sprites.front_default,
-              types
-            });
-          }
+          remaining.push({
+            id: pokemon.id,
+            name: pokemon.name,
+            sprite: data.sprites.front_default,
+            types: pokemon.types
+          });
         }
       }
       setRemainingPokemon(remaining);
@@ -569,6 +587,22 @@ function App() {
               {POKEMON_TYPES.map(type => (
                 <option key={type} value={type}>
                   {type}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="letter-selector">
+            <label htmlFor="letter">First letter must be:</label>
+            <select 
+              id="letter" 
+              onChange={handleLetterChange}
+              value={selectedLetter}
+            >
+              <option value="All">All Letters</option>
+              {Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ').map(letter => (
+                <option key={letter} value={letter}>
+                  {letter}
                 </option>
               ))}
             </select>
