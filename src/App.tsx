@@ -441,6 +441,66 @@ function App() {
     }
   };
 
+  const isValidCombination = (generation: Generation, type: string, letter: string): boolean => {
+    const filteredPokemon = POKEMON_DATA.filter(pokemon => {
+      const inGeneration = generation.name === "All Generations" || 
+        (pokemon.id >= generation.startId && pokemon.id <= generation.endId);
+      const matchesType = type === "All Types" || 
+        pokemon.types.some(t => t.toLowerCase() === type.toLowerCase());
+      const matchesLetter = letter === "All" || 
+        pokemon.name.toLowerCase().startsWith(letter.toLowerCase());
+      return inGeneration && matchesType && matchesLetter;
+    });
+    return filteredPokemon.length > 0;
+  };
+
+  const handleRandomize = async () => {
+    if (caughtPokemon.length > 0) {
+      const confirmChange = window.confirm(
+        "Randomizing filters will reset your current progress. Are you sure?"
+      );
+      if (!confirmChange) return;
+    }
+
+    let validCombinationFound = false;
+    let attempts = 0;
+    const maxAttempts = 50; // Prevent infinite loop if something goes wrong
+    
+    while (!validCombinationFound && attempts < maxAttempts) {
+      // Random generation (excluding "All Generations")
+      const randomGenIndex = Math.floor(Math.random() * (GENERATIONS.length - 1)) + 1;
+      
+      // Random type (excluding "All Types")
+      const randomTypeIndex = Math.floor(Math.random() * (POKEMON_TYPES.length - 1)) + 1;
+      
+      // Random letter (excluding "All")
+      const letters = Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+      const randomLetter = letters[Math.floor(Math.random() * letters.length)];
+
+      // Check if this combination would return results
+      if (isValidCombination(GENERATIONS[randomGenIndex], POKEMON_TYPES[randomTypeIndex], randomLetter)) {
+        setSelectedGenerationIndex(randomGenIndex);
+        setSelectedType(POKEMON_TYPES[randomTypeIndex]);
+        setSelectedLetter(randomLetter);
+        resetProgress();
+        await updateTotalCount(GENERATIONS[randomGenIndex], POKEMON_TYPES[randomTypeIndex], randomLetter);
+        validCombinationFound = true;
+      }
+
+      attempts++;
+    }
+
+    // If we couldn't find a valid combination, fall back to a safe combination
+    if (!validCombinationFound) {
+      // Reset to "All Generations", "All Types", and "All" letter as a fallback
+      setSelectedGenerationIndex(0);
+      setSelectedType(POKEMON_TYPES[0]);
+      setSelectedLetter("All");
+      resetProgress();
+      await updateTotalCount(GENERATIONS[0], POKEMON_TYPES[0], "All");
+    }
+  };
+
   return (
     <div className="app">
       <div className={`main-content ${isSidebarCollapsed ? 'expanded' : ''}`}>
@@ -571,7 +631,7 @@ function App() {
             >
               {GENERATIONS.map((gen, index) => (
                 <option key={gen.name} value={index}>
-                  {gen.name} ({gen.total} Pokemon)
+                  {gen.name}
                 </option>
               ))}
             </select>
@@ -607,6 +667,14 @@ function App() {
               ))}
             </select>
           </div>
+
+          <button 
+            className="randomize-button"
+            onClick={handleRandomize}
+            title="Randomly set all filters"
+          >
+            🎲 Randomize Filters
+          </button>
         </div>
       </div>
 

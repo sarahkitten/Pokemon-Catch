@@ -8,6 +8,7 @@
 
 .app {
   display: flex;
+  flex-direction: row;
   min-height: 100vh;
   padding: 1rem;
   gap: 1rem;
@@ -21,14 +22,11 @@
   transition: margin-left 0.3s ease;
   min-width: 0;
   order: 2;
-}
-
-.main-content.expanded {
   margin-left: 0;
 }
 
 .sidebar {
-  width: 250px;
+  width: 350px;
   background-color: #f5f5f5;
   border-radius: 0.8em;
   padding: 3.5em 1em 1em;
@@ -37,11 +35,13 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
   order: 1;
+  height: auto;
 }
 
 .sidebar.collapsed {
   width: 50px;
   padding: 3.5em 0.5em 0.5em;
+  height: auto;
 }
 
 .sidebar-toggle {
@@ -116,28 +116,6 @@
   }
 }
 
-@media (min-width: 701px) {
-  .app {
-    flex-direction: row;
-  }
-
-  .main-content {
-    margin-left: 0;
-    order: 2;
-  }
-
-  .sidebar {
-    width: 250px;
-    height: auto;
-    order: 1;
-  }
-
-  .sidebar.collapsed {
-    width: 50px;
-    height: auto;
-  }
-}
-
 .toggle-icon-vertical-expanded {
   content: "▼";
 }
@@ -204,8 +182,6 @@
   border-color: #2196f3;
   box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.3);
 }
-
-
 
 .generation-selector label,
 .type-selector label,
@@ -333,6 +309,27 @@ input:disabled {
 .start-over-button:active {
   transform: translateY(0);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.randomize-button {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.randomize-button:hover {
+  background-color: #357abd;
+}
+
+.randomize-button:active {
+  transform: scale(0.98);
 }
 
 .caught-list {
