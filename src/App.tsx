@@ -70,15 +70,30 @@ function App() {
     if (spriteCache[pokemonForm]) {
       return spriteCache[pokemonForm];
     }
-    
-    // Fetch from API
-    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonForm}`);
-    if (response.ok) {
-      const data = await response.json();
-      const sprite = data.sprites.front_default;
-      // Update cache
-      setSpriteCache(prev => ({ ...prev, [pokemonForm]: sprite }));
-      return sprite;
+
+    try {
+      // Try to load from local sprites first
+      const localSprite = await import(`./data/sprites/${pokemonForm}.png`);
+      if (localSprite) {
+        console.log(`Loaded local sprite for ${pokemonForm}`);
+        setSpriteCache(prev => ({ ...prev, [pokemonForm]: localSprite.default }));
+        return localSprite.default;
+      }
+    } catch {
+      // If local sprite doesn't exist, fetch from API
+      console.log(`Local sprite not found for ${pokemonForm}, fetching from API...`);
+      try {
+        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonForm}`);
+        if (response.ok) {
+          const data = await response.json();
+          const sprite = data.sprites.front_default;
+          // Update cache
+          setSpriteCache(prev => ({ ...prev, [pokemonForm]: sprite }));
+          return sprite;
+        }
+      } catch (error) {
+        console.error('Error fetching sprite:', error);
+      }
     }
     return '';
   };
