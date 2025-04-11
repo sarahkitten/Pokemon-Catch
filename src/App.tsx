@@ -55,7 +55,7 @@ function App() {
   const [totalPokemon, setTotalPokemon] = useState<number>(GENERATIONS[0].total);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isGivingUp, setIsGivingUp] = useState(false);
-  const [remainingPokemon, setRemainingPokemon] = useState<Pokemon[]>([]);
+  const [revealedPokemon, setRevealedPokemon] = useState<Pokemon[]>([]);
   const [pokemonData, setPokemonData] = useState<PokemonData[]>([]);
   const [isFetchingData, setIsFetchingData] = useState(false);
   const [spriteCache, setSpriteCache] = useState<Record<string, string>>({});
@@ -65,19 +65,19 @@ function App() {
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 700);
   const [isEasyMode, setIsEasyMode] = useState(false);
 
-  const fetchSprite = async (pokemonName: string): Promise<string> => {
+  const fetchFormSprite = async (pokemonForm: string): Promise<string> => {
     // Check cache first
-    if (spriteCache[pokemonName]) {
-      return spriteCache[pokemonName];
+    if (spriteCache[pokemonForm]) {
+      return spriteCache[pokemonForm];
     }
     
     // Fetch from API
-    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`);
+    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonForm}`);
     if (response.ok) {
       const data = await response.json();
       const sprite = data.sprites.front_default;
       // Update cache
-      setSpriteCache(prev => ({ ...prev, [pokemonName]: sprite }));
+      setSpriteCache(prev => ({ ...prev, [pokemonForm]: sprite }));
       return sprite;
     }
     return '';
@@ -107,7 +107,7 @@ function App() {
     setInputValue('');
     console.log('Error cleared by resetProgress()');
     setError('');
-    setRemainingPokemon([]);
+    setRevealedPokemon([]);
   };
 
   const handleGenerationChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -246,7 +246,7 @@ function App() {
   };
 
   const handleStartOver = () => {
-    if (caughtPokemon.length === 0 && remainingPokemon.length === 0) return;
+    if (caughtPokemon.length === 0 && revealedPokemon.length === 0) return;
     
     const confirmReset = window.confirm(
       `Are you sure you want to start over?${caughtPokemon.length > 0 ? ` This will release all ${caughtPokemon.length} Pokemon.` : ''}`
@@ -440,7 +440,7 @@ function App() {
       }
 
       // Fetch sprite using the enhanced function
-      const sprite = await fetchSprite(form.name);
+      const sprite = await fetchFormSprite(form.name);
 
       // Fetch and play the Pokemon's cry if not muted
       if (!isMuted) {
@@ -502,30 +502,34 @@ function App() {
     console.log('Error cleared by handleGiveUp()');
     setError(''); // Clear any error messages
     setInputValue(''); // Clear the input field
-    const remaining: Pokemon[] = [];
+    const revealed: Pokemon[] = [];
     
     try {
-      // Instead of fetching all Pokemon again, filter the existing pokemonData
-      // This ensures we only show Pokemon that match all current filters
-      const remainingPokemon = pokemonData.filter(pokemon => 
-        !caughtPokemon.some(caught => caught.name === pokemon.name)
+      // Filter pokemonData to get remaining Pokemon to reveal
+      const revealedPokemonData = pokemonData.filter(pokemon => 
+        !caughtPokemon.some(caught => 
+          caught.name === pokemon.name || 
+          pokemon.forms.some(f => f.name === caught.name)
+        )
       );
 
-      for (const pokemon of remainingPokemon) {
-        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon.name}`);
-        if (response.ok) {
-          const data = await response.json();
-          remaining.push({
-            id: pokemon.id,
-            name: pokemon.name,
-            sprite: data.sprites.front_default,
-            types: pokemon.types
-          });
-        }
+      // Get sprites for revealed Pokemon using our existing fetchSprite function
+      for (const pokemon of revealedPokemonData) {
+        // Find the default form
+        const defaultForm = pokemon.forms.find(f => f.isDefault);
+        const formNameToUse = defaultForm ? defaultForm.name : pokemon.name;
+        
+        const sprite = await fetchFormSprite(formNameToUse);
+        revealed.push({
+          id: pokemon.id,
+          name: pokemon.name,
+          sprite: sprite || '',
+          types: pokemon.types
+        });
       }
-      setRemainingPokemon(remaining);
+      setRevealedPokemon(revealed);
     } catch (err) {
-      console.error('Error fetching remaining Pokemon:', err);
+      console.error('Error fetching remaining Pokemon sprites:', err);
     } finally {
       setIsGivingUp(false);
     }
@@ -674,8 +678,8 @@ function App() {
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder={isFetchingData ? "Loading Pokemon data..." : remainingPokemon.length > 0 ? "Click 'Start Over' to catch more Pokemon" : "Enter a Pokemon name"}
-              disabled={isLoading || remainingPokemon.length > 0 || isFetchingData}
+              placeholder={isFetchingData ? "Loading Pokemon data..." : revealedPokemon.length > 0 ? "Click 'Start Over' to catch more Pokemon" : "Enter a Pokemon name"}
+              disabled={isLoading || revealedPokemon.length > 0 || isFetchingData}
             />
           </form>
 
@@ -684,7 +688,7 @@ function App() {
             {isFetchingData && <p className="loading">Loading Pokemon data...</p>}
             {error && !isLoading && !isFetchingData && <p className="error">{error}</p>}
             {noResults && <p className="error">No Pokemon found matching these filters!</p>}
-            {remainingPokemon.length > 0 && (
+            {revealedPokemon.length > 0 && (
               <p className="info">Click 'Start Over' to try catching Pokemon again!</p>
             )}
           </div>
@@ -704,12 +708,12 @@ function App() {
               </p>
             )}
             <div className="button-group">
-              {(caughtPokemon.length > 0 || remainingPokemon.length > 0) && (
+              {(caughtPokemon.length > 0 || revealedPokemon.length > 0) && (
                 <button onClick={handleStartOver} className="start-over-button">
                   Start Over
                 </button>
               )}
-              {remainingPokemon.length === 0 && caughtPokemon.length < totalPokemon && (
+              {revealedPokemon.length === 0 && caughtPokemon.length < totalPokemon && (
                 <button
                   className="give-up-button"
                   onClick={handleGiveUp}
@@ -728,7 +732,7 @@ function App() {
             </div>
           </div>
 
-          {(caughtPokemon.length > 0 || remainingPokemon.length > 0) && (
+          {(caughtPokemon.length > 0 || revealedPokemon.length > 0) && (
             <div className={`caught-list ${caughtPokemon.length === totalPokemon ? 'success' : ''}`}>
               <h3>Pokemon Collection:</h3>
               <div className="pokemon-list">
@@ -747,7 +751,7 @@ function App() {
                     </div>
                   </div>
                 ))}
-                {remainingPokemon.map((pokemon) => (
+                {revealedPokemon.map((pokemon) => (
                   <div 
                     key={pokemon.name} 
                     className="pokemon-card uncaught"
