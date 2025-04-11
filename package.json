@@ -15,10 +15,12 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "fastest-levenshtein": "^1.0.16",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
     "react-confetti": "^6.1.0",
-    "react-router-dom": "^6.22.1"
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.1",
+    "string-similarity": "^4.0.4"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.2",

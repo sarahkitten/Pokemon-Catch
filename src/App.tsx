@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { distance } from 'fastest-levenshtein'
 import './App.css'
 import PokemonConfetti from './PokemonConfetti'
 import { POKEMON_DATA } from './data/pokemonData'
@@ -60,6 +61,7 @@ function App() {
   const [noResults, setNoResults] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 700);
+  const [isEasyMode, setIsEasyMode] = useState(false);
 
   const fetchSprite = async (pokemonName: string): Promise<string> => {
     // Check cache first
@@ -101,6 +103,7 @@ function App() {
   const resetProgress = () => {
     setCaughtPokemon([]);
     setInputValue('');
+    console.log('Error cleared by resetProgress()');
     setError('');
     setRemainingPokemon([]);
   };
@@ -252,13 +255,41 @@ function App() {
     }
   };
 
+  const findClosestPokemon = (input: string) => {
+    const normalizedInput = input.toLowerCase().trim();
+    let closestMatch: PokemonData | undefined = undefined;
+    let minDistance = Infinity;
+    let maxDistance = 3; // Maximum "distance" to consider a match
+
+    for (const pokemon of pokemonData) {
+      // Check base name
+      const baseDistance = distance(normalizedInput, pokemon.name.toLowerCase());
+      if (baseDistance < minDistance && baseDistance <= maxDistance) {
+        minDistance = baseDistance;
+        closestMatch = pokemon;
+      }
+
+      // Check forms
+      for (const form of pokemon.forms) {
+        const formDistance = distance(normalizedInput, form.name.toLowerCase());
+        if (formDistance < minDistance && formDistance <= maxDistance) {
+          minDistance = formDistance;
+          closestMatch = pokemon;
+        }
+      }
+    }
+
+    return closestMatch || undefined;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const pokemonName = inputValue.trim().toLowerCase().replace(/\s+/g, '-');
+    let pokemonName = inputValue.trim().toLowerCase().replace(/\s+/g, '-');
     
     // Special case for Nidoran
     if (pokemonName === 'nidoran') {
       setIsLoading(true);
+      console.log('Error cleared by Nidoran case');
       setError('');
       
       const result = await handleNidoranInput(pokemonData, caughtPokemon);
@@ -311,14 +342,25 @@ function App() {
     }
 
     setIsLoading(true);
+    console.log('Error cleared by start of handleSubmit');
     setError('');
 
     try {
       // Find the Pokemon in our pre-fetched data
-      const pokemon = pokemonData.find(p => 
-        p.name.toLowerCase() === pokemonName.toLowerCase() ||  // Match base name
-        p.forms.some(f => f.name.toLowerCase() === pokemonName.toLowerCase())  // Match specific form
+      let pokemon = pokemonData.find(p => 
+        p.name.toLowerCase() === pokemonName.toLowerCase() ||  
+        p.forms.some(f => f.name.toLowerCase() === pokemonName.toLowerCase())
       );
+
+      // If not found and easy mode is on, try fuzzy matching
+      if (!pokemon && isEasyMode) {
+        pokemon = findClosestPokemon(pokemonName);
+        if (pokemon) {
+          // Show a message that we accepted a close match without timeout
+          console.log('Accepted fuzzy match:', pokemon.name);
+          setError(`Accepted "${inputValue}" as "${pokemon.name}" (Easy Mode)`);
+        }
+      }
       
       if (!pokemon) {
         // Check if the Pokemon exists in POKEMON_DATA but not in current selection
@@ -417,7 +459,6 @@ function App() {
 
       setCaughtPokemon(prev => [newCaughtPokemon, ...prev]);
       setInputValue('');
-      setError('');
       
       // Get position for confetti
       const rect = inputRef.current?.getBoundingClientRect();
@@ -456,6 +497,7 @@ function App() {
     if (!confirmGiveUp) return;
 
     setIsGivingUp(true);
+    console.log('Error cleared by handleGiveUp()');
     setError(''); // Clear any error messages
     setInputValue(''); // Clear the input field
     const remaining: Pokemon[] = [];
@@ -636,9 +678,9 @@ function App() {
           </form>
 
           <div className="message-container">
-            {error && <p className="error">{error}</p>}
             {isLoading && <p className="loading">Searching for Pokemon...</p>}
             {isFetchingData && <p className="loading">Loading Pokemon data...</p>}
+            {error && !isLoading && !isFetchingData && <p className="error">{error}</p>}
             {noResults && <p className="error">No Pokemon found matching these filters!</p>}
             {remainingPokemon.length > 0 && (
               <p className="info">Click 'Start Over' to try catching Pokemon again!</p>
@@ -835,6 +877,17 @@ function App() {
                 ↺
               </button>
             </div>
+          </div>
+
+          <div className="easy-mode-toggle">
+            <label>
+              <input
+                type="checkbox"
+                checked={isEasyMode}
+                onChange={(e) => setIsEasyMode(e.target.checked)}
+              />
+              Easy Mode (Accept close spellings)
+            </label>
           </div>
 
           <button 
