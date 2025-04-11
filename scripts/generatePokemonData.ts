@@ -45,6 +45,25 @@ const DASHED_NAMES = new Set([
   'ting-lu',
   'chien-pao',
   'wo-chien',
+  'great-tusk',
+  'scream-tail',
+  'brute-bonnet',
+  'flutter-mane',
+  'slither-wing',
+  'sandy-shocks',
+  'roaring-moon',
+  'walking-wake',
+  'raging-bolt',
+  'gouging-fire',
+  'iron-treads',
+  'iron-bundle',
+  'iron-hands',
+  'iron-jugulis',
+  'iron-moth',
+  'iron-thorns',
+  'iron-valiant',
+  'iron-leaves',
+  'iron-crown',
 ]);
 
 async function fetchPokemonSpeciesData(name: string): Promise<{ forms: { name: string; isDefault: boolean }[] } | null> {
@@ -82,10 +101,10 @@ async function fetchPokemonData(id: number): Promise<PokemonData> {
       baseName = data.name.split('-')[0];
     }
     
-    // Get the species data for forms using the dedicated function
-    const speciesData = await fetchPokemonSpeciesData(data.name);
+    // Get the species data using the base name
+    const speciesData = await fetchPokemonSpeciesData(baseName);
     if (!speciesData) {
-      throw new Error(`Failed to fetch species data for ${data.name}`);
+      throw new Error(`Failed to fetch species data for ${baseName}`);
     }
 
     // Determine generation based on ID
@@ -95,7 +114,7 @@ async function fetchPokemonData(id: number): Promise<PokemonData> {
 
     return {
       id,
-      name: baseName,  // Store the base name (with dashes for special cases)
+      name: baseName,
       types: data.types.map((type: any) => type.type.name),
       generation,
       forms: speciesData.forms
@@ -120,7 +139,7 @@ async function generatePokemonData() {
     }
 
     // Add a small delay to avoid hitting rate limits
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
   }
 
   // Sort by ID
@@ -157,4 +176,4 @@ ${pokemonData.map(pokemon => `  {
 }
 
 // Run the script
-generatePokemonData().catch(console.error); 
+generatePokemonData().catch(console.error);

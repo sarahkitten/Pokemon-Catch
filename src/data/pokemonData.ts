@@ -6893,84 +6893,84 @@ export const POKEMON_DATA: PokemonData[] = [
   },
   {
     id: 984,
-    name: "great",
+    name: "great-tusk",
     types: ["ground", "fighting"],
     generation: 9,
     forms: [{ name: "great-tusk", isDefault: true }]
   },
   {
     id: 985,
-    name: "scream",
+    name: "scream-tail",
     types: ["fairy", "psychic"],
     generation: 9,
     forms: [{ name: "scream-tail", isDefault: true }]
   },
   {
     id: 986,
-    name: "brute",
+    name: "brute-bonnet",
     types: ["grass", "dark"],
     generation: 9,
     forms: [{ name: "brute-bonnet", isDefault: true }]
   },
   {
     id: 987,
-    name: "flutter",
+    name: "flutter-mane",
     types: ["ghost", "fairy"],
     generation: 9,
     forms: [{ name: "flutter-mane", isDefault: true }]
   },
   {
     id: 988,
-    name: "slither",
+    name: "slither-wing",
     types: ["bug", "fighting"],
     generation: 9,
     forms: [{ name: "slither-wing", isDefault: true }]
   },
   {
     id: 989,
-    name: "sandy",
+    name: "sandy-shocks",
     types: ["electric", "ground"],
     generation: 9,
     forms: [{ name: "sandy-shocks", isDefault: true }]
   },
   {
     id: 990,
-    name: "iron",
+    name: "iron-treads",
     types: ["ground", "steel"],
     generation: 9,
     forms: [{ name: "iron-treads", isDefault: true }]
   },
   {
     id: 991,
-    name: "iron",
+    name: "iron-bundle",
     types: ["ice", "water"],
     generation: 9,
     forms: [{ name: "iron-bundle", isDefault: true }]
   },
   {
     id: 992,
-    name: "iron",
+    name: "iron-hands",
     types: ["fighting", "electric"],
     generation: 9,
     forms: [{ name: "iron-hands", isDefault: true }]
   },
   {
     id: 993,
-    name: "iron",
+    name: "iron-jugulis",
     types: ["dark", "flying"],
     generation: 9,
     forms: [{ name: "iron-jugulis", isDefault: true }]
   },
   {
     id: 994,
-    name: "iron",
+    name: "iron-moth",
     types: ["fire", "poison"],
     generation: 9,
     forms: [{ name: "iron-moth", isDefault: true }]
   },
   {
     id: 995,
-    name: "iron",
+    name: "iron-thorns",
     types: ["rock", "electric"],
     generation: 9,
     forms: [{ name: "iron-thorns", isDefault: true }]
@@ -7040,14 +7040,14 @@ export const POKEMON_DATA: PokemonData[] = [
   },
   {
     id: 1005,
-    name: "roaring",
+    name: "roaring-moon",
     types: ["dragon", "dark"],
     generation: 9,
     forms: [{ name: "roaring-moon", isDefault: true }]
   },
   {
     id: 1006,
-    name: "iron",
+    name: "iron-valiant",
     types: ["fairy", "fighting"],
     generation: 9,
     forms: [{ name: "iron-valiant", isDefault: true }]
