@@ -75,86 +75,80 @@ function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleGenerationChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newIndex = parseInt(event.target.value);
-    if (caughtPokemon.length > 0) {
-      const confirmChange = window.confirm(
-        "Changing generations will reset your current progress. Are you sure?"
-      );
-      if (!confirmChange) return;
-    }
-    await changeGeneration(newIndex);
-  };
-
-  const handleTypeChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newType = event.target.value;
-    if (caughtPokemon.length > 0) {
-      const confirmChange = window.confirm(
-        "Changing types will reset your current progress. Are you sure?"
-      );
-      if (!confirmChange) return;
-    }
-    await changeType(newType);
-  };
-
-  const handleLetterChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newLetter = event.target.value;
-    if (caughtPokemon.length > 0) {
-      const confirmChange = window.confirm(
-        "Changing starting letter will reset your current progress. Are you sure?"
-      );
-      if (!confirmChange) return;
-    }
-    await changeLetter(newLetter);
-  };
-
-  const handleGenerationReset = async () => {
-    if (selectedGenerationIndex === 0) return; // Already at default
-    if (caughtPokemon.length > 0) {
-      const confirmChange = window.confirm(
-        "Resetting generation will reset your current progress. Are you sure?"
-      );
-      if (!confirmChange) return;
-    }
-    await resetGeneration();
-  };
-
-  const handleTypeReset = async () => {
-    if (selectedType === POKEMON_TYPES[0]) return; // Already at default
-    if (caughtPokemon.length > 0) {
-      const confirmChange = window.confirm(
-        "Resetting type will reset your current progress. Are you sure?"
-      );
-      if (!confirmChange) return;
-    }
-    await resetType();
-  };
-
-  const handleLetterReset = async () => {
-    if (selectedLetter === "All") return; // Already at default
-    if (caughtPokemon.length > 0) {
-      const confirmChange = window.confirm(
-        "Resetting letter filter will reset your current progress. Are you sure?"
-      );
-      if (!confirmChange) return;
-    }
-    await resetLetter();
-  };
-
-  const handleResetAllFilters = async () => {
-    if (selectedGenerationIndex === 0 && selectedType === POKEMON_TYPES[0] && selectedLetter === "All") {
-      return; // Already at default values
-    }
+  const handleFilterChange = async (
+    event: React.ChangeEvent<HTMLSelectElement>,
+    filterType: 'generation' | 'type' | 'letter',
+    changeFunction: (value: any) => Promise<void>
+  ) => {
+    const value = filterType === 'generation' ? parseInt(event.target.value) : event.target.value;
     
     if (caughtPokemon.length > 0) {
+      const filterName = {
+        'generation': 'generations',
+        'type': 'types',
+        'letter': 'starting letter'
+      }[filterType];
+      
       const confirmChange = window.confirm(
-        "Resetting all filters will reset your current progress. Are you sure?"
+        `Changing ${filterName} will reset your current progress. Are you sure?`
+      );
+      if (!confirmChange) return;
+    }
+    
+    await changeFunction(value);
+  };
+
+  const handleGenerationChange = (event: React.ChangeEvent<HTMLSelectElement>) => 
+    handleFilterChange(event, 'generation', changeGeneration);
+
+  const handleTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => 
+    handleFilterChange(event, 'type', changeType);
+
+  const handleLetterChange = (event: React.ChangeEvent<HTMLSelectElement>) => 
+    handleFilterChange(event, 'letter', changeLetter);
+
+  const handleReset = async (
+    filterType: 'generation' | 'type' | 'letter' | 'all',
+    currentValue: string | number,
+    defaultValue: string | number,
+    resetFunction: () => Promise<void>
+  ) => {
+    if (currentValue === defaultValue) return; // Already at default
+    
+    if (caughtPokemon.length > 0) {
+      const filterName = {
+        'generation': 'generation',
+        'type': 'type',
+        'letter': 'letter filter',
+        'all': 'all filters'
+      }[filterType];
+      
+      const confirmChange = window.confirm(
+        `Resetting ${filterName} will reset your current progress. Are you sure?`
       );
       if (!confirmChange) return;
     }
 
-    await resetAllFilters();
+    await resetFunction();
   };
+
+  const handleGenerationReset = () => 
+    handleReset('generation', selectedGenerationIndex, 0, resetGeneration);
+
+  const handleTypeReset = () => 
+    handleReset('type', selectedType, POKEMON_TYPES[0], resetType);
+
+  const handleLetterReset = () => 
+    handleReset('letter', selectedLetter, "All", resetLetter);
+
+  // TODO: make this more maintainable
+  const handleResetAllFilters = () => 
+    handleReset(
+      'all', 
+      `${selectedGenerationIndex}-${selectedType}-${selectedLetter}`,
+      `0-${POKEMON_TYPES[0]}-All`,
+      resetAllFilters
+    );
 
   const handleStartOver = () => {
     if (caughtPokemon.length === 0 && revealedPokemon.length === 0) return;
