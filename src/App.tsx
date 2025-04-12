@@ -1,81 +1,62 @@
 import { useState, useRef, useEffect } from 'react'
-import { distance } from 'fastest-levenshtein'
 import './App.css'
 import PokemonConfetti from './PokemonConfetti'
 import { POKEMON_DATA } from './data/pokemonData'
-import { handleNidoranInput, playPokemonCry } from './utils/pokemonUtils'
-import { PokemonData, CaughtPokemon } from './types'
-import { MAX_MATCH_DISTANCE, POKEMON_TYPES, GENERATIONS, Generation, UI_CONSTANTS } from './constants'
-
-interface Pokemon {
-  name: string;
-  sprite: string;
-  types: string[];
-  id: number;
-}
+import { CaughtPokemon, Pokemon } from './types'
+import { POKEMON_TYPES, GENERATIONS, Generation, UI_CONSTANTS } from './constants'
+import { useGameState } from './hooks/useGameState'
+import { findClosestPokemon, fetchFormSprite, playPokemonCry, calculateConfettiPosition } from './utils/pokemonUtils'
 
 function App() {
-  const [caughtPokemon, setCaughtPokemon] = useState<CaughtPokemon[]>([]);
-  const [inputValue, setInputValue] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isTotalLoading, setIsTotalLoading] = useState(false);
-  const [confettiProps, setConfettiProps] = useState<{ sprite: string; position: { x: number; y: number } } | null>(null);
-  const [selectedGenerationIndex, setSelectedGenerationIndex] = useState<number>(0);
-  const selectedGeneration = GENERATIONS[selectedGenerationIndex];
-  const [selectedType, setSelectedType] = useState<string>(POKEMON_TYPES[0]);
-  const [selectedLetter, setSelectedLetter] = useState<string>("All");
-  const [totalPokemon, setTotalPokemon] = useState<number>(GENERATIONS[0].total);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [isGivingUp, setIsGivingUp] = useState(false);
-  const [revealedPokemon, setRevealedPokemon] = useState<Pokemon[]>([]);
-  const [pokemonData, setPokemonData] = useState<PokemonData[]>([]);
-  const [isFetchingData, setIsFetchingData] = useState(false);
-  const [spriteCache, setSpriteCache] = useState<Record<string, string>>({});
-  const [isMuted, setIsMuted] = useState(false);
-  const [noResults, setNoResults] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT);
-  const [isEasyMode, setIsEasyMode] = useState(false);
-
-  const fetchFormSprite = async (pokemonForm: string): Promise<string> => {
-    // Check cache first
-    if (spriteCache[pokemonForm]) {
-      return spriteCache[pokemonForm];
-    }
-
-    try {
-      // Try to load from local sprites first
-      const localSprite = await import(`./data/sprites/${pokemonForm}.png`);
-      if (localSprite) {
-        console.log(`Loaded local sprite for ${pokemonForm}`);
-        setSpriteCache(prev => ({ ...prev, [pokemonForm]: localSprite.default }));
-        return localSprite.default;
-      }
-    } catch {
-      // If local sprite doesn't exist, fetch from API
-      console.log(`Local sprite not found for ${pokemonForm}, fetching from API...`);
-      try {
-        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonForm}`);
-        if (response.ok) {
-          const data = await response.json();
-          const sprite = data.sprites.front_default;
-          // Update cache
-          setSpriteCache(prev => ({ ...prev, [pokemonForm]: sprite }));
-          return sprite;
-        }
-      } catch (error) {
-        console.error('Error fetching sprite:', error);
-      }
-    }
-    return '';
-  };
-
+  const {
+    caughtPokemon,
+    inputValue,
+    confettiProps,
+    selectedGenerationIndex,
+    selectedGeneration,
+    selectedType,
+    selectedLetter,
+    totalPokemon,
+    isGivingUp,
+    revealedPokemon,
+    pokemonData,
+    isFetchingData,
+    isMuted,
+    isEasyMode,
+    noResults,
+    error,
+    isLoading,
+    isTotalLoading,
+    setCaughtPokemon,
+    setInputValue,
+    setConfettiProps,
+    setSelectedGenerationIndex,
+    setSelectedType,
+    setSelectedLetter,
+    setTotalPokemon,
+    setIsGivingUp,
+    setRevealedPokemon,
+    setPokemonData,
+    setIsFetchingData,
+    setIsMuted,
+    setIsEasyMode,
+    setNoResults,
+    setError,
+    setIsLoading,
+    setIsTotalLoading
+  } = useGameState();
+  
+  const inputRef = useRef<HTMLInputElement>(null); // Leave
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // Leave
+  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT); // Leave
+  
   useEffect(() => {
     updateTotalCount(selectedGeneration, selectedType);
   }, []);
 
   useEffect(() => {
+    document.documentElement.style.setProperty('--small-screen-breakpoint', `${UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT}px`);
+
     const handleResize = () => {
       setIsSmallScreen(window.innerWidth <= UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT);
     };
@@ -88,11 +69,6 @@ function App() {
     
     // Cleanup
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Add effect to set CSS variable
-  useEffect(() => {
-    document.documentElement.style.setProperty('--small-screen-breakpoint', `${UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT}px`);
   }, []);
 
   const resetProgress = () => {
@@ -250,91 +226,9 @@ function App() {
     }
   };
 
-  const findClosestPokemon = (input: string) => {
-    const normalizedInput = input.toLowerCase().trim();
-    let closestMatch: PokemonData | undefined = undefined;
-    let minDistance = Infinity;
-    let maxDistance = MAX_MATCH_DISTANCE; // Maximum "distance" to consider a match
-
-    for (const pokemon of pokemonData) {
-      // Check base name
-      const baseDistance = distance(normalizedInput, pokemon.name.toLowerCase());
-      if (baseDistance < minDistance && baseDistance <= maxDistance) {
-        minDistance = baseDistance;
-        closestMatch = pokemon;
-      }
-
-      // Check forms
-      for (const form of pokemon.forms) {
-        const formDistance = distance(normalizedInput, form.name.toLowerCase());
-        if (formDistance < minDistance && formDistance <= maxDistance) {
-          minDistance = formDistance;
-          closestMatch = pokemon;
-        }
-      }
-    }
-
-    return closestMatch || undefined;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     let pokemonName = inputValue.trim().toLowerCase().replace(/\s+/g, '-');
-    
-    // Special case for Nidoran
-    if (pokemonName === 'nidoran') {
-      setIsLoading(true);
-      console.log('Error cleared by Nidoran case');
-      setError('');
-      
-      const result = await handleNidoranInput(pokemonData, caughtPokemon);
-      
-      if (!result.success) {
-        setError(result.error || 'Error catching Nidoran!');
-        setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
-        setIsLoading(false);
-        return;
-      }
-
-      if (result.caughtPokemon) {
-        // Update sprite cache with new sprites
-        result.caughtPokemon.forEach(pokemon => {
-          if (pokemon.sprite) {
-            setSpriteCache(prev => ({ ...prev, [pokemon.name]: pokemon.sprite }));
-          }
-        });
-
-        setCaughtPokemon(prev => [...result.caughtPokemon!, ...prev]);
-        setInputValue('');
-        setError('');
-        
-        // Play cry if not muted
-        if (!isMuted && result.cryId) {
-          await playPokemonCry(result.cryId, isMuted);
-        }
-        
-        // Get position for confetti
-        const rect = inputRef.current?.getBoundingClientRect();
-        if (rect && result.sprite) {
-          const centerX = rect.left + (rect.width / 2);
-          const centerY = rect.top + (rect.height / 2);
-          
-          setConfettiProps({
-            sprite: result.sprite,
-            position: {
-              x: centerX + window.scrollX,
-              y: centerY + window.scrollY
-            }
-          });
-          
-          setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
-          setTimeout(() => setConfettiProps(null), UI_CONSTANTS.CONFETTI_ANIMATION_DURATION);
-        }
-      }
-      
-      setIsLoading(false);
-      return;
-    }
 
     setIsLoading(true);
     console.log('Error cleared by start of handleSubmit');
@@ -349,7 +243,7 @@ function App() {
 
       // If not found and easy mode is on, try fuzzy matching
       if (!pokemon && isEasyMode) {
-        pokemon = findClosestPokemon(pokemonName);
+        pokemon = findClosestPokemon(pokemonName, pokemonData);
         if (pokemon) {
           // Show a message that we accepted a close match without timeout
           console.log('Accepted fuzzy match:', pokemon.name);
@@ -435,16 +329,8 @@ function App() {
       // Fetch sprite using the enhanced function
       const sprite = await fetchFormSprite(form.name);
 
-      // Fetch and play the Pokemon's cry if not muted
-      if (!isMuted) {
-        try {
-          const cryUrl = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${pokemon.id}.ogg`;
-          const audio = new Audio(cryUrl);
-          audio.play().catch(err => console.log('Error playing cry:', err));
-        } catch (err) {
-          console.log('Error fetching cry:', err);
-        }
-      }
+      // Play the Pokemon's cry
+      await playPokemonCry(pokemon.id, isMuted);
 
       const newCaughtPokemon: CaughtPokemon = {
         name: form.name,
@@ -455,18 +341,11 @@ function App() {
       setCaughtPokemon(prev => [newCaughtPokemon, ...prev]);
       setInputValue('');
       
-      // Get position for confetti
-      const rect = inputRef.current?.getBoundingClientRect();
-      if (rect) {
-        const centerX = rect.left + (rect.width / 2);
-        const centerY = rect.top + (rect.height / 2);
-        
+      if (inputRef.current) {
+        const position = calculateConfettiPosition(inputRef.current);
         setConfettiProps({
           sprite: newCaughtPokemon.sprite,
-          position: {
-            x: centerX + window.scrollX,
-            y: centerY + window.scrollY
-          }
+          position
         });
         
         setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);

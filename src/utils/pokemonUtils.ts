@@ -1,110 +1,5 @@
 import { CaughtPokemon, PokemonData, Pokemon } from "../types";
-
-interface NidoranHandlingResult {
-  success: boolean;
-  error?: string;
-  caughtPokemon?: CaughtPokemon[];
-  sprite?: string;
-  cryId?: number;
-}
-
-export async function handleNidoranInput(
-  pokemonData: PokemonData[],
-  caughtPokemon: CaughtPokemon[],
-): Promise<NidoranHandlingResult> {
-  // Check if either form is already caught
-  const hasNidoranF = caughtPokemon.some(p => p.name === 'nidoran-f');
-  const hasNidoranM = caughtPokemon.some(p => p.name === 'nidoran-m');
-
-  // Find Nidoran data
-  const nidoranF = pokemonData.find(p => p.name === 'nidoran-f');
-  const nidoranM = pokemonData.find(p => p.name === 'nidoran-m');
-
-  if (!nidoranF || !nidoranM) {
-    return {
-      success: false,
-      error: 'Error finding Nidoran data!'
-    };
-  }
-
-  try {
-    // Add both forms if neither is caught
-    if (!hasNidoranF && !hasNidoranM) {
-      const newCaughtPokemon: CaughtPokemon[] = [];
-      
-      // Add Nidoran-F
-      const responseF = await fetch(`https://pokeapi.co/api/v2/pokemon/nidoran-f`);
-      if (responseF.ok) {
-        const dataF = await responseF.json();
-        const spriteF = dataF.sprites.front_default;
-        newCaughtPokemon.push({
-          name: 'nidoran-f',
-          sprite: spriteF,
-          types: nidoranF.types
-        });
-      }
-
-      // Add Nidoran-M
-      const responseM = await fetch(`https://pokeapi.co/api/v2/pokemon/nidoran-m`);
-      if (responseM.ok) {
-        const dataM = await responseM.json();
-        const spriteM = dataM.sprites.front_default;
-        newCaughtPokemon.push({
-          name: 'nidoran-m',
-          sprite: spriteM,
-          types: nidoranM.types
-        });
-      }
-
-      if (newCaughtPokemon.length === 0) {
-        return {
-          success: false,
-          error: 'Error fetching Nidoran sprites!'
-        };
-      }
-
-      return {
-        success: true,
-        caughtPokemon: newCaughtPokemon,
-        sprite: newCaughtPokemon[0].sprite,
-        cryId: nidoranF.id
-      };
-    } else {
-      // Add the missing form
-      const missingForm = hasNidoranF ? nidoranM : nidoranF;
-      const formName = hasNidoranF ? 'nidoran-m' : 'nidoran-f';
-      
-      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${formName}`);
-      if (!response.ok) {
-        return {
-          success: false,
-          error: 'Error fetching Nidoran sprite!'
-        };
-      }
-
-      const data = await response.json();
-      const sprite = data.sprites.front_default;
-
-      const caughtPokemon: CaughtPokemon = {
-        name: formName,
-        sprite: sprite,
-        types: missingForm.types
-      };
-
-      return {
-        success: true,
-        caughtPokemon: [caughtPokemon],
-        sprite: caughtPokemon.sprite,
-        cryId: missingForm.id
-      };
-    }
-  } catch (err) {
-    return {
-      success: false,
-      error: 'Error catching Nidoran!'
-    };
-  }
-}
+import { distance } from 'fastest-levenshtein';
 
 export async function playPokemonCry(pokemonId: number, isMuted: boolean) {
   if (isMuted) return;
@@ -128,4 +23,71 @@ export async function handlePokemonClick(pokemon: CaughtPokemon | Pokemon, pokem
   if (pokemonInData) {
     await playPokemonCry(pokemonInData.id, isMuted);
   }
-} 
+}
+
+interface ConfettiPosition {
+  x: number;
+  y: number;
+}
+
+export const calculateConfettiPosition = (element: HTMLElement): ConfettiPosition => {
+  const rect = element.getBoundingClientRect();
+  const centerX = rect.left + (rect.width / 2);
+  const centerY = rect.top + (rect.height / 2);
+  
+  return {
+    x: centerX + window.scrollX,
+    y: centerY + window.scrollY
+  };
+};
+
+export async function fetchFormSprite(pokemonForm: string): Promise<string> {
+  try {
+    // Try to load from local sprites first
+    const localSprite = await import(`../data/sprites/${pokemonForm}.png`);
+    if (localSprite) {
+      console.log(`Loaded local sprite for ${pokemonForm}`);
+      return localSprite.default;
+    }
+  } catch {
+    // If local sprite doesn't exist, fetch from API as fallback
+    console.log(`Local sprite not found for ${pokemonForm}, fetching from API...`);
+    try {
+      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonForm}`);
+      if (response.ok) {
+        const data = await response.json();
+        return data.sprites.front_default;
+      }
+    } catch (error) {
+      console.error('Error fetching sprite:', error);
+    }
+  }
+  return '';
+}
+
+export const findClosestPokemon = (input: string, pokemonData: PokemonData[]) => {
+  const normalizedInput = input.toLowerCase().trim();
+  let closestMatch: PokemonData | undefined = undefined;
+  let minDistance = Infinity;
+  const maxDistance = 3; // Maximum "distance" to consider a match
+
+  for (const pokemon of pokemonData) {
+    // Check base name
+    const baseDistance = distance(normalizedInput, pokemon.name.toLowerCase());
+    if (baseDistance < minDistance && baseDistance <= maxDistance) {
+      minDistance = baseDistance;
+      closestMatch = pokemon;
+    }
+
+    // Check forms
+    for (const form of pokemon.forms) {
+      const formDistance = distance(normalizedInput, form.name.toLowerCase());
+      if (formDistance < minDistance && formDistance <= maxDistance) {
+        minDistance = formDistance;
+        closestMatch = pokemon;
+      }
+    }
+  }
+
+  return closestMatch || undefined;
+};
