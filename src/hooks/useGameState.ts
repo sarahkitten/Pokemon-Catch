@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Pokemon, CaughtPokemon, PokemonData } from '../types';
 import { Generation, GENERATIONS, POKEMON_TYPES } from '../constants';
+import { POKEMON_DATA } from '../data/pokemonData';
 
 interface GameState {
   caughtPokemon: CaughtPokemon[];
@@ -38,6 +39,15 @@ interface GameState {
   setError: (error: string) => void;
   setIsLoading: (value: boolean) => void;
   setIsTotalLoading: (value: boolean) => void;
+  resetProgress: () => void;
+  updateTotalCount: (generation: Generation, type: string, letter?: string) => Promise<void>;
+  changeGeneration: (newIndex: number) => Promise<void>;
+  changeType: (newType: string) => Promise<void>;
+  changeLetter: (newLetter: string) => Promise<void>;
+  resetGeneration: () => Promise<void>;
+  resetType: () => Promise<void>;
+  resetLetter: () => Promise<void>;
+  resetAllFilters: () => Promise<void>;
 }
 
 export function useGameState(): GameState {
@@ -59,6 +69,93 @@ export function useGameState(): GameState {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isTotalLoading, setIsTotalLoading] = useState(false);
+
+  const resetProgress = () => {
+    setCaughtPokemon([]);
+    setInputValue('');
+    console.log('Error cleared by resetProgress()');
+    setError('');
+    setRevealedPokemon([]);
+  };
+
+  const updateTotalCount = async (generation: Generation, type: string, letter: string = selectedLetter) => {
+    console.log('Updating total count for:', generation.name, type, letter);
+    
+    setIsTotalLoading(true);
+    setIsFetchingData(true);
+    setNoResults(false);
+    
+    try {
+      // Filter Pokemon based on generation, type, and starting letter using local data
+      const filteredPokemon = POKEMON_DATA.filter(pokemon => {
+        const inGeneration = generation.name === "All Generations" || 
+          (pokemon.id >= generation.startId && pokemon.id <= generation.endId);
+        const matchesType = type === "All Types" || 
+          pokemon.types.some(t => t.toLowerCase() === type.toLowerCase());
+        const matchesLetter = letter === "All" || 
+          pokemon.name.toLowerCase().startsWith(letter.toLowerCase());
+        return inGeneration && matchesType && matchesLetter;
+      });
+      
+      console.log('Filtered Pokemon list:', filteredPokemon);
+      setTotalPokemon(filteredPokemon.length);
+      setPokemonData(filteredPokemon);
+      
+      if (filteredPokemon.length === 0) {
+        setNoResults(true);
+      }
+    } catch (err) {
+      console.error('Error updating Pokemon data:', err);
+    } finally {
+      setIsTotalLoading(false);
+      setIsFetchingData(false);
+    }
+  };
+
+  const changeGeneration = async (newIndex: number) => {
+    const newGen = GENERATIONS[newIndex];
+    setSelectedGenerationIndex(newIndex);
+    resetProgress();
+    await updateTotalCount(newGen, selectedType, selectedLetter);
+  };
+
+  const changeType = async (newType: string) => {
+    setSelectedType(newType);
+    resetProgress();
+    await updateTotalCount(selectedGeneration, newType, selectedLetter);
+  };
+
+  const changeLetter = async (newLetter: string) => {
+    setSelectedLetter(newLetter);
+    resetProgress();
+    await updateTotalCount(selectedGeneration, selectedType, newLetter);
+  };
+
+  const resetGeneration = async () => {
+    setSelectedGenerationIndex(0);
+    resetProgress();
+    await updateTotalCount(GENERATIONS[0], selectedType, selectedLetter);
+  };
+
+  const resetType = async () => {
+    setSelectedType(POKEMON_TYPES[0]);
+    resetProgress();
+    await updateTotalCount(selectedGeneration, POKEMON_TYPES[0], selectedLetter);
+  };
+
+  const resetLetter = async () => {
+    setSelectedLetter("All");
+    resetProgress();
+    await updateTotalCount(selectedGeneration, selectedType, "All");
+  };
+
+  const resetAllFilters = async () => {
+    setSelectedGenerationIndex(0);
+    setSelectedType(POKEMON_TYPES[0]);
+    setSelectedLetter("All");
+    resetProgress();
+    await updateTotalCount(GENERATIONS[0], POKEMON_TYPES[0], "All");
+  };
 
   return {
     caughtPokemon,
@@ -96,5 +193,14 @@ export function useGameState(): GameState {
     setError,
     setIsLoading,
     setIsTotalLoading,
+    resetProgress,
+    updateTotalCount,
+    changeGeneration,
+    changeType,
+    changeLetter,
+    resetGeneration,
+    resetType,
+    resetLetter,
+    resetAllFilters,
   };
 }

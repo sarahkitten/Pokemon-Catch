@@ -5,7 +5,7 @@ import { POKEMON_DATA } from './data/pokemonData'
 import { CaughtPokemon, Pokemon } from './types'
 import { POKEMON_TYPES, GENERATIONS, Generation, UI_CONSTANTS } from './constants'
 import { useGameState } from './hooks/useGameState'
-import { findClosestPokemon, fetchFormSprite, playPokemonCry, calculateConfettiPosition } from './utils/pokemonUtils'
+import { findClosestPokemon, fetchFormSprite, playPokemonCry, calculateConfettiPosition, handlePokemonClick } from './utils/pokemonUtils'
 
 function App() {
   const {
@@ -33,17 +33,21 @@ function App() {
     setSelectedGenerationIndex,
     setSelectedType,
     setSelectedLetter,
-    setTotalPokemon,
     setIsGivingUp,
     setRevealedPokemon,
-    setPokemonData,
-    setIsFetchingData,
     setIsMuted,
     setIsEasyMode,
-    setNoResults,
     setError,
     setIsLoading,
-    setIsTotalLoading
+    resetProgress,
+    updateTotalCount,
+    changeGeneration,
+    changeType,
+    changeLetter,
+    resetGeneration,
+    resetType,
+    resetLetter,
+    resetAllFilters,
   } = useGameState();
   
   const inputRef = useRef<HTMLInputElement>(null); // Leave
@@ -71,27 +75,15 @@ function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const resetProgress = () => {
-    setCaughtPokemon([]);
-    setInputValue('');
-    console.log('Error cleared by resetProgress()');
-    setError('');
-    setRevealedPokemon([]);
-  };
-
   const handleGenerationChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newIndex = parseInt(event.target.value);
-    const newGen = GENERATIONS[newIndex];
     if (caughtPokemon.length > 0) {
       const confirmChange = window.confirm(
         "Changing generations will reset your current progress. Are you sure?"
       );
       if (!confirmChange) return;
     }
-    
-    setSelectedGenerationIndex(newIndex);
-    resetProgress();
-    await updateTotalCount(newGen, selectedType, selectedLetter);
+    await changeGeneration(newIndex);
   };
 
   const handleTypeChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -102,10 +94,7 @@ function App() {
       );
       if (!confirmChange) return;
     }
-    
-    setSelectedType(newType);
-    resetProgress();
-    await updateTotalCount(selectedGeneration, newType, selectedLetter);
+    await changeType(newType);
   };
 
   const handleLetterChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -116,10 +105,7 @@ function App() {
       );
       if (!confirmChange) return;
     }
-    
-    setSelectedLetter(newLetter);
-    resetProgress();
-    await updateTotalCount(selectedGeneration, selectedType, newLetter);
+    await changeLetter(newLetter);
   };
 
   const handleGenerationReset = async () => {
@@ -130,9 +116,7 @@ function App() {
       );
       if (!confirmChange) return;
     }
-    setSelectedGenerationIndex(0);
-    resetProgress();
-    await updateTotalCount(GENERATIONS[0], selectedType, selectedLetter);
+    await resetGeneration();
   };
 
   const handleTypeReset = async () => {
@@ -143,9 +127,7 @@ function App() {
       );
       if (!confirmChange) return;
     }
-    setSelectedType(POKEMON_TYPES[0]);
-    resetProgress();
-    await updateTotalCount(selectedGeneration, POKEMON_TYPES[0], selectedLetter);
+    await resetType();
   };
 
   const handleLetterReset = async () => {
@@ -156,9 +138,7 @@ function App() {
       );
       if (!confirmChange) return;
     }
-    setSelectedLetter("All");
-    resetProgress();
-    await updateTotalCount(selectedGeneration, selectedType, "All");
+    await resetLetter();
   };
 
   const handleResetAllFilters = async () => {
@@ -173,45 +153,7 @@ function App() {
       if (!confirmChange) return;
     }
 
-    setSelectedGenerationIndex(0);
-    setSelectedType(POKEMON_TYPES[0]);
-    setSelectedLetter("All");
-    resetProgress();
-    await updateTotalCount(GENERATIONS[0], POKEMON_TYPES[0], "All");
-  };
-
-  const updateTotalCount = async (generation: Generation, type: string, letter: string = selectedLetter) => {
-    console.log('Updating total count for:', generation.name, type, letter);
-    
-    setIsTotalLoading(true);
-    setIsFetchingData(true);
-    setNoResults(false);
-    
-    try {
-      // Filter Pokemon based on generation, type, and starting letter using local data
-      const filteredPokemon = POKEMON_DATA.filter(pokemon => {
-        const inGeneration = generation.name === "All Generations" || 
-          (pokemon.id >= generation.startId && pokemon.id <= generation.endId);
-        const matchesType = type === "All Types" || 
-          pokemon.types.some(t => t.toLowerCase() === type.toLowerCase());
-        const matchesLetter = letter === "All" || 
-          pokemon.name.toLowerCase().startsWith(letter.toLowerCase());
-        return inGeneration && matchesType && matchesLetter;
-      });
-      
-      console.log('Filtered Pokemon list:', filteredPokemon);
-      setTotalPokemon(filteredPokemon.length);
-      setPokemonData(filteredPokemon);
-      
-      if (filteredPokemon.length === 0) {
-        setNoResults(true);
-      }
-    } catch (err) {
-      console.error('Error updating Pokemon data:', err);
-    } finally {
-      setIsTotalLoading(false);
-      setIsFetchingData(false);
-    }
+    await resetAllFilters();
   };
 
   const handleStartOver = () => {
@@ -404,18 +346,6 @@ function App() {
       console.error('Error fetching remaining Pokemon sprites:', err);
     } finally {
       setIsGivingUp(false);
-    }
-  };
-
-  const handlePokemonClick = async (pokemon: CaughtPokemon | Pokemon) => {
-    // Find the Pokemon in our data to get its ID
-    const pokemonInData = POKEMON_DATA.find(p => 
-      p.name.toLowerCase() === pokemon.name.toLowerCase() || 
-      p.forms.some(f => f.name.toLowerCase() === pokemon.name.toLowerCase())
-    );
-    
-    if (pokemonInData) {
-      await playPokemonCry(pokemonInData.id, isMuted);
     }
   };
 
@@ -612,7 +542,7 @@ function App() {
                   <div 
                     key={pokemon.name} 
                     className="pokemon-card"
-                    onClick={() => handlePokemonClick(pokemon)}
+                    onClick={() => handlePokemonClick(pokemon, pokemonData, isMuted)}
                   >
                     <img src={pokemon.sprite} alt={pokemon.name} className="pokemon-sprite" />
                     <span>{pokemon.name}</span>
@@ -627,7 +557,7 @@ function App() {
                   <div 
                     key={pokemon.name} 
                     className="pokemon-card uncaught"
-                    onClick={() => handlePokemonClick(pokemon)}
+                    onClick={() => handlePokemonClick(pokemon, pokemonData, isMuted)}
                   >
                     <img src={pokemon.sprite} alt={pokemon.name} className="pokemon-sprite" />
                     <span>{pokemon.name}</span>
