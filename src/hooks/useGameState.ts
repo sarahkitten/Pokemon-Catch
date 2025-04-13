@@ -73,13 +73,11 @@ export function useGameState(): GameState {
   const resetProgress = () => {
     setCaughtPokemon([]);
     setInputValue('');
-    console.log('Error cleared by resetProgress()');
     setError('');
     setRevealedPokemon([]);
   };
 
   const updateTotalCount = async (generation: Generation, type: string, letter: string = selectedLetter) => {
-    console.log('Updating total count for:', generation.name, type, letter);
     
     setIsTotalLoading(true);
     setIsFetchingData(true);
@@ -97,7 +95,6 @@ export function useGameState(): GameState {
         return inGeneration && matchesType && matchesLetter;
       });
       
-      console.log('Filtered Pokemon list:', filteredPokemon);
       setTotalPokemon(filteredPokemon.length);
       setPokemonData(filteredPokemon);
       
