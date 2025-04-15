@@ -12,6 +12,19 @@ interface PokemonData {
   }[];
 }
 
+interface PokeAPIVariety {
+  pokemon: {
+    name: string;
+  };
+  is_default: boolean;
+}
+
+interface PokeAPIType {
+  type: {
+    name: string;
+  };
+}
+
 const GENERATIONS = [
   { name: "Gen 1 (Kanto)", startId: 1, endId: 151 },
   { name: "Gen 2 (Johto)", startId: 152, endId: 251 },
@@ -75,7 +88,7 @@ async function fetchPokemonSpeciesData(name: string): Promise<{ forms: { name: s
     }
 
     const data = await response.json();
-    const forms = data.varieties.map((variety: any) => ({
+    const forms = data.varieties.map((variety: PokeAPIVariety) => ({
       name: variety.pokemon.name,
       isDefault: variety.is_default
     }));
@@ -115,7 +128,7 @@ async function fetchPokemonData(id: number): Promise<PokemonData> {
     return {
       id,
       name: baseName,
-      types: data.types.map((type: any) => type.type.name),
+      types: data.types.map((type: PokeAPIType) => type.type.name),
       generation,
       forms: speciesData.forms
     };

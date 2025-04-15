@@ -2,8 +2,9 @@ import { useState, useRef, useEffect } from 'react'
 import './App.css'
 import PokemonConfetti from './PokemonConfetti'
 import { POKEMON_DATA } from './data/pokemonData'
-import { CaughtPokemon, Pokemon } from './types'
-import { POKEMON_TYPES, GENERATIONS, Generation, UI_CONSTANTS } from './constants'
+import type { CaughtPokemon, Pokemon } from './types'
+import type { Generation} from './constants';
+import { POKEMON_TYPES, GENERATIONS, UI_CONSTANTS } from './constants'
 import { useGameState } from './hooks/useGameState'
 import { findClosestPokemon, fetchFormSprite, playPokemonCry, calculateConfettiPosition, handlePokemonClick } from './utils/pokemonUtils'
 
@@ -56,7 +57,7 @@ function App() {
   
   useEffect(() => {
     updateTotalCount(selectedGeneration, selectedType);
-  }, []);
+  }, [selectedGeneration, selectedType, updateTotalCount]);
 
   useEffect(() => {
     document.documentElement.style.setProperty('--small-screen-breakpoint', `${UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT}px`);
@@ -78,7 +79,7 @@ function App() {
   const handleFilterChange = async (
     event: React.ChangeEvent<HTMLSelectElement>,
     filterType: 'generation' | 'type' | 'letter',
-    changeFunction: (value: any) => Promise<void>
+    changeFunction: (value: string | number) => Promise<void>
   ) => {
     const value = filterType === 'generation' ? parseInt(event.target.value) : event.target.value;
     
@@ -164,7 +165,7 @@ function App() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    let pokemonName = inputValue.trim().toLowerCase().replace(/\s+/g, '-');
+    const pokemonName = inputValue.trim().toLowerCase().replace(/\s+/g, '-');
 
     setIsLoading(true);
     console.log('Error cleared by start of handleSubmit');
@@ -287,7 +288,8 @@ function App() {
         setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
         setTimeout(() => setConfettiProps(null), UI_CONSTANTS.CONFETTI_ANIMATION_DURATION);
       }
-    } catch (err) {
+    } catch (error: unknown) {
+      console.error('Error in handleSubmit:', error);
       setError('That\'s not a valid Pokemon name!');
       setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
     } finally {
@@ -357,6 +359,8 @@ function App() {
   };
 
   const getValidOptions = (filterType: 'generation' | 'type' | 'letter'): number[] | string[] => {
+    let letters: string[];
+    
     switch (filterType) {
       case 'generation':
         return GENERATIONS.map((_, index) => index).filter(genIndex => {
@@ -368,7 +372,7 @@ function App() {
           isValidCombination(selectedGeneration, type, selectedLetter)
         );
       case 'letter':
-        const letters = ["All", ...Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ')];
+        letters = ["All", ...Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ')];
         return letters.filter(letter => 
           isValidCombination(selectedGeneration, selectedType, letter)
         );

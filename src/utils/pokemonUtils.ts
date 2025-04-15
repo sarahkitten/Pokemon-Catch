@@ -1,4 +1,4 @@
-import { CaughtPokemon, PokemonData, Pokemon } from "../types";
+import type { CaughtPokemon, PokemonData, Pokemon } from "../types";
 import { distance } from 'fastest-levenshtein';
 
 export async function playPokemonCry(pokemonId: number, isMuted: boolean) {

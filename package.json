@@ -13,7 +13,9 @@
     "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
-    "download-sprites": "NODE_OPTIONS='--loader ts-node/esm' node scripts/downloadSprites.ts"
+    "download-sprites": "NODE_OPTIONS='--loader ts-node/esm' node scripts/downloadSprites.ts",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "fastest-levenshtein": "^1.0.16",
@@ -44,6 +46,7 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.19.3",
     "typescript": "^5.2.2",
+    "typescript-eslint": "^8.30.1",
     "undici": "^7.8.0",
     "vite": "^5.1.0"
   }

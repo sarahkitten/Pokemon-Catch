@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Pokemon, CaughtPokemon, PokemonData } from '../types';
-import { Generation, GENERATIONS, POKEMON_TYPES } from '../constants';
+import type { Pokemon, CaughtPokemon, PokemonData } from '../types';
+import type { Generation} from '../constants';
+import { GENERATIONS, POKEMON_TYPES } from '../constants';
 import { POKEMON_DATA } from '../data/pokemonData';
 
 interface GameState {
