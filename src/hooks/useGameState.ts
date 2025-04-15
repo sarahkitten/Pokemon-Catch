@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import type { Pokemon, CaughtPokemon, PokemonData } from '../types';
-import type { Generation} from '../constants';
-import { GENERATIONS, POKEMON_TYPES } from '../constants';
+import type { Generation } from '../constants';
+import { GENERATIONS, POKEMON_TYPES, UI_CONSTANTS } from '../constants';
 import { POKEMON_DATA } from '../data/pokemonData';
+import { getRandomValue, findRandomValidCombination, isValidCombination } from '../utils/pokemonUtils';
 
-interface GameState {
+export interface GameState {
   caughtPokemon: CaughtPokemon[];
   inputValue: string;
   confettiProps: { sprite: string; position: { x: number; y: number } } | null;
@@ -49,6 +50,11 @@ interface GameState {
   resetType: () => Promise<void>;
   resetLetter: () => Promise<void>;
   resetAllFilters: () => Promise<void>;
+  randomizeGeneration: () => Promise<void>;
+  randomizeType: () => Promise<void>;
+  randomizeLetter: () => Promise<void>;
+  randomizeAllFilters: () => Promise<void>;
+  getValidOptions: (filterType: 'generation' | 'type' | 'letter') => (number | string)[];
 }
 
 export function useGameState(): GameState {
@@ -155,6 +161,76 @@ export function useGameState(): GameState {
     await updateTotalCount(GENERATIONS[0], POKEMON_TYPES[0], "All");
   };
 
+  const getValidOptions = (filterType: 'generation' | 'type' | 'letter'): (number | string)[] => {
+    switch (filterType) {
+      case 'generation':
+        return GENERATIONS.map((_, index) => index).filter(genIndex => {
+          const gen = GENERATIONS[genIndex];
+          return isValidCombination(pokemonData, gen, selectedType, selectedLetter);
+        });
+      case 'type':
+        return POKEMON_TYPES.filter(type =>
+          isValidCombination(pokemonData, selectedGeneration, type, selectedLetter)
+        );
+      case 'letter': {
+        const letters = ["All", ...Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ')];
+        return letters.filter(letter =>
+          isValidCombination(pokemonData, selectedGeneration, selectedType, letter)
+        );
+      }
+      default:
+        return [];
+    }
+  };
+
+  const randomizeGeneration = async () => {
+    const validOptions = getValidOptions('generation') as number[];
+    const newGenIndex = getRandomValue(validOptions, selectedGenerationIndex);
+    if (newGenIndex !== selectedGenerationIndex) {
+      await changeGeneration(newGenIndex);
+    }
+  };
+
+  const randomizeType = async () => {
+    const validOptions = getValidOptions('type') as string[];
+    const newType = getRandomValue(validOptions, selectedType);
+    if (newType !== selectedType) {
+      await changeType(newType);
+    }
+  };
+
+  const randomizeLetter = async () => {
+    const validOptions = getValidOptions('letter') as string[];
+    const newLetter = getRandomValue(validOptions, selectedLetter);
+    if (newLetter !== selectedLetter) {
+      await changeLetter(newLetter);
+    }
+  };
+
+  const randomizeAllFilters = async () => {
+    const result = findRandomValidCombination(
+      pokemonData,
+      GENERATIONS,
+      POKEMON_TYPES,
+      UI_CONSTANTS.MAX_FILTER_ATTEMPTS
+    );
+
+    if (result) {
+      const { generationIndex, type, letter } = result;
+      setSelectedGenerationIndex(generationIndex);
+      setSelectedType(type);
+      setSelectedLetter(letter);
+      resetProgress();
+      await updateTotalCount(GENERATIONS[generationIndex], type, letter);
+    } else {
+      setSelectedGenerationIndex(0);
+      setSelectedType(POKEMON_TYPES[0]);
+      setSelectedLetter("All");
+      resetProgress();
+      await updateTotalCount(GENERATIONS[0], POKEMON_TYPES[0], "All");
+    }
+  };
+
   return {
     caughtPokemon,
     inputValue,
@@ -200,5 +276,10 @@ export function useGameState(): GameState {
     resetType,
     resetLetter,
     resetAllFilters,
+    randomizeGeneration,
+    randomizeType,
+    randomizeLetter,
+    randomizeAllFilters,
+    getValidOptions
   };
 }

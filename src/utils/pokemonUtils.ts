@@ -1,4 +1,6 @@
+import { MAX_MATCH_DISTANCE } from "../constants";
 import type { CaughtPokemon, PokemonData, Pokemon } from "../types";
+import type { Generation } from "../constants";
 import { distance } from 'fastest-levenshtein';
 
 export async function playPokemonCry(pokemonId: number, isMuted: boolean) {
@@ -69,7 +71,7 @@ export const findClosestPokemon = (input: string, pokemonData: PokemonData[]) =>
   const normalizedInput = input.toLowerCase().trim();
   let closestMatch: PokemonData | undefined = undefined;
   let minDistance = Infinity;
-  const maxDistance = 3; // Maximum "distance" to consider a match
+  const maxDistance = MAX_MATCH_DISTANCE; // Maximum "distance" to consider a match
 
   for (const pokemon of pokemonData) {
     // Check base name
@@ -90,4 +92,58 @@ export const findClosestPokemon = (input: string, pokemonData: PokemonData[]) =>
   }
 
   return closestMatch || undefined;
+};
+
+export const isValidCombination = (
+  pokemon: PokemonData[],
+  generation: Generation,
+  type: string,
+  letter: string
+): boolean => {
+  const filteredPokemon = pokemon.filter((p: PokemonData) => {
+    const inGeneration = generation.name === "All Generations" ||
+      (p.id >= generation.startId && p.id <= generation.endId);
+    const matchesType = type === "All Types" ||
+      p.types.some((t: string) => t.toLowerCase() === type.toLowerCase());
+    const matchesLetter = letter === "All" ||
+      p.name.toLowerCase().startsWith(letter.toLowerCase());
+    return inGeneration && matchesType && matchesLetter;
+  });
+  return filteredPokemon.length > 0;
+};
+
+export const getRandomValue = <T>(validOptions: T[], currentValue: T): T => {
+  if (validOptions.length <= 1) return currentValue;
+  let randomValue;
+  do {
+    randomValue = validOptions[Math.floor(Math.random() * validOptions.length)];
+  } while (randomValue === currentValue && validOptions.length > 1);
+  return randomValue;
+};
+
+export const findRandomValidCombination = (
+  pokemon: PokemonData[],
+  generations: Generation[],
+  types: string[],
+  maxAttempts: number
+): { generationIndex: number; type: string; letter: string } | null => {
+  let attempts = 0;
+
+  while (attempts < maxAttempts) {
+    const randomGenIndex = Math.floor(Math.random() * (generations.length - 1)) + 1;
+    const randomTypeIndex = Math.floor(Math.random() * (types.length - 1)) + 1;
+    const letters = Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+    const randomLetter = letters[Math.floor(Math.random() * letters.length)];
+
+    if (isValidCombination(pokemon, generations[randomGenIndex], types[randomTypeIndex], randomLetter)) {
+      return {
+        generationIndex: randomGenIndex,
+        type: types[randomTypeIndex],
+        letter: randomLetter
+      };
+    }
+    attempts++;
+  }
+
+  return null;
 };
