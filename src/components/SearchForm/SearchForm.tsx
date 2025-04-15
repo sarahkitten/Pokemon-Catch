@@ -1,14 +1,13 @@
-import { type FormEvent, useRef } from 'react';
+import { type FormEvent } from 'react';
 import type { GameState } from '../../hooks/useGameState';
 
 interface SearchFormProps {
   gameState: GameState;
   onSubmit: (e: FormEvent) => Promise<void>;
+  inputRef: React.RefObject<HTMLInputElement>;
 }
 
-export function SearchForm({ gameState, onSubmit }: SearchFormProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-
+export function SearchForm({ gameState, onSubmit, inputRef }: SearchFormProps) {
   return (
     <>
       <form onSubmit={onSubmit}>
@@ -27,7 +26,6 @@ export function SearchForm({ gameState, onSubmit }: SearchFormProps) {
           disabled={gameState.isLoading || gameState.revealedPokemon.length > 0 || gameState.isFetchingData}
         />
       </form>
-
       <div className="message-container">
         {gameState.isLoading && <p className="loading">Searching for Pokemon...</p>}
         {gameState.isFetchingData && <p className="loading">Loading Pokemon data...</p>}

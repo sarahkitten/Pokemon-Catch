@@ -36,7 +36,7 @@ export const calculateConfettiPosition = (element: HTMLElement): ConfettiPositio
   const rect = element.getBoundingClientRect();
   const centerX = rect.left + (rect.width / 2);
   const centerY = rect.top + (rect.height / 2);
-  
+    
   return {
     x: centerX + window.scrollX,
     y: centerY + window.scrollY

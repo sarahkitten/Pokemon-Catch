@@ -146,8 +146,11 @@ function App() {
           position
         });
 
+        setTimeout(() => {
+          gameState.setConfettiProps(null);
+        }, UI_CONSTANTS.CONFETTI_ANIMATION_DURATION);
+
         setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
-        setTimeout(() => gameState.setConfettiProps(null), UI_CONSTANTS.CONFETTI_ANIMATION_DURATION);
       }
     } catch (error: unknown) {
       console.error('Error in handleSubmit:', error);
@@ -208,7 +211,11 @@ function App() {
         <h1>Catch them all!</h1>
         <div className="pokemon-section">
           <h2>How many Pokemon can you catch?</h2>
-          <SearchForm gameState={gameState} onSubmit={handleSubmit} />
+          <SearchForm 
+            gameState={gameState} 
+            onSubmit={handleSubmit}
+            inputRef={inputRef}
+          />
           <GameControls 
             gameState={gameState}
             onStartOver={handleStartOver}

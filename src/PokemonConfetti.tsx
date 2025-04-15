@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { UI_CONSTANTS } from './constants';
 import './PokemonConfetti.css';
 
 interface Particle {
@@ -34,8 +35,8 @@ export default function PokemonConfetti({ spriteUrl, inputPosition }: PokemonCon
     for (let i = 0; i < particleCount; i++) {
       newParticles.push({
         id: i,
-        x: startX,
-        y: startY,
+        x: startX - 48, // offset by half the sprite width
+        y: startY - 48, // offset by half the sprite height
         rotation: Math.random() * 360,
         xVelocity: (Math.random() - 0.5) * 8,
         yVelocity: -Math.random() * 6 - 3,
@@ -46,21 +47,22 @@ export default function PokemonConfetti({ spriteUrl, inputPosition }: PokemonCon
     setParticles(newParticles);
 
     const animationInterval = setInterval(() => {
-      setParticles(prevParticles => 
-        prevParticles.map(particle => ({
+      setParticles(prevParticles => {
+        const updatedParticles = prevParticles.map(particle => ({
           ...particle,
           x: particle.x + particle.xVelocity,
           y: particle.y + particle.yVelocity,
           yVelocity: particle.yVelocity + 0.3,
           rotation: particle.rotation + particle.rotationVelocity,
-        }))
-      );
+        }));
+        return updatedParticles;
+      });
     }, 1000 / 60);
 
     const cleanup = setTimeout(() => {
       setParticles([]);
       clearInterval(animationInterval);
-    }, 3000);
+    }, UI_CONSTANTS.CONFETTI_ANIMATION_DURATION);
 
     return () => {
       clearInterval(animationInterval);
@@ -76,11 +78,13 @@ export default function PokemonConfetti({ spriteUrl, inputPosition }: PokemonCon
           src={spriteUrl}
           className="confetti-sprite"
           style={{
-            transform: `translate(${particle.x}px, ${particle.y}px) rotate(${particle.rotation}deg)`,
+            left: `${particle.x}px`,
+            top: `${particle.y}px`,
+            transform: `rotate(${particle.rotation}deg)`,
           }}
           alt=""
         />
       ))}
     </div>
   );
-} 
+}
