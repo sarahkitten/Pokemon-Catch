@@ -3,61 +3,20 @@ import './App.css'
 import PokemonConfetti from './PokemonConfetti'
 import { POKEMON_DATA } from './data/pokemonData'
 import type { CaughtPokemon, Pokemon } from './types'
-import type { Generation} from './constants';
+import type { Generation } from './constants';
 import { POKEMON_TYPES, GENERATIONS, UI_CONSTANTS } from './constants'
 import { useGameState } from './hooks/useGameState'
 import { findClosestPokemon, fetchFormSprite, playPokemonCry, calculateConfettiPosition, handlePokemonClick } from './utils/pokemonUtils'
 
 function App() {
-  const {
-    caughtPokemon,
-    inputValue,
-    confettiProps,
-    selectedGenerationIndex,
-    selectedGeneration,
-    selectedType,
-    selectedLetter,
-    totalPokemon,
-    isGivingUp,
-    revealedPokemon,
-    pokemonData,
-    isFetchingData,
-    isMuted,
-    isEasyMode,
-    noResults,
-    error,
-    isLoading,
-    isTotalLoading,
-    setCaughtPokemon,
-    setInputValue,
-    setConfettiProps,
-    setSelectedGenerationIndex,
-    setSelectedType,
-    setSelectedLetter,
-    setIsGivingUp,
-    setRevealedPokemon,
-    setIsMuted,
-    setIsEasyMode,
-    setError,
-    setIsLoading,
-    resetProgress,
-    updateTotalCount,
-    changeGeneration,
-    changeType,
-    changeLetter,
-    resetGeneration,
-    resetType,
-    resetLetter,
-    resetAllFilters,
-  } = useGameState();
-  
-  const inputRef = useRef<HTMLInputElement>(null); // Leave
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // Leave
-  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT); // Leave
-  
+  const gameState = useGameState();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT);
+
   useEffect(() => {
-    updateTotalCount(selectedGeneration, selectedType);
-  }, [selectedGeneration, selectedType, updateTotalCount]);
+    gameState.updateTotalCount(gameState.selectedGeneration, gameState.selectedType);
+  }, [gameState.selectedGeneration, gameState.selectedType, gameState.updateTotalCount]);
 
   useEffect(() => {
     document.documentElement.style.setProperty('--small-screen-breakpoint', `${UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT}px`);
@@ -66,13 +25,10 @@ function App() {
       setIsSmallScreen(window.innerWidth <= UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT);
     };
 
-    // Initial check
     handleResize();
 
-    // Add event listener
     window.addEventListener('resize', handleResize);
-    
-    // Cleanup
+
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -82,31 +38,31 @@ function App() {
     changeFunction: (value: T) => Promise<void>
   ) => {
     const value = filterType === 'generation' ? parseInt(event.target.value) : event.target.value;
-    
-    if (caughtPokemon.length > 0) {
+
+    if (gameState.caughtPokemon.length > 0) {
       const filterName = {
         'generation': 'generations',
         'type': 'types',
         'letter': 'starting letter'
       }[filterType];
-      
+
       const confirmChange = window.confirm(
         `Changing ${filterName} will reset your current progress. Are you sure?`
       );
       if (!confirmChange) return;
     }
-    
+
     await changeFunction(value as T);
   };
 
-  const handleGenerationChange = (event: React.ChangeEvent<HTMLSelectElement>) => 
-    handleFilterChange<number>(event, 'generation', changeGeneration);
+  const handleGenerationChange = (event: React.ChangeEvent<HTMLSelectElement>) =>
+    handleFilterChange<number>(event, 'generation', gameState.changeGeneration);
 
-  const handleTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => 
-    handleFilterChange<string>(event, 'type', changeType);
+  const handleTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) =>
+    handleFilterChange<string>(event, 'type', gameState.changeType);
 
-  const handleLetterChange = (event: React.ChangeEvent<HTMLSelectElement>) => 
-    handleFilterChange<string>(event, 'letter', changeLetter);
+  const handleLetterChange = (event: React.ChangeEvent<HTMLSelectElement>) =>
+    handleFilterChange<string>(event, 'letter', gameState.changeLetter);
 
   const handleReset = async (
     filterType: 'generation' | 'type' | 'letter' | 'all',
@@ -114,16 +70,16 @@ function App() {
     defaultValue: string | number,
     resetFunction: () => Promise<void>
   ) => {
-    if (currentValue === defaultValue) return; // Already at default
-    
-    if (caughtPokemon.length > 0) {
+    if (currentValue === defaultValue) return;
+
+    if (gameState.caughtPokemon.length > 0) {
       const filterName = {
         'generation': 'generation',
         'type': 'type',
         'letter': 'letter filter',
         'all': 'all filters'
       }[filterType];
-      
+
       const confirmChange = window.confirm(
         `Resetting ${filterName} will reset your current progress. Are you sure?`
       );
@@ -133,141 +89,125 @@ function App() {
     await resetFunction();
   };
 
-  const handleGenerationReset = () => 
-    handleReset('generation', selectedGenerationIndex, 0, resetGeneration);
+  const handleGenerationReset = () =>
+    handleReset('generation', gameState.selectedGenerationIndex, 0, gameState.resetGeneration);
 
-  const handleTypeReset = () => 
-    handleReset('type', selectedType, POKEMON_TYPES[0], resetType);
+  const handleTypeReset = () =>
+    handleReset('type', gameState.selectedType, POKEMON_TYPES[0], gameState.resetType);
 
-  const handleLetterReset = () => 
-    handleReset('letter', selectedLetter, "All", resetLetter);
+  const handleLetterReset = () =>
+    handleReset('letter', gameState.selectedLetter, "All", gameState.resetLetter);
 
-  // TODO: make this more maintainable
-  const handleResetAllFilters = () => 
+  const handleResetAllFilters = () =>
     handleReset(
-      'all', 
-      `${selectedGenerationIndex}-${selectedType}-${selectedLetter}`,
+      'all',
+      `${gameState.selectedGenerationIndex}-${gameState.selectedType}-${gameState.selectedLetter}`,
       `0-${POKEMON_TYPES[0]}-All`,
-      resetAllFilters
+      gameState.resetAllFilters
     );
 
   const handleStartOver = () => {
-    if (caughtPokemon.length === 0 && revealedPokemon.length === 0) return;
-    
+    if (gameState.caughtPokemon.length === 0 && gameState.revealedPokemon.length === 0) return;
+
     const confirmReset = window.confirm(
-      `Are you sure you want to start over?${caughtPokemon.length > 0 ? ` This will release all ${caughtPokemon.length} Pokemon.` : ''}`
+      `Are you sure you want to start over?${gameState.caughtPokemon.length > 0 ? ` This will release all ${gameState.caughtPokemon.length} Pokemon.` : ''}`
     );
-    
+
     if (confirmReset) {
-      resetProgress();
+      gameState.resetProgress();
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const pokemonName = inputValue.trim().toLowerCase().replace(/\s+/g, '-');
+    const pokemonName = gameState.inputValue.trim().toLowerCase().replace(/\s+/g, '-');
 
-    setIsLoading(true);
+    gameState.setIsLoading(true);
     console.log('Error cleared by start of handleSubmit');
-    setError('');
+    gameState.setError('');
 
     try {
-      // Find the Pokemon in our pre-fetched data
-      let pokemon = pokemonData.find(p => 
-        p.name.toLowerCase() === pokemonName.toLowerCase() ||  
+      let pokemon = gameState.pokemonData.find(p =>
+        p.name.toLowerCase() === pokemonName.toLowerCase() ||
         p.forms.some(f => f.name.toLowerCase() === pokemonName.toLowerCase())
       );
 
-      // If not found and easy mode is on, try fuzzy matching
-      if (!pokemon && isEasyMode) {
-        pokemon = findClosestPokemon(pokemonName, pokemonData);
+      if (!pokemon && gameState.isEasyMode) {
+        pokemon = findClosestPokemon(pokemonName, gameState.pokemonData);
         if (pokemon) {
-          // Show a message that we accepted a close match without timeout
           console.log('Accepted fuzzy match:', pokemon.name);
-          setError(`Accepted "${inputValue}" as "${pokemon.name}" (Easy Mode)`);
+          gameState.setError(`Accepted "${gameState.inputValue}" as "${pokemon.name}" (Easy Mode)`);
         }
       }
-      
+
       if (!pokemon) {
-        // Check if the Pokemon exists in POKEMON_DATA but not in current selection
-        const pokemonExists = POKEMON_DATA.find(p => 
-          p.name.toLowerCase() === pokemonName.toLowerCase() || 
+        const pokemonExists = POKEMON_DATA.find(p =>
+          p.name.toLowerCase() === pokemonName.toLowerCase() ||
           p.forms.some(f => f.name.toLowerCase() === pokemonName.toLowerCase())
         );
 
         if (pokemonExists) {
-          // Check if it's a generation mismatch
-          const inGeneration = selectedGeneration.name === "All Generations" || 
-            (pokemonExists.id >= selectedGeneration.startId && pokemonExists.id <= selectedGeneration.endId);
-          
-          // Check if it's a type mismatch
-          const matchesType = selectedType === "All Types" || 
-            pokemonExists.types.some(t => t.toLowerCase() === selectedType.toLowerCase());
+          const inGeneration = gameState.selectedGeneration.name === "All Generations" ||
+            (pokemonExists.id >= gameState.selectedGeneration.startId && pokemonExists.id <= gameState.selectedGeneration.endId);
 
-          // Check if it's a letter mismatch
-          const matchesLetter = selectedLetter === "All" || 
-            pokemonExists.name.toLowerCase().startsWith(selectedLetter.toLowerCase());
+          const matchesType = gameState.selectedType === "All Types" ||
+            pokemonExists.types.some(t => t.toLowerCase() === gameState.selectedType.toLowerCase());
+
+          const matchesLetter = gameState.selectedLetter === "All" ||
+            pokemonExists.name.toLowerCase().startsWith(gameState.selectedLetter.toLowerCase());
 
           if (!matchesLetter) {
-            setError(`That Pokemon doesn't start with the letter ${selectedLetter}!`);
+            gameState.setError(`That Pokemon doesn't start with the letter ${gameState.selectedLetter}!`);
           } else if (!inGeneration) {
-            setError(`That Pokemon is not in ${selectedGeneration.name}!`);
+            gameState.setError(`That Pokemon is not in ${gameState.selectedGeneration.name}!`);
           } else if (!matchesType) {
-            setError(`That Pokemon is not a ${selectedType} type!`);
+            gameState.setError(`That Pokemon is not a ${gameState.selectedType} type!`);
           } else {
-            setError('That\'s not a valid Pokemon name!');
+            gameState.setError('That\'s not a valid Pokemon name!');
           }
         } else {
-          setError('That\'s not a valid Pokemon name!');
+          gameState.setError('That\'s not a valid Pokemon name!');
         }
         setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
         return;
       }
 
-      // Check if any form of this Pokemon is already caught
-      const existingPokemon = caughtPokemon.find(p => {
-        const pokemonInData = pokemonData.find(pd => 
+      const existingPokemon = gameState.caughtPokemon.find(p => {
+        const pokemonInData = gameState.pokemonData.find(pd =>
           pd.forms.some(f => f.name.toLowerCase() === p.name.toLowerCase())
         );
         return pokemonInData?.name === pokemon.name;
       });
 
       if (existingPokemon) {
-        // Check if they're trying to catch the exact same form
-        const isSameForm = caughtPokemon.some(p => p.name.toLowerCase() === pokemonName.toLowerCase());
-        
+        const isSameForm = gameState.caughtPokemon.some(p => p.name.toLowerCase() === pokemonName.toLowerCase());
+
         if (isSameForm) {
-          setError(`You already caught ${pokemonName.charAt(0).toUpperCase() + pokemonName.slice(1)}!`);
+          gameState.setError(`You already caught ${pokemonName.charAt(0).toUpperCase() + pokemonName.slice(1)}!`);
         } else {
-          setError(`You already caught a different form of ${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}!`);
+          gameState.setError(`You already caught a different form of ${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}!`);
         }
         setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
         return;
       }
 
-      // Determine which form to use
       let form;
       if (pokemonName.includes('-')) {
-        // If input includes a form, try to find that specific form
         form = pokemon.forms.find(f => f.name.toLowerCase() === pokemonName.toLowerCase());
       }
-      
-      // If no specific form found or no form specified, use the default form
+
       if (!form) {
         form = pokemon.forms.find(f => f.isDefault);
       }
 
       if (!form) {
-        setError('Could not find a valid form for this Pokemon!');
+        gameState.setError('Could not find a valid form for this Pokemon!');
         setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
         return;
       }
 
-      // Fetch sprite using the enhanced function
       const sprite = await fetchFormSprite(form.name);
-
-      // Play the Pokemon's cry
-      await playPokemonCry(pokemon.id, isMuted);
+      await playPokemonCry(pokemon.id, gameState.isMuted);
 
       const newCaughtPokemon: CaughtPokemon = {
         name: form.name,
@@ -275,60 +215,57 @@ function App() {
         types: pokemon.types
       };
 
-      setCaughtPokemon(prev => [newCaughtPokemon, ...prev]);
-      setInputValue('');
-      
+      gameState.setCaughtPokemon(prev => [newCaughtPokemon, ...prev]);
+      gameState.setInputValue('');
+
       if (inputRef.current) {
         const position = calculateConfettiPosition(inputRef.current);
-        setConfettiProps({
+        gameState.setConfettiProps({
           sprite: newCaughtPokemon.sprite,
           position
         });
-        
+
         setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
-        setTimeout(() => setConfettiProps(null), UI_CONSTANTS.CONFETTI_ANIMATION_DURATION);
+        setTimeout(() => gameState.setConfettiProps(null), UI_CONSTANTS.CONFETTI_ANIMATION_DURATION);
       }
     } catch (error: unknown) {
       console.error('Error in handleSubmit:', error);
-      setError('That\'s not a valid Pokemon name!');
+      gameState.setError('That\'s not a valid Pokemon name!');
       setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
     } finally {
-      setIsLoading(false);
+      gameState.setIsLoading(false);
     }
   };
 
   const handleGiveUp = async () => {
-    if (caughtPokemon.length === totalPokemon) {
-      return; // No need to give up if all Pokemon are caught
+    if (gameState.caughtPokemon.length === gameState.totalPokemon) {
+      return;
     }
 
     const confirmGiveUp = window.confirm(
       `Are you sure you want to give up? This will reveal all remaining Pokemon!`
     );
-    
+
     if (!confirmGiveUp) return;
 
-    setIsGivingUp(true);
+    gameState.setIsGivingUp(true);
     console.log('Error cleared by handleGiveUp()');
-    setError(''); // Clear any error messages
-    setInputValue(''); // Clear the input field
+    gameState.setError('');
+    gameState.setInputValue('');
     const revealed: Pokemon[] = [];
-    
+
     try {
-      // Filter pokemonData to get remaining Pokemon to reveal
-      const revealedPokemonData = pokemonData.filter(pokemon => 
-        !caughtPokemon.some(caught => 
-          caught.name === pokemon.name || 
+      const revealedPokemonData = gameState.pokemonData.filter(pokemon =>
+        !gameState.caughtPokemon.some(caught =>
+          caught.name === pokemon.name ||
           pokemon.forms.some(f => f.name === caught.name)
         )
       );
 
-      // Get sprites for revealed Pokemon using our existing fetchSprite function
       for (const pokemon of revealedPokemonData) {
-        // Find the default form
         const defaultForm = pokemon.forms.find(f => f.isDefault);
         const formNameToUse = defaultForm ? defaultForm.name : pokemon.name;
-        
+
         const sprite = await fetchFormSprite(formNameToUse);
         revealed.push({
           id: pokemon.id,
@@ -337,21 +274,21 @@ function App() {
           types: pokemon.types
         });
       }
-      setRevealedPokemon(revealed);
+      gameState.setRevealedPokemon(revealed);
     } catch (err) {
       console.error('Error fetching remaining Pokemon sprites:', err);
     } finally {
-      setIsGivingUp(false);
+      gameState.setIsGivingUp(false);
     }
   };
 
   const isValidCombination = (generation: Generation, type: string, letter: string): boolean => {
     const filteredPokemon = POKEMON_DATA.filter(pokemon => {
-      const inGeneration = generation.name === "All Generations" || 
+      const inGeneration = generation.name === "All Generations" ||
         (pokemon.id >= generation.startId && pokemon.id <= generation.endId);
-      const matchesType = type === "All Types" || 
+      const matchesType = type === "All Types" ||
         pokemon.types.some(t => t.toLowerCase() === type.toLowerCase());
-      const matchesLetter = letter === "All" || 
+      const matchesLetter = letter === "All" ||
         pokemon.name.toLowerCase().startsWith(letter.toLowerCase());
       return inGeneration && matchesType && matchesLetter;
     });
@@ -360,21 +297,21 @@ function App() {
 
   const getValidOptions = (filterType: 'generation' | 'type' | 'letter'): number[] | string[] => {
     let letters: string[];
-    
+
     switch (filterType) {
       case 'generation':
         return GENERATIONS.map((_, index) => index).filter(genIndex => {
           const gen = GENERATIONS[genIndex];
-          return isValidCombination(gen, selectedType, selectedLetter);
+          return isValidCombination(gen, gameState.selectedType, gameState.selectedLetter);
         });
       case 'type':
-        return POKEMON_TYPES.filter(type => 
-          isValidCombination(selectedGeneration, type, selectedLetter)
+        return POKEMON_TYPES.filter(type =>
+          isValidCombination(gameState.selectedGeneration, type, gameState.selectedLetter)
         );
       case 'letter':
         letters = ["All", ...Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ')];
-        return letters.filter(letter => 
-          isValidCombination(selectedGeneration, selectedType, letter)
+        return letters.filter(letter =>
+          isValidCombination(gameState.selectedGeneration, gameState.selectedType, letter)
         );
       default:
         return [];
@@ -383,42 +320,42 @@ function App() {
 
   const randomizeGeneration = () => {
     const validGenerations = getValidOptions('generation') as number[];
-    if (validGenerations.length <= 1) return; // No other valid options
+    if (validGenerations.length <= 1) return;
 
     let randomIndex;
     do {
       randomIndex = validGenerations[Math.floor(Math.random() * validGenerations.length)];
-    } while (randomIndex === selectedGenerationIndex && validGenerations.length > 1);
+    } while (randomIndex === gameState.selectedGenerationIndex && validGenerations.length > 1);
 
     handleGenerationChange({ target: { value: randomIndex.toString() } } as React.ChangeEvent<HTMLSelectElement>);
   };
 
   const randomizeType = () => {
     const validTypes = getValidOptions('type') as string[];
-    if (validTypes.length <= 1) return; // No other valid options
+    if (validTypes.length <= 1) return;
 
     let randomType;
     do {
       randomType = validTypes[Math.floor(Math.random() * validTypes.length)];
-    } while (randomType === selectedType && validTypes.length > 1);
+    } while (randomType === gameState.selectedType && validTypes.length > 1);
 
     handleTypeChange({ target: { value: randomType } } as React.ChangeEvent<HTMLSelectElement>);
   };
 
   const randomizeLetter = () => {
     const validLetters = getValidOptions('letter') as string[];
-    if (validLetters.length <= 1) return; // No other valid options
+    if (validLetters.length <= 1) return;
 
     let randomLetter;
     do {
       randomLetter = validLetters[Math.floor(Math.random() * validLetters.length)];
-    } while (randomLetter === selectedLetter && validLetters.length > 1);
+    } while (randomLetter === gameState.selectedLetter && validLetters.length > 1);
 
     handleLetterChange({ target: { value: randomLetter } } as React.ChangeEvent<HTMLSelectElement>);
   };
 
   const handleRandomize = async () => {
-    if (caughtPokemon.length > 0) {
+    if (gameState.caughtPokemon.length > 0) {
       const confirmChange = window.confirm(
         "Randomizing filters will reset your current progress. Are you sure?"
       );
@@ -427,40 +364,34 @@ function App() {
 
     let validCombinationFound = false;
     let attempts = 0;
-    const maxAttempts = UI_CONSTANTS.MAX_FILTER_ATTEMPTS; // Prevent infinite loop if something goes wrong
-    
+    const maxAttempts = UI_CONSTANTS.MAX_FILTER_ATTEMPTS;
+
     while (!validCombinationFound && attempts < maxAttempts) {
-      // Random generation (excluding "All Generations")
       const randomGenIndex = Math.floor(Math.random() * (GENERATIONS.length - 1)) + 1;
-      
-      // Random type (excluding "All Types")
+
       const randomTypeIndex = Math.floor(Math.random() * (POKEMON_TYPES.length - 1)) + 1;
-      
-      // Random letter (excluding "All")
+
       const letters = Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
       const randomLetter = letters[Math.floor(Math.random() * letters.length)];
 
-      // Check if this combination would return results
       if (isValidCombination(GENERATIONS[randomGenIndex], POKEMON_TYPES[randomTypeIndex], randomLetter)) {
-        setSelectedGenerationIndex(randomGenIndex);
-        setSelectedType(POKEMON_TYPES[randomTypeIndex]);
-        setSelectedLetter(randomLetter);
-        resetProgress();
-        await updateTotalCount(GENERATIONS[randomGenIndex], POKEMON_TYPES[randomTypeIndex], randomLetter);
+        gameState.setSelectedGenerationIndex(randomGenIndex);
+        gameState.setSelectedType(POKEMON_TYPES[randomTypeIndex]);
+        gameState.setSelectedLetter(randomLetter);
+        gameState.resetProgress();
+        await gameState.updateTotalCount(GENERATIONS[randomGenIndex], POKEMON_TYPES[randomTypeIndex], randomLetter);
         validCombinationFound = true;
       }
 
       attempts++;
     }
 
-    // If we couldn't find a valid combination, fall back to a safe combination
     if (!validCombinationFound) {
-      // Reset to "All Generations", "All Types", and "All" letter as a fallback
-      setSelectedGenerationIndex(0);
-      setSelectedType(POKEMON_TYPES[0]);
-      setSelectedLetter("All");
-      resetProgress();
-      await updateTotalCount(GENERATIONS[0], POKEMON_TYPES[0], "All");
+      gameState.setSelectedGenerationIndex(0);
+      gameState.setSelectedType(POKEMON_TYPES[0]);
+      gameState.setSelectedLetter("All");
+      gameState.resetProgress();
+      await gameState.updateTotalCount(GENERATIONS[0], POKEMON_TYPES[0], "All");
     }
   };
 
@@ -468,79 +399,79 @@ function App() {
     <div className="app">
       <div className={`main-content ${isSidebarCollapsed ? 'expanded' : ''}`}>
         <h1>Catch them all!</h1>
-        
+
         <div className="pokemon-section">
           <h2>How many Pokemon can you catch?</h2>
-          
+
           <form onSubmit={handleSubmit}>
             <input
               ref={inputRef}
               type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder={isFetchingData ? "Loading Pokemon data..." : revealedPokemon.length > 0 ? "Click 'Start Over' to catch more Pokemon" : "Enter a Pokemon name"}
-              disabled={isLoading || revealedPokemon.length > 0 || isFetchingData}
+              value={gameState.inputValue}
+              onChange={(e) => gameState.setInputValue(e.target.value)}
+              placeholder={gameState.isFetchingData ? "Loading Pokemon data..." : gameState.revealedPokemon.length > 0 ? "Click 'Start Over' to catch more Pokemon" : "Enter a Pokemon name"}
+              disabled={gameState.isLoading || gameState.revealedPokemon.length > 0 || gameState.isFetchingData}
             />
           </form>
 
           <div className="message-container">
-            {isLoading && <p className="loading">Searching for Pokemon...</p>}
-            {isFetchingData && <p className="loading">Loading Pokemon data...</p>}
-            {error && !isLoading && !isFetchingData && <p className="error">{error}</p>}
-            {noResults && <p className="error">No Pokemon found matching these filters!</p>}
-            {revealedPokemon.length > 0 && (
+            {gameState.isLoading && <p className="loading">Searching for Pokemon...</p>}
+            {gameState.isFetchingData && <p className="loading">Loading Pokemon data...</p>}
+            {gameState.error && !gameState.isLoading && !gameState.isFetchingData && <p className="error">{gameState.error}</p>}
+            {gameState.noResults && <p className="error">No Pokemon found matching these filters!</p>}
+            {gameState.revealedPokemon.length > 0 && (
               <p className="info">Click 'Start Over' to try catching Pokemon again!</p>
             )}
           </div>
-          
+
           <div className="controls">
-            {!noResults && (
-              <p className={`counter ${caughtPokemon.length === totalPokemon ? 'success' : ''}`}>
-                {isTotalLoading ? (
+            {!gameState.noResults && (
+              <p className={`counter ${gameState.caughtPokemon.length === gameState.totalPokemon ? 'success' : ''}`}>
+                {gameState.isTotalLoading ? (
                   <span className="loading-dots">
                     <span>.</span><span>.</span><span>.</span>
                   </span>
-                ) : caughtPokemon.length === totalPokemon ? (
-                  `Congratulations! You've caught all ${totalPokemon} Pokemon!`
+                ) : gameState.caughtPokemon.length === gameState.totalPokemon ? (
+                  `Congratulations! You've caught all ${gameState.totalPokemon} Pokemon!`
                 ) : (
-                  `You've caught ${caughtPokemon.length} Pokemon! ${totalPokemon - caughtPokemon.length} to go!`
+                  `You've caught ${gameState.caughtPokemon.length} Pokemon! ${gameState.totalPokemon - gameState.caughtPokemon.length} to go!`
                 )}
               </p>
             )}
             <div className="button-group">
-              {(caughtPokemon.length > 0 || revealedPokemon.length > 0) && (
+              {(gameState.caughtPokemon.length > 0 || gameState.revealedPokemon.length > 0) && (
                 <button onClick={handleStartOver} className="start-over-button">
                   Start Over
                 </button>
               )}
-              {revealedPokemon.length === 0 && caughtPokemon.length < totalPokemon && (
+              {gameState.revealedPokemon.length === 0 && gameState.caughtPokemon.length < gameState.totalPokemon && (
                 <button
                   className="give-up-button"
                   onClick={handleGiveUp}
-                  disabled={isGivingUp}
+                  disabled={gameState.isGivingUp}
                 >
-                  {isGivingUp ? "Loading..." : "Give Up"}
+                  {gameState.isGivingUp ? "Loading..." : "Give Up"}
                 </button>
               )}
               <button
-                className={`mute-button ${isMuted ? 'muted' : ''}`}
-                onClick={() => setIsMuted(!isMuted)}
-                title={isMuted ? "Unmute Pokemon cries" : "Mute Pokemon cries"}
+                className={`mute-button ${gameState.isMuted ? 'muted' : ''}`}
+                onClick={() => gameState.setIsMuted(!gameState.isMuted)}
+                title={gameState.isMuted ? "Unmute Pokemon cries" : "Mute Pokemon cries"}
               >
-                {isMuted ? "🔇" : "🔊"}
+                {gameState.isMuted ? "🔇" : "🔊"}
               </button>
             </div>
           </div>
 
-          {(caughtPokemon.length > 0 || revealedPokemon.length > 0) && (
-            <div className={`caught-list ${caughtPokemon.length === totalPokemon ? 'success' : ''}`}>
+          {(gameState.caughtPokemon.length > 0 || gameState.revealedPokemon.length > 0) && (
+            <div className={`caught-list ${gameState.caughtPokemon.length === gameState.totalPokemon ? 'success' : ''}`}>
               <h3>Pokemon Collection:</h3>
               <div className="pokemon-list">
-                {caughtPokemon.map((pokemon) => (
-                  <div 
-                    key={pokemon.name} 
+                {gameState.caughtPokemon.map((pokemon) => (
+                  <div
+                    key={pokemon.name}
                     className="pokemon-card"
-                    onClick={() => handlePokemonClick(pokemon, pokemonData, isMuted)}
+                    onClick={() => handlePokemonClick(pokemon, gameState.pokemonData, gameState.isMuted)}
                   >
                     <img src={pokemon.sprite} alt={pokemon.name} className="pokemon-sprite" />
                     <span>{pokemon.name}</span>
@@ -551,11 +482,11 @@ function App() {
                     </div>
                   </div>
                 ))}
-                {revealedPokemon.map((pokemon) => (
-                  <div 
-                    key={pokemon.name} 
+                {gameState.revealedPokemon.map((pokemon) => (
+                  <div
+                    key={pokemon.name}
                     className="pokemon-card uncaught"
-                    onClick={() => handlePokemonClick(pokemon, pokemonData, isMuted)}
+                    onClick={() => handlePokemonClick(pokemon, gameState.pokemonData, gameState.isMuted)}
                   >
                     <img src={pokemon.sprite} alt={pokemon.name} className="pokemon-sprite" />
                     <span>{pokemon.name}</span>
@@ -573,7 +504,7 @@ function App() {
       </div>
 
       <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
-        <button 
+        <button
           className="sidebar-toggle"
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -588,10 +519,10 @@ function App() {
           <div className="generation-selector">
             <label htmlFor="generation">Choose your region:</label>
             <div className="filter-row">
-              <select 
-                id="generation" 
+              <select
+                id="generation"
                 onChange={handleGenerationChange}
-                value={selectedGenerationIndex}
+                value={gameState.selectedGenerationIndex}
               >
                 {GENERATIONS.map((gen, index) => (
                   <option key={gen.name} value={index}>
@@ -599,19 +530,19 @@ function App() {
                   </option>
                 ))}
               </select>
-              <button 
-                className="randomize-filter" 
+              <button
+                className="randomize-filter"
                 onClick={randomizeGeneration}
                 disabled={getValidOptions('generation').length <= 1}
                 title={getValidOptions('generation').length <= 1 ? "No other valid options" : "Random generation"}
               >
                 🎲
               </button>
-              <button 
-                className="reset-filter" 
+              <button
+                className="reset-filter"
                 onClick={handleGenerationReset}
-                disabled={selectedGenerationIndex === 0}
-                title={selectedGenerationIndex === 0 ? "Already at default" : "Reset to All Generations"}
+                disabled={gameState.selectedGenerationIndex === 0}
+                title={gameState.selectedGenerationIndex === 0 ? "Already at default" : "Reset to All Generations"}
               >
                 ↺
               </button>
@@ -621,10 +552,10 @@ function App() {
           <div className="type-selector">
             <label htmlFor="type">Choose Pokemon type:</label>
             <div className="filter-row">
-              <select 
-                id="type" 
+              <select
+                id="type"
                 onChange={handleTypeChange}
-                value={selectedType}
+                value={gameState.selectedType}
               >
                 {POKEMON_TYPES.map(type => (
                   <option key={type} value={type}>
@@ -632,19 +563,19 @@ function App() {
                   </option>
                 ))}
               </select>
-              <button 
-                className="randomize-filter" 
+              <button
+                className="randomize-filter"
                 onClick={randomizeType}
                 disabled={getValidOptions('type').length <= 1}
                 title={getValidOptions('type').length <= 1 ? "No other valid options" : "Random type"}
               >
                 🎲
               </button>
-              <button 
-                className="reset-filter" 
+              <button
+                className="reset-filter"
                 onClick={handleTypeReset}
-                disabled={selectedType === POKEMON_TYPES[0]}
-                title={selectedType === POKEMON_TYPES[0] ? "Already at default" : "Reset to All Types"}
+                disabled={gameState.selectedType === POKEMON_TYPES[0]}
+                title={gameState.selectedType === POKEMON_TYPES[0] ? "Already at default" : "Reset to All Types"}
               >
                 ↺
               </button>
@@ -654,10 +585,10 @@ function App() {
           <div className="letter-selector">
             <label htmlFor="letter">First letter must be:</label>
             <div className="filter-row">
-              <select 
-                id="letter" 
+              <select
+                id="letter"
                 onChange={handleLetterChange}
-                value={selectedLetter}
+                value={gameState.selectedLetter}
               >
                 <option value="All">All Letters</option>
                 {Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ').map(letter => (
@@ -666,19 +597,19 @@ function App() {
                   </option>
                 ))}
               </select>
-              <button 
-                className="randomize-filter" 
+              <button
+                className="randomize-filter"
                 onClick={randomizeLetter}
                 disabled={getValidOptions('letter').length <= 1}
                 title={getValidOptions('letter').length <= 1 ? "No other valid options" : "Random letter"}
               >
                 🎲
               </button>
-              <button 
-                className="reset-filter" 
+              <button
+                className="reset-filter"
                 onClick={handleLetterReset}
-                disabled={selectedLetter === "All"}
-                title={selectedLetter === "All" ? "Already at default" : "Reset to All Letters"}
+                disabled={gameState.selectedLetter === "All"}
+                title={gameState.selectedLetter === "All" ? "Already at default" : "Reset to All Letters"}
               >
                 ↺
               </button>
@@ -689,25 +620,25 @@ function App() {
             <label>
               <input
                 type="checkbox"
-                checked={isEasyMode}
-                onChange={(e) => setIsEasyMode(e.target.checked)}
+                checked={gameState.isEasyMode}
+                onChange={(e) => gameState.setIsEasyMode(e.target.checked)}
               />
               Easy Mode (Accept close spellings)
             </label>
           </div>
 
-          <button 
+          <button
             className="randomize-button"
             onClick={handleRandomize}
             title="Randomly set all filters"
           >
             🎲 Randomize Filters
           </button>
-          <button 
+          <button
             className="reset-all-button"
             onClick={handleResetAllFilters}
-            disabled={selectedGenerationIndex === 0 && selectedType === POKEMON_TYPES[0] && selectedLetter === "All"}
-            title={selectedGenerationIndex === 0 && selectedType === POKEMON_TYPES[0] && selectedLetter === "All" ? 
+            disabled={gameState.selectedGenerationIndex === 0 && gameState.selectedType === POKEMON_TYPES[0] && gameState.selectedLetter === "All"}
+            title={gameState.selectedGenerationIndex === 0 && gameState.selectedType === POKEMON_TYPES[0] && gameState.selectedLetter === "All" ?
               "All filters are already at default values" : "Reset all filters to default values"}
           >
             ↺ Reset All Filters
@@ -715,10 +646,10 @@ function App() {
         </div>
       </div>
 
-      {confettiProps && (
+      {gameState.confettiProps && (
         <PokemonConfetti
-          spriteUrl={confettiProps.sprite}
-          inputPosition={confettiProps.position}
+          spriteUrl={gameState.confettiProps.sprite}
+          inputPosition={gameState.confettiProps.position}
         />
       )}
     </div>
