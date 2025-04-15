@@ -68,7 +68,7 @@ describe('useGameState', () => {
     expect(result.current.selectedType).toBe('Electric');
     expect(result.current.totalPokemon).toBeGreaterThan(0);
     expect(result.current.totalPokemon).toBeLessThan(GENERATIONS[0].total);
-    expect(result.current.pokemonData.every(pokemon => 
+    expect(result.current.filteredPokemon.every(pokemon => 
       pokemon.types.some(type => type.toLowerCase() === 'electric')
     )).toBe(true);
   });
@@ -87,7 +87,7 @@ describe('useGameState', () => {
     // Verify generation was changed and state was updated
     expect(result.current.selectedGenerationIndex).toBe(1);
     expect(result.current.selectedGeneration.name).toBe('Gen 1 (Kanto)');
-    expect(result.current.pokemonData.every(pokemon => 
+    expect(result.current.filteredPokemon.every(pokemon => 
       pokemon.id >= GENERATIONS[1].startId && pokemon.id <= GENERATIONS[1].endId
     )).toBe(true);
   });
@@ -105,7 +105,7 @@ describe('useGameState', () => {
 
     // Verify letter was changed and state was updated
     expect(result.current.selectedLetter).toBe("P");
-    expect(result.current.pokemonData.every(pokemon => 
+    expect(result.current.filteredPokemon.every(pokemon => 
       pokemon.name.toLowerCase().startsWith('p')
     )).toBe(true);
   });
@@ -126,14 +126,14 @@ describe('useGameState', () => {
     // Verify both filters were applied correctly
     expect(result.current.selectedGenerationIndex).toBe(1);
     expect(result.current.selectedLetter).toBe("P");
-    expect(result.current.pokemonData.every(pokemon => 
+    expect(result.current.filteredPokemon.every(pokemon => 
       pokemon.name.toLowerCase().startsWith('p') &&
       pokemon.id >= GENERATIONS[1].startId && 
       pokemon.id <= GENERATIONS[1].endId
     )).toBe(true);
 
     // Should include Pikachu but not Piplup (Gen 4)
-    const pokemonNames = result.current.pokemonData.map(p => p.name.toLowerCase());
+    const pokemonNames = result.current.filteredPokemon.map(p => p.name.toLowerCase());
     expect(pokemonNames).toContain('pikachu');
     expect(pokemonNames).not.toContain('piplup');
   });
@@ -352,7 +352,7 @@ describe('useGameState', () => {
     // Verify both filters were applied correctly
     expect(result.current.selectedGenerationIndex).toBe(1);
     expect(result.current.selectedType).toBe('Electric');
-    expect(result.current.pokemonData.every(pokemon => 
+    expect(result.current.filteredPokemon.every(pokemon => 
       // Should be in Gen 1 range
       pokemon.id >= GENERATIONS[1].startId && 
       pokemon.id <= GENERATIONS[1].endId &&
@@ -361,7 +361,7 @@ describe('useGameState', () => {
     )).toBe(true);
 
     // Should include Pikachu but not Electivire (Gen 4)
-    const pokemonNames = result.current.pokemonData.map(p => p.name.toLowerCase());
+    const pokemonNames = result.current.filteredPokemon.map(p => p.name.toLowerCase());
     expect(pokemonNames).toContain('pikachu');
     expect(pokemonNames).not.toContain('electivire');
 
@@ -580,14 +580,14 @@ describe('useGameState', () => {
 
     // No results state should be true as no Pokemon can match this combination
     expect(result.current.noResults).toBe(true);
-    expect(result.current.pokemonData).toHaveLength(0);
+    expect(result.current.filteredPokemon).toHaveLength(0);
 
     // Reset filters should clear no results state
     await act(async () => {
       await result.current.resetAllFilters();
     });
     expect(result.current.noResults).toBe(false);
-    expect(result.current.pokemonData.length).toBeGreaterThan(0);
+    expect(result.current.filteredPokemon.length).toBeGreaterThan(0);
 
     // Try another impossible combination
     await act(async () => {
@@ -598,13 +598,13 @@ describe('useGameState', () => {
       );
     });
     expect(result.current.noResults).toBe(true);
-    expect(result.current.pokemonData).toHaveLength(0);
+    expect(result.current.filteredPokemon).toHaveLength(0);
 
     // Changing back to valid filters should clear no results state
     await act(async () => {
       await result.current.resetAllFilters();
     });
     expect(result.current.noResults).toBe(false);
-    expect(result.current.pokemonData.length).toBeGreaterThan(0);
+    expect(result.current.filteredPokemon.length).toBeGreaterThan(0);
   });
 });

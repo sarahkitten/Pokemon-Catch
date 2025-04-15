@@ -94,21 +94,11 @@ export function FilterSidebar({
             </select>
             <button
               className="randomize-filter"
-              onClick={() => {
-                const validGenerations = gameState.getValidOptions('generation') as number[];
-                if (validGenerations.length <= 1) return;
-
-                let randomIndex;
-                do {
-                  randomIndex = validGenerations[Math.floor(Math.random() * validGenerations.length)];
-                } while (randomIndex === gameState.selectedGenerationIndex && validGenerations.length > 1);
-
-                handleFilterChange(
-                  { target: { value: randomIndex.toString() } } as ChangeEvent<HTMLSelectElement>,
-                  'generation',
-                  gameState.changeGeneration
-                );
-              }}
+              onClick={() => handleFilterChange(
+                { target: { value: "" } } as ChangeEvent<HTMLSelectElement>,
+                'generation', 
+                gameState.randomizeGeneration
+              )}
               disabled={gameState.getValidOptions('generation').length <= 1}
               title={gameState.getValidOptions('generation').length <= 1 ? "No other valid options" : "Random generation"}
             >
@@ -141,21 +131,11 @@ export function FilterSidebar({
             </select>
             <button
               className="randomize-filter"
-              onClick={() => {
-                const validTypes = gameState.getValidOptions('type') as string[];
-                if (validTypes.length <= 1) return;
-
-                let randomType;
-                do {
-                  randomType = validTypes[Math.floor(Math.random() * validTypes.length)];
-                } while (randomType === gameState.selectedType && validTypes.length > 1);
-
-                handleFilterChange(
-                  { target: { value: randomType } } as ChangeEvent<HTMLSelectElement>,
-                  'type',
-                  gameState.changeType
-                );
-              }}
+              onClick={() => handleFilterChange(
+                { target: { value: "" } } as ChangeEvent<HTMLSelectElement>,
+                'type',
+                gameState.randomizeType
+              )}
               disabled={gameState.getValidOptions('type').length <= 1}
               title={gameState.getValidOptions('type').length <= 1 ? "No other valid options" : "Random type"}
             >
@@ -189,21 +169,11 @@ export function FilterSidebar({
             </select>
             <button
               className="randomize-filter"
-              onClick={() => {
-                const validLetters = gameState.getValidOptions('letter') as string[];
-                if (validLetters.length <= 1) return;
-
-                let randomLetter;
-                do {
-                  randomLetter = validLetters[Math.floor(Math.random() * validLetters.length)];
-                } while (randomLetter === gameState.selectedLetter && validLetters.length > 1);
-
-                handleFilterChange(
-                  { target: { value: randomLetter } } as ChangeEvent<HTMLSelectElement>,
-                  'letter',
-                  gameState.changeLetter
-                );
-              }}
+              onClick={() => handleFilterChange(
+                { target: { value: "" } } as ChangeEvent<HTMLSelectElement>,
+                'letter',
+                gameState.randomizeLetter
+              )}
               disabled={gameState.getValidOptions('letter').length <= 1}
               title={gameState.getValidOptions('letter').length <= 1 ? "No other valid options" : "Random letter"}
             >

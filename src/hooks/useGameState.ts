@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import type { Pokemon, CaughtPokemon, PokemonData } from '../types';
 import type { Generation } from '../constants';
 import { GENERATIONS, POKEMON_TYPES, UI_CONSTANTS } from '../constants';
@@ -16,7 +16,7 @@ export interface GameState {
   totalPokemon: number;
   isGivingUp: boolean;
   revealedPokemon: Pokemon[];
-  pokemonData: PokemonData[];
+  filteredPokemon: PokemonData[];
   isFetchingData: boolean;
   isMuted: boolean;
   isEasyMode: boolean;
@@ -33,7 +33,7 @@ export interface GameState {
   setTotalPokemon: (total: number) => void;
   setIsGivingUp: (value: boolean) => void;
   setRevealedPokemon: (pokemon: Pokemon[]) => void;
-  setPokemonData: (data: PokemonData[]) => void;
+  setFilteredPokemon: (data: PokemonData[]) => void;
   setIsFetchingData: (value: boolean) => void;
   setIsMuted: (value: boolean) => void;
   setIsEasyMode: (value: boolean) => void;
@@ -68,7 +68,7 @@ export function useGameState(): GameState {
   const [totalPokemon, setTotalPokemon] = useState<number>(GENERATIONS[0].total);
   const [isGivingUp, setIsGivingUp] = useState(false);
   const [revealedPokemon, setRevealedPokemon] = useState<Pokemon[]>([]);
-  const [pokemonData, setPokemonData] = useState<PokemonData[]>([]);
+  const [filteredPokemon, setFilteredPokemon] = useState<PokemonData[]>([]);
   const [isFetchingData, setIsFetchingData] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isEasyMode, setIsEasyMode] = useState(false);
@@ -84,8 +84,7 @@ export function useGameState(): GameState {
     setRevealedPokemon([]);
   };
 
-  const updateTotalCount = async (generation: Generation, type: string, letter: string = selectedLetter) => {
-    
+  const updateTotalCount = useCallback(async (generation: Generation, type: string, letter: string = selectedLetter) => {
     setIsTotalLoading(true);
     setIsFetchingData(true);
     setNoResults(false);
@@ -103,7 +102,7 @@ export function useGameState(): GameState {
       });
       
       setTotalPokemon(filteredPokemon.length);
-      setPokemonData(filteredPokemon);
+      setFilteredPokemon(filteredPokemon);
       
       if (filteredPokemon.length === 0) {
         setNoResults(true);
@@ -114,7 +113,7 @@ export function useGameState(): GameState {
       setIsTotalLoading(false);
       setIsFetchingData(false);
     }
-  };
+  }, [selectedLetter]);
 
   const changeGeneration = async (newIndex: number) => {
     const newGen = GENERATIONS[newIndex];
@@ -166,16 +165,16 @@ export function useGameState(): GameState {
       case 'generation':
         return GENERATIONS.map((_, index) => index).filter(genIndex => {
           const gen = GENERATIONS[genIndex];
-          return isValidCombination(pokemonData, gen, selectedType, selectedLetter);
+          return isValidCombination(POKEMON_DATA, gen, selectedType, selectedLetter);
         });
       case 'type':
         return POKEMON_TYPES.filter(type =>
-          isValidCombination(pokemonData, selectedGeneration, type, selectedLetter)
+          isValidCombination(POKEMON_DATA, selectedGeneration, type, selectedLetter)
         );
       case 'letter': {
         const letters = ["All", ...Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ')];
         return letters.filter(letter =>
-          isValidCombination(pokemonData, selectedGeneration, selectedType, letter)
+          isValidCombination(POKEMON_DATA, selectedGeneration, selectedType, letter)
         );
       }
       default:
@@ -184,10 +183,16 @@ export function useGameState(): GameState {
   };
 
   const randomizeGeneration = async () => {
+    console.log('Randomizing generation...');
     const validOptions = getValidOptions('generation') as number[];
+    console.log('Valid generation options:', validOptions);
     const newGenIndex = getRandomValue(validOptions, selectedGenerationIndex);
+    console.log('Selected new generation index:', newGenIndex);
     if (newGenIndex !== selectedGenerationIndex) {
+      console.log('Changing generation to new index:', newGenIndex);
       await changeGeneration(newGenIndex);
+    } else {
+      console.log('New generation index is the same as the current one. No change needed.');
     }
   };
 
@@ -209,7 +214,7 @@ export function useGameState(): GameState {
 
   const randomizeAllFilters = async () => {
     const result = findRandomValidCombination(
-      pokemonData,
+      POKEMON_DATA,
       GENERATIONS,
       POKEMON_TYPES,
       UI_CONSTANTS.MAX_FILTER_ATTEMPTS
@@ -242,7 +247,7 @@ export function useGameState(): GameState {
     totalPokemon,
     isGivingUp,
     revealedPokemon,
-    pokemonData,
+    filteredPokemon,
     isFetchingData,
     isMuted,
     isEasyMode,
@@ -259,7 +264,7 @@ export function useGameState(): GameState {
     setTotalPokemon,
     setIsGivingUp,
     setRevealedPokemon,
-    setPokemonData,
+    setFilteredPokemon,
     setIsFetchingData,
     setIsMuted,
     setIsEasyMode,

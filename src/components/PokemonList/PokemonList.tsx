@@ -4,12 +4,12 @@ import { handlePokemonClick } from '../../utils/pokemonUtils';
 interface PokemonListProps {
   caughtPokemon: CaughtPokemon[];
   revealedPokemon: Pokemon[];
-  pokemonData: PokemonData[];
+  filteredPokemon: PokemonData[];
   isMuted: boolean;
   totalPokemon: number;
 }
 
-export function PokemonList({ caughtPokemon, revealedPokemon, pokemonData, isMuted, totalPokemon }: PokemonListProps) {
+export function PokemonList({ caughtPokemon, revealedPokemon, filteredPokemon: pokemonData, isMuted, totalPokemon }: PokemonListProps) {
   const shouldShow = caughtPokemon.length > 0 || revealedPokemon.length > 0;
   if (!shouldShow) return null;
 

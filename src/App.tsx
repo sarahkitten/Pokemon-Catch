@@ -19,7 +19,7 @@ function App() {
 
   useEffect(() => {
     gameState.updateTotalCount(gameState.selectedGeneration, gameState.selectedType);
-  }, [gameState.selectedGeneration, gameState.selectedType, gameState.updateTotalCount]);
+  }, [gameState.selectedGeneration, gameState.selectedType]);
 
   useEffect(() => {
     document.documentElement.style.setProperty('--small-screen-breakpoint', `${UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT}px`);
@@ -56,13 +56,13 @@ function App() {
     gameState.setError('');
 
     try {
-      let pokemon = gameState.pokemonData.find(p =>
+      let pokemon = gameState.filteredPokemon.find(p =>
         p.name.toLowerCase() === pokemonName.toLowerCase() ||
         p.forms.some(f => f.name.toLowerCase() === pokemonName.toLowerCase())
       );
 
       if (!pokemon && gameState.isEasyMode) {
-        pokemon = findClosestPokemon(pokemonName, gameState.pokemonData);
+        pokemon = findClosestPokemon(pokemonName, gameState.filteredPokemon);
         if (pokemon) {
           console.log('Accepted fuzzy match:', pokemon.name);
           gameState.setError(`Accepted "${gameState.inputValue}" as "${pokemon.name}" (Easy Mode)`);
@@ -102,7 +102,7 @@ function App() {
       }
 
       const existingPokemon = gameState.caughtPokemon.find(p => {
-        const pokemonInData = gameState.pokemonData.find(pd =>
+        const pokemonInData = gameState.filteredPokemon.find(pd =>
           pd.forms.some(f => f.name.toLowerCase() === p.name.toLowerCase())
         );
         return pokemonInData?.name === pokemon.name;
@@ -184,7 +184,7 @@ function App() {
     const revealed: Pokemon[] = [];
 
     try {
-      const revealedPokemonData = gameState.pokemonData.filter(pokemon =>
+      const revealedPokemonData = gameState.filteredPokemon.filter(pokemon =>
         !gameState.caughtPokemon.some(caught =>
           caught.name === pokemon.name ||
           pokemon.forms.some(f => f.name === caught.name)
@@ -226,7 +226,7 @@ function App() {
           <PokemonList
             caughtPokemon={gameState.caughtPokemon}
             revealedPokemon={gameState.revealedPokemon}
-            pokemonData={gameState.pokemonData}
+            filteredPokemon={gameState.filteredPokemon}
             isMuted={gameState.isMuted}
             totalPokemon={gameState.totalPokemon}
           />
