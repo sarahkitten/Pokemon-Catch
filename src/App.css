@@ -6,12 +6,6 @@
   background-color: #74c6e7;
 }
 
-:root {
-  /* This is a fallback value that matches UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT.
-     The actual value is set dynamically from constants.ts when the app loads */
-  --small-screen-breakpoint: 700px;
-}
-
 .app {
   display: flex;
   flex-direction: row;
@@ -107,7 +101,8 @@
   margin: 0;
 }
 
-@media (max-width: var(--small-screen-breakpoint)) {
+/* Keep this the same as UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT */
+@media (max-width: 700px) {
   .app {
     flex-direction: column;
   }
