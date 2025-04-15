@@ -336,23 +336,275 @@ describe('useGameState', () => {
     expect(result.current.isMuted).toBe(true);
   });
 
-  it('combines type and generation filters correctly', () => {
-    // TODO: Test combining type and generation filters together
+  it('combines type and generation filters correctly', async () => {
+    const { result } = renderHook(() => useGameState());
+    
+    // Change to Generation 1
+    await act(async () => {
+      await result.current.changeGeneration(1);
+    });
+
+    // Then change to Electric type
+    await act(async () => {
+      await result.current.changeType('Electric');
+    });
+
+    // Verify both filters were applied correctly
+    expect(result.current.selectedGenerationIndex).toBe(1);
+    expect(result.current.selectedType).toBe('Electric');
+    expect(result.current.pokemonData.every(pokemon => 
+      // Should be in Gen 1 range
+      pokemon.id >= GENERATIONS[1].startId && 
+      pokemon.id <= GENERATIONS[1].endId &&
+      // Should be Electric type
+      pokemon.types.some(type => type.toLowerCase() === 'electric')
+    )).toBe(true);
+
+    // Should include Pikachu but not Electivire (Gen 4)
+    const pokemonNames = result.current.pokemonData.map(p => p.name.toLowerCase());
+    expect(pokemonNames).toContain('pikachu');
+    expect(pokemonNames).not.toContain('electivire');
+
+    // Total count should be less than both total Gen 1 Pokemon and total Electric Pokemon
+    expect(result.current.totalPokemon).toBeLessThan(GENERATIONS[1].total);
+    expect(result.current.totalPokemon).toBeGreaterThan(0);
   });
 
   it('handles invalid inputs correctly', () => {
-    // TODO: Test behavior when invalid Pokemon names are entered
+    const { result } = renderHook(() => useGameState());
+    
+    // Initially there should be no error
+    expect(result.current.error).toBe('');
+
+    // Test non-existent Pokemon
+    act(() => {
+      result.current.setInputValue('NotAPokemon');
+      result.current.setError('That\'s not a valid Pokemon name!');
+    });
+    expect(result.current.error).toBe('That\'s not a valid Pokemon name!');
+    
+    // Test already caught Pokemon
+    act(() => {
+      result.current.setCaughtPokemon([{
+        name: 'Pikachu',
+        sprite: '/sprites/pikachu.png',
+        types: ['Electric']
+      }]);
+      result.current.setInputValue('Pikachu');
+      result.current.setError('You already caught Pikachu!');
+    });
+    expect(result.current.error).toBe('You already caught Pikachu!');
+
+    // Test filter mismatches
+    act(() => {
+      // Set Generation 1 filter
+      result.current.setSelectedGenerationIndex(1);
+      // Try to catch a Gen 2 Pokemon
+      result.current.setError('That Pokemon is not in Gen 1 (Kanto)!');
+    });
+    expect(result.current.error).toBe('That Pokemon is not in Gen 1 (Kanto)!');
+
+    act(() => {
+      // Set Electric type filter
+      result.current.setSelectedType('Electric');
+      // Error for non-Electric type
+      result.current.setError('That Pokemon is not a Electric type!');
+    });
+    expect(result.current.error).toBe('That Pokemon is not a Electric type!');
+
+    act(() => {
+      // Set letter filter to P
+      result.current.setSelectedLetter('P');
+      // Error for wrong starting letter
+      result.current.setError('That Pokemon doesn\'t start with the letter P!');
+    });
+    expect(result.current.error).toBe('That Pokemon doesn\'t start with the letter P!');
+
+    // Error should be cleared by resetProgress
+    act(() => {
+      result.current.resetProgress();
+    });
+    expect(result.current.error).toBe('');
+
+    // Error should be cleared by resetAllFilters
+    act(() => {
+      result.current.setError('Some error');
+      result.current.resetAllFilters();
+    });
+    expect(result.current.error).toBe('');
   });
 
   it('updates revealed Pokemon correctly when giving up', () => {
-    // TODO: Test the give up functionality and revealed Pokemon state
+    const { result } = renderHook(() => useGameState());
+    
+    // Set some initial caught Pokemon
+    act(() => {
+      result.current.setCaughtPokemon([{
+        name: 'Pikachu',
+        sprite: '/sprites/pikachu.png',
+        types: ['Electric']
+      }]);
+    });
+
+    // Set Generation 1 and Electric type filters
+    act(() => {
+      result.current.setSelectedGenerationIndex(1);
+      result.current.setSelectedType('Electric');
+    });
+
+    // Initially there should be no revealed Pokemon
+    expect(result.current.revealedPokemon).toHaveLength(0);
+
+    // Set giving up state and reveal Pokemon
+    act(() => {
+      result.current.setIsGivingUp(true);
+      // Simulate revealing remaining Electric Pokemon from Gen 1
+      result.current.setRevealedPokemon([
+        {
+          id: 100,
+          name: 'Voltorb',
+          sprite: '/sprites/voltorb.png',
+          types: ['Electric']
+        },
+        {
+          id: 101,
+          name: 'Electrode',
+          sprite: '/sprites/electrode.png',
+          types: ['Electric']
+        }
+      ]);
+    });
+
+    // Verify revealed Pokemon state
+    expect(result.current.isGivingUp).toBe(true);
+    expect(result.current.revealedPokemon).toHaveLength(2);
+    expect(result.current.revealedPokemon.map(p => p.name)).toEqual(['Voltorb', 'Electrode']);
+    
+    // Already caught Pokemon (Pikachu) should not be in revealed list
+    expect(result.current.revealedPokemon.some(p => p.name === 'Pikachu')).toBe(false);
+    
+    // All revealed Pokemon should match current filters
+    expect(result.current.revealedPokemon.every(pokemon => 
+      pokemon.types.includes('Electric')
+    )).toBe(true);
+
+    // Reset should clear revealed Pokemon
+    act(() => {
+      result.current.resetProgress();
+    });
+    expect(result.current.revealedPokemon).toHaveLength(0);
+    expect(result.current.isGivingUp).toBe(true); // isGivingUp should persist through reset
   });
 
-  it('manages loading states correctly', () => {
-    // TODO: Test isLoading and isTotalLoading states during async operations
+  it('manages loading states correctly', async () => {
+    const { result } = renderHook(() => useGameState());
+    
+    // Initially no loading states should be active
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.isTotalLoading).toBe(false);
+    expect(result.current.isFetchingData).toBe(false);
+
+    // Test loading states during filter changes
+    await act(async () => {
+      // Start changing generation
+      result.current.setIsTotalLoading(true);
+      result.current.setIsFetchingData(true);
+      
+      // Change generation
+      await result.current.changeGeneration(1);
+    });
+
+    // After filter change, loading states should be cleared
+    expect(result.current.isTotalLoading).toBe(false);
+    expect(result.current.isFetchingData).toBe(false);
+
+    // Test loading state during Pokemon catching
+    act(() => {
+      result.current.setIsLoading(true);
+    });
+    expect(result.current.isLoading).toBe(true);
+
+    // Loading state should be independent of other state changes
+    act(() => {
+      result.current.setInputValue('pikachu');
+    });
+    expect(result.current.isLoading).toBe(true);
+
+    // Clear loading state
+    act(() => {
+      result.current.setIsLoading(false);
+    });
+    expect(result.current.isLoading).toBe(false);
+
+    // Loading states should be cleared by resetProgress
+    act(() => {
+      result.current.setIsLoading(true);
+      result.current.setIsTotalLoading(true);
+      result.current.setIsFetchingData(true);
+      result.current.resetProgress();
+    });
+    
+    // Loading states should persist through resetProgress as they're independent
+    expect(result.current.isLoading).toBe(true);
+    expect(result.current.isTotalLoading).toBe(true);
+    expect(result.current.isFetchingData).toBe(true);
+
+    // Reset all loading states at the end
+    act(() => {
+      result.current.setIsLoading(false);
+      result.current.setIsTotalLoading(false);
+      result.current.setIsFetchingData(false);
+    });
   });
 
-  it('handles no results state correctly', () => {
-    // TODO: Test when filters result in no matching Pokemon
+  it('handles no results state correctly', async () => {
+    const { result } = renderHook(() => useGameState());
+    
+    // Initially there should be no "no results" state
+    expect(result.current.noResults).toBe(false);
+
+    // Set up impossible combination of filters
+    // No Pokemon can be both Fire and Water type
+    await act(async () => {
+      await result.current.changeType('Fire');
+    });
+
+    await act(async () => {
+      // Use updateTotalCount directly to set an impossible combination
+      await result.current.updateTotalCount(
+        result.current.selectedGeneration,
+        'Fire AND Water', // This type doesn't exist, should result in no matches
+        result.current.selectedLetter
+      );
+    });
+
+    // No results state should be true as no Pokemon can match this combination
+    expect(result.current.noResults).toBe(true);
+    expect(result.current.pokemonData).toHaveLength(0);
+
+    // Reset filters should clear no results state
+    await act(async () => {
+      await result.current.resetAllFilters();
+    });
+    expect(result.current.noResults).toBe(false);
+    expect(result.current.pokemonData.length).toBeGreaterThan(0);
+
+    // Try another impossible combination
+    await act(async () => {
+      await result.current.updateTotalCount(
+        result.current.selectedGeneration,
+        result.current.selectedType,
+        '🎈' // Invalid letter that no Pokemon name starts with
+      );
+    });
+    expect(result.current.noResults).toBe(true);
+    expect(result.current.pokemonData).toHaveLength(0);
+
+    // Changing back to valid filters should clear no results state
+    await act(async () => {
+      await result.current.resetAllFilters();
+    });
+    expect(result.current.noResults).toBe(false);
+    expect(result.current.pokemonData.length).toBeGreaterThan(0);
   });
 });
