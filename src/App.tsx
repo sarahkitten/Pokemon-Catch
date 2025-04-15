@@ -18,10 +18,6 @@ function App() {
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT);
 
   useEffect(() => {
-    gameState.updateTotalCount(gameState.selectedGeneration, gameState.selectedType);
-  }, [gameState.selectedGeneration, gameState.selectedType]);
-
-  useEffect(() => {
     document.documentElement.style.setProperty('--small-screen-breakpoint', `${UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT}px`);
 
     const handleResize = () => {
