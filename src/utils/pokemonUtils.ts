@@ -9,9 +9,9 @@ export async function playPokemonCry(pokemonId: number, isMuted: boolean) {
   try {
     const cryUrl = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${pokemonId}.ogg`;
     const audio = new Audio(cryUrl);
-    audio.play().catch(err => console.log('Error playing cry:', err));
+    audio.play().catch(err => console.error('Error playing cry:', err));
   } catch (err) {
-    console.log('Error playing cry:', err);
+    console.error('Error playing cry:', err);
   }
 }
 
@@ -48,12 +48,10 @@ export async function fetchFormSprite(pokemonForm: string): Promise<string> {
     // Try to load from local sprites first
     const localSprite = await import(`../data/sprites/${pokemonForm}.png`);
     if (localSprite) {
-      console.log(`Loaded local sprite for ${pokemonForm}`);
       return localSprite.default;
     }
   } catch {
     // If local sprite doesn't exist, fetch from API as fallback
-    console.log(`Local sprite not found for ${pokemonForm}, fetching from API...`);
     try {
       const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonForm}`);
       if (response.ok) {

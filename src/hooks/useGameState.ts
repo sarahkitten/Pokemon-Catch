@@ -183,16 +183,10 @@ export function useGameState(): GameState {
   };
 
   const randomizeGeneration = async () => {
-    console.log('Randomizing generation...');
     const validOptions = getValidOptions('generation') as number[];
-    console.log('Valid generation options:', validOptions);
     const newGenIndex = getRandomValue(validOptions, selectedGenerationIndex);
-    console.log('Selected new generation index:', newGenIndex);
     if (newGenIndex !== selectedGenerationIndex) {
-      console.log('Changing generation to new index:', newGenIndex);
       await changeGeneration(newGenIndex);
-    } else {
-      console.log('New generation index is the same as the current one. No change needed.');
     }
   };
 

@@ -52,7 +52,6 @@ function App() {
     const pokemonName = gameState.inputValue.trim().toLowerCase().replace(/\s+/g, '-');
 
     gameState.setIsLoading(true);
-    console.log('Error cleared by start of handleSubmit');
     gameState.setError('');
 
     try {
@@ -64,7 +63,6 @@ function App() {
       if (!pokemon && gameState.isEasyMode) {
         pokemon = findClosestPokemon(pokemonName, gameState.filteredPokemon);
         if (pokemon) {
-          console.log('Accepted fuzzy match:', pokemon.name);
           gameState.setError(`Accepted "${gameState.inputValue}" as "${pokemon.name}" (Easy Mode)`);
         }
       }
@@ -178,7 +176,6 @@ function App() {
     if (!confirmGiveUp) return;
 
     gameState.setIsGivingUp(true);
-    console.log('Error cleared by handleGiveUp()');
     gameState.setError('');
     gameState.setInputValue('');
     const revealed: Pokemon[] = [];
