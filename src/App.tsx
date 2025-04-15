@@ -76,10 +76,10 @@ function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleFilterChange = async (
+  const handleFilterChange = async <T extends string | number>(
     event: React.ChangeEvent<HTMLSelectElement>,
     filterType: 'generation' | 'type' | 'letter',
-    changeFunction: (value: string | number) => Promise<void>
+    changeFunction: (value: T) => Promise<void>
   ) => {
     const value = filterType === 'generation' ? parseInt(event.target.value) : event.target.value;
     
@@ -96,17 +96,17 @@ function App() {
       if (!confirmChange) return;
     }
     
-    await changeFunction(value);
+    await changeFunction(value as T);
   };
 
   const handleGenerationChange = (event: React.ChangeEvent<HTMLSelectElement>) => 
-    handleFilterChange(event, 'generation', changeGeneration);
+    handleFilterChange<number>(event, 'generation', changeGeneration);
 
   const handleTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => 
-    handleFilterChange(event, 'type', changeType);
+    handleFilterChange<string>(event, 'type', changeType);
 
   const handleLetterChange = (event: React.ChangeEvent<HTMLSelectElement>) => 
-    handleFilterChange(event, 'letter', changeLetter);
+    handleFilterChange<string>(event, 'letter', changeLetter);
 
   const handleReset = async (
     filterType: 'generation' | 'type' | 'letter' | 'all',
