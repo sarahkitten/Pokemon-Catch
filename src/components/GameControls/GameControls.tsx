@@ -15,7 +15,7 @@ export function GameControls({ gameState, onStartOver, onGiveUp }: GameControlsP
       {!gameState.noResults && (
         <p className={`counter ${gameState.caughtPokemon.length === gameState.totalPokemon ? 'success' : ''}`}>
           {gameState.isTotalLoading ? (
-            <span className="loading-dots">
+            <span className="loading-dots" role="status" aria-label="Loading">
               <span>.</span><span>.</span><span>.</span>
             </span>
           ) : gameState.caughtPokemon.length === gameState.totalPokemon ? (
