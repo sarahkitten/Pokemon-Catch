@@ -68,7 +68,7 @@ export function useGameState(): GameState {
   const [totalPokemon, setTotalPokemon] = useState<number>(GENERATIONS[0].total);
   const [isGivingUp, setIsGivingUp] = useState(false);
   const [revealedPokemon, setRevealedPokemon] = useState<Pokemon[]>([]);
-  const [filteredPokemon, setFilteredPokemon] = useState<PokemonData[]>([]);
+  const [filteredPokemon, setFilteredPokemon] = useState<PokemonData[]>(POKEMON_DATA);
   const [isFetchingData, setIsFetchingData] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isEasyMode, setIsEasyMode] = useState(false);
