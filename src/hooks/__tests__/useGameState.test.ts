@@ -673,7 +673,7 @@ describe('useGameState', () => {
     )).toBe(true);
     
     // Test invalid filter type
-    const invalidOptions = result.current.getValidOptions('generation' as 'generation' | 'type' | 'letter');
+    const invalidOptions = result.current.getValidOptions('invalid-type' as 'generation' | 'type' | 'letter');
     expect(invalidOptions).toEqual([]);
     
     // Test options with restrictive filters
