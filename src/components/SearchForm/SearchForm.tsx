@@ -1,5 +1,6 @@
-import { type FormEvent } from 'react';
+import React, { type FormEvent } from 'react';
 import type { GameState } from '../../hooks/useGameState';
+import './SearchForm.css';
 
 interface SearchFormProps {
   gameState: GameState;

@@ -1,6 +1,7 @@
 import { type ChangeEvent } from 'react';
 import type { GameState } from '../../hooks/useGameState';
 import { GENERATIONS, POKEMON_TYPES } from '../../constants';
+import './FilterSidebar.css';
 
 interface FilterSidebarProps {
   gameState: GameState;

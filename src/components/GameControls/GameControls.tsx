@@ -1,4 +1,5 @@
 import type { GameState } from '../../hooks/useGameState';
+import './GameControls.css';
 
 interface GameControlsProps {
   gameState: GameState;

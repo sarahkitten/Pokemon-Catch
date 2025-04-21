@@ -1,5 +1,6 @@
 import type { Pokemon, CaughtPokemon, PokemonData } from '../../types';
 import { handlePokemonClick } from '../../utils/pokemonUtils';
+import './PokemonList.css';
 
 interface PokemonListProps {
   caughtPokemon: CaughtPokemon[];
