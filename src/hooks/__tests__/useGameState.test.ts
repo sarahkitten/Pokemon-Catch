@@ -607,4 +607,86 @@ describe('useGameState', () => {
     expect(result.current.noResults).toBe(false);
     expect(result.current.filteredPokemon.length).toBeGreaterThan(0);
   });
+
+  it('randomization functions work correctly', async () => {
+    const { result } = renderHook(() => useGameState());
+    
+    // Test randomizeGeneration
+    await act(async () => {
+      await result.current.randomizeGeneration();
+    });
+    expect(result.current.selectedGenerationIndex).toBeGreaterThanOrEqual(0);
+    expect(result.current.selectedGenerationIndex).toBeLessThan(GENERATIONS.length);
+    
+    // Test randomizeType
+    await act(async () => {
+      await result.current.randomizeType();
+    });
+    expect(POKEMON_TYPES).toContain(result.current.selectedType);
+    
+    // Test randomizeLetter
+    await act(async () => {
+      await result.current.randomizeLetter();
+    });
+    expect(result.current.selectedLetter).toMatch(/^[A-Z]$|^All$/);
+    
+    // Test randomizeAllFilters
+    await act(async () => {
+      await result.current.randomizeAllFilters();
+    });
+    // Verify that the resulting combination is valid
+    const validGenerations = result.current.getValidOptions('generation');
+    const validTypes = result.current.getValidOptions('type');
+    const validLetters = result.current.getValidOptions('letter');
+    
+    expect(validGenerations).toContain(result.current.selectedGenerationIndex);
+    expect(validTypes).toContain(result.current.selectedType);
+    expect(validLetters).toContain(result.current.selectedLetter);
+  });
+
+  it('getValidOptions returns correct options for each filter type', async () => {
+    const { result } = renderHook(() => useGameState());
+    
+    // Test generation options
+    const generationOptions = result.current.getValidOptions('generation');
+    expect(generationOptions).toBeInstanceOf(Array);
+    expect(generationOptions.length).toBeGreaterThan(0);
+    expect(generationOptions.every(index => 
+      typeof index === 'number' && index >= 0 && index < GENERATIONS.length
+    )).toBe(true);
+    
+    // Test type options
+    const typeOptions = result.current.getValidOptions('type');
+    expect(typeOptions).toBeInstanceOf(Array);
+    expect(typeOptions.length).toBeGreaterThan(0);
+    expect(typeOptions.every(type => 
+      POKEMON_TYPES.includes(type as string)
+    )).toBe(true);
+    
+    // Test letter options
+    const letterOptions = result.current.getValidOptions('letter');
+    expect(letterOptions).toBeInstanceOf(Array);
+    expect(letterOptions.length).toBeGreaterThan(0);
+    expect(letterOptions[0]).toBe('All');
+    expect(letterOptions.every(letter => 
+      letter === 'All' || /^[A-Z]$/.test(letter as string)
+    )).toBe(true);
+    
+    // Test invalid filter type
+    const invalidOptions = result.current.getValidOptions('generation' as 'generation' | 'type' | 'letter');
+    expect(invalidOptions).toEqual([]);
+    
+    // Test options with restrictive filters
+    await act(async () => {
+      await result.current.changeGeneration(1); // Gen 1
+      await result.current.changeType('Electric'); // Electric type
+    });
+    
+    const filteredLetterOptions = result.current.getValidOptions('letter');
+    // Should only include letters that start Pokemon names in Gen 1 Electric types
+    expect(filteredLetterOptions).toContain('P'); // For Pikachu
+    expect(filteredLetterOptions).toContain('E'); // For Electrode
+    expect(filteredLetterOptions).toContain('V'); // For Voltorb
+    expect(filteredLetterOptions).not.toContain('X'); // No Gen 1 Electric Pokemon starts with X
+  });
 });
