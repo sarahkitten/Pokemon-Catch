@@ -51,5 +51,12 @@ export default tseslint.config(
         version: 'detect'
       }
     }
+  },
+  // Add exception for script files
+  {
+    files: ['scripts/**/*.{ts,tsx}'],
+    rules: {
+      'no-console': 'off' // Allow console statements in script files
+    }
   }
 )
