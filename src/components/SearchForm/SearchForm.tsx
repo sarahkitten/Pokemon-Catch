@@ -21,7 +21,7 @@ export function SearchForm({ gameState, onSubmit, inputRef }: SearchFormProps) {
             gameState.isFetchingData
               ? "Loading Pokemon data..."
               : gameState.revealedPokemon.length > 0
-              ? "Click 'Start Over' to catch more Pokemon"
+              ? "Nice job!"
               : "Enter a Pokemon name"
           }
           disabled={gameState.isLoading || gameState.revealedPokemon.length > 0 || gameState.isFetchingData}
