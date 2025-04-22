@@ -10,16 +10,27 @@ A fun and interactive web application where you can catch Pokemon by guessing th
 - 🎯 Type Pokemon names to catch them
 - 🎉 Visual feedback with confetti animations
 - 📊 Progress tracking
+- 🌈 Collapsible filter sidebar with:
+  - Region selection (by generation)
+  - Pokemon type filtering
+  - First letter filtering
+  - Randomize individual filters
+  - Reset filters to default
+  - Easy mode for spelling
 - 🎨 Responsive design
-- 🌈 Colorful UI with Pokemon-themed styling
 - 🏆 Completion celebration when all Pokemon are caught
 
 ## How to Play
 
 1. Type the name of a Pokemon you want to catch
 2. If the name is correct, the Pokemon will be added to your collection
-3. Try to catch all Pokemon to complete the game!
-4. You can give up at any time to see the remaining Pokemon
+3. Use the sidebar filters to:
+   - Focus on specific regions/generations
+   - Filter by Pokemon type
+   - Filter by the first letter of names
+   - Enable easy mode for more forgiving spelling
+4. Try to catch all Pokemon to complete the game!
+5. You can give up at any time to see the remaining Pokemon
 
 ## Technologies Used
 
