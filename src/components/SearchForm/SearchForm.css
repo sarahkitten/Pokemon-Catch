@@ -13,10 +13,10 @@ form {
 }
 
 input {
-  padding: 0.2em 1.2em 0;
+  padding: 0.5em 1.2em;
   min-height: 3.5em;
   font-size: clamp(0.7em, 1.8vw, 0.9em);
-  line-height: 3.5em;
+  line-height: 2.5em;
   border-radius: 999px;
   border: none;
   width: 100%;
@@ -26,9 +26,10 @@ input {
   box-sizing: border-box;
 }
 
-
 input::placeholder {
-  padding: 0.3em 1.2em 0;
+  color: #666;
+  line-height: inherit;
+  padding-top: 0.3em;
 }
 
 input:focus {

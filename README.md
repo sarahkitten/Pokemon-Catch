@@ -1,36 +1,36 @@
-# Pokemon Catch Game
+# Pokémon Catch Game
 
-A fun and interactive web application where you can catch Pokemon by guessing their names! Test your Pokemon knowledge and try to catch them all.
+A fun and interactive web application where you can catch Pokémon by guessing their names! Test your Pokémon knowledge and try to catch them all.
 
 [![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen)](https://sarahkitten.github.io/pokemon-app)
 
 ## Features
 
-- 🎮 Interactive Pokemon catching game
-- 🎯 Type Pokemon names to catch them
+- 🎮 Interactive Pokémon catching game
+- 🎯 Type Pokémon names to catch them
 - 🎉 Visual feedback with confetti animations
 - 📊 Progress tracking
 - 🌈 Collapsible filter sidebar with:
   - Region selection (by generation)
-  - Pokemon type filtering
+  - Pokémon type filtering
   - First letter filtering
   - Randomize individual filters
   - Reset filters to default
   - Easy mode for spelling
 - 🎨 Responsive design
-- 🏆 Completion celebration when all Pokemon are caught
+- 🏆 Completion celebration when all Pokémon are caught
 
 ## How to Play
 
-1. Type the name of a Pokemon you want to catch
-2. If the name is correct, the Pokemon will be added to your collection
+1. Type the name of a Pokémon you want to catch
+2. If the name is correct, the Pokémon will be added to your collection
 3. Use the sidebar filters to:
    - Focus on specific regions/generations
-   - Filter by Pokemon type
+   - Filter by Pokémon type
    - Filter by the first letter of names
    - Enable easy mode for more forgiving spelling
-4. Try to catch all Pokemon to complete the game!
-5. You can give up at any time to see the remaining Pokemon
+4. Try to catch all Pokémon to complete the game!
+5. You can give up at any time to see the remaining Pokémon
 
 ## Technologies Used
 
@@ -38,7 +38,7 @@ A fun and interactive web application where you can catch Pokemon by guessing th
 - TypeScript
 - Vite
 - CSS3
-- Pokemon API
+- Pokémon API
 - Jest & Testing Library
 - ESLint
 - GitHub Pages
@@ -84,31 +84,31 @@ npm run test:watch  # Run tests in watch mode
 npm run test:coverage # Generate test coverage report
 npm run lint        # Check code style
 npm run lint:fix    # Fix code style issues
-npm run download-sprites # Download Pokemon sprites
+npm run download-sprites # Download Pokémon sprites
 ```
 
-### Generating Pokemon Data
+### Generating Pokémon Data
 
-The app uses local data files for both Pokemon information and sprites. There are two scripts available to refresh this data:
+The app uses local data files for both Pokémon information and sprites. There are two scripts available to refresh this data:
 
-1. Generate Pokemon data:
+1. Generate Pokémon data:
 ```bash
 npx ts-node scripts/generatePokemonData.ts
 ```
 
 This script will:
-- Fetch the latest Pokemon data from the PokeAPI
+- Fetch the latest Pokémon data from the PokeAPI
 - Generate an updated `pokemonData.ts` file in `src/data`
-- Include information about Pokemon IDs, names, types, generations, and forms
-- Display progress as it fetches data for each Pokemon
+- Include information about Pokémon IDs, names, types, generations, and forms
+- Display progress as it fetches data for each Pokémon
 
-2. Download Pokemon sprites:
+2. Download Pokémon sprites:
 ```bash
 npm run download-sprites
 ```
 
 This script will:
-- Download sprite images for all Pokemon in the data
+- Download sprite images for all Pokémon in the data
 - Save sprites to the `src/data/sprites` directory
 - Create/update the sprite index file for the application
 - Show download progress for each sprite
@@ -160,6 +160,6 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## Acknowledgments
 
-- Pokemon data provided by the Pokemon API
-- Inspired by the classic Pokemon games
+- Pokémon data provided by the Pokémon API
+- Inspired by the classic Pokémon games
 - Playtested by my brother and his girlfriend

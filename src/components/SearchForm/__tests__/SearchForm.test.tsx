@@ -21,7 +21,7 @@ describe('SearchForm', () => {
   it('renders input field with correct placeholder when not loading', () => {
     render(<SearchForm {...defaultProps} />);
     
-    const input = screen.getByPlaceholderText('Enter a Pokemon name');
+    const input = screen.getByPlaceholderText('Enter a Pokémon name');
     expect(input).toBeInTheDocument();
     expect(input).not.toBeDisabled();
   });
@@ -30,7 +30,7 @@ describe('SearchForm', () => {
     const gameState = createMockGameState({ isFetchingData: true });
     render(<SearchForm {...defaultProps} gameState={gameState} />);
     
-    const input = screen.getByPlaceholderText('Loading Pokemon data...');
+    const input = screen.getByPlaceholderText('Loading Pokémon data...');
     expect(input).toBeInTheDocument();
     expect(input).toBeDisabled();
   });
@@ -50,7 +50,7 @@ describe('SearchForm', () => {
     const gameState = createMockGameState({ isLoading: true });
     render(<SearchForm {...defaultProps} gameState={gameState} />);
     
-    const input = screen.getByPlaceholderText('Enter a Pokemon name');
+    const input = screen.getByPlaceholderText('Enter a Pokémon name');
     expect(input).toBeDisabled();
   });
 
@@ -58,7 +58,7 @@ describe('SearchForm', () => {
     const gameState = createMockGameState();
     render(<SearchForm {...defaultProps} gameState={gameState} />);
     
-    const input = screen.getByPlaceholderText('Enter a Pokemon name');
+    const input = screen.getByPlaceholderText('Enter a Pokémon name');
     fireEvent.change(input, { target: { value: 'pikachu' } });
     
     expect(gameState.setInputValue).toHaveBeenCalledWith('pikachu');
@@ -78,28 +78,28 @@ describe('SearchForm', () => {
     const gameState = createMockGameState({ isLoading: true });
     render(<SearchForm {...defaultProps} gameState={gameState} />);
     
-    expect(screen.getByText('Searching for Pokemon...')).toBeInTheDocument();
+    expect(screen.getByText('Searching for Pokémon...')).toBeInTheDocument();
   });
 
   it('shows loading message when fetching Pokemon data', () => {
     const gameState = createMockGameState({ isFetchingData: true });
     render(<SearchForm {...defaultProps} gameState={gameState} />);
     
-    expect(screen.getByText('Loading Pokemon data...')).toBeInTheDocument();
+    expect(screen.getByText('Loading Pokémon data...')).toBeInTheDocument();
   });
 
   it('shows error message when there is an error', () => {
-    const gameState = createMockGameState({ error: 'Pokemon not found!' });
+    const gameState = createMockGameState({ error: 'Pokémon not found!' });
     render(<SearchForm {...defaultProps} gameState={gameState} />);
     
-    expect(screen.getByText('Pokemon not found!')).toBeInTheDocument();
+    expect(screen.getByText('Pokémon not found!')).toBeInTheDocument();
   });
 
   it('shows no results message when noResults is true', () => {
     const gameState = createMockGameState({ noResults: true });
     render(<SearchForm {...defaultProps} gameState={gameState} />);
     
-    expect(screen.getByText('No Pokemon found matching these filters!')).toBeInTheDocument();
+    expect(screen.getByText('No Pokémon found matching these filters!')).toBeInTheDocument();
   });
 
   it('shows info message when Pokemon are revealed', () => {
@@ -108,6 +108,6 @@ describe('SearchForm', () => {
     });
     render(<SearchForm {...defaultProps} gameState={gameState} />);
     
-    expect(screen.getByText("Click 'Start Over' to try catching Pokemon again!")).toBeInTheDocument();
+    expect(screen.getByText("Click 'Start Over' to try catching Pokémon again!")).toBeInTheDocument();
   });
 });

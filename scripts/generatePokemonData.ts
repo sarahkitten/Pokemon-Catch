@@ -104,7 +104,7 @@ async function fetchPokemonData(id: number): Promise<PokemonData> {
   try {
     const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
     if (!response.ok) {
-      throw new Error(`Failed to fetch Pokemon ${id}`);
+      throw new Error(`Failed to fetch Pokémon ${id}`);
     }
     const data = await response.json();
     

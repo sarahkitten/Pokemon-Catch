@@ -19,7 +19,7 @@ describe('GameControls', () => {
     const gameState = createMockGameState({ caughtPokemon: [], totalPokemon: 10 });
     render(<GameControls {...defaultProps} gameState={gameState} />);
     
-    expect(screen.getByText("You've caught 0 Pokemon! 10 to go!")).toBeInTheDocument();
+    expect(screen.getByText("You've caught 0 Pokémon! 10 to go!")).toBeInTheDocument();
   });
 
   it('shows correct counter when some Pokemon are caught', () => {
@@ -32,7 +32,7 @@ describe('GameControls', () => {
     });
     render(<GameControls {...defaultProps} gameState={gameState} />);
     
-    expect(screen.getByText("You've caught 2 Pokemon! 8 to go!")).toBeInTheDocument();
+    expect(screen.getByText("You've caught 2 Pokémon! 8 to go!")).toBeInTheDocument();
   });
 
   it('shows congratulations message when all Pokemon are caught', () => {
@@ -45,7 +45,7 @@ describe('GameControls', () => {
     });
     render(<GameControls {...defaultProps} gameState={gameState} />);
     
-    expect(screen.getByText("Congratulations! You've caught all 2 Pokemon!")).toBeInTheDocument();
+    expect(screen.getByText("Congratulations! You've caught all 2 Pokémon!")).toBeInTheDocument();
   });
 
   it('shows loading dots when total is loading', () => {
@@ -117,7 +117,7 @@ describe('GameControls', () => {
     const gameState = createMockGameState();
     const { rerender } = render(<GameControls {...defaultProps} gameState={gameState} />);
     
-    const muteButton = screen.getByTitle('Mute Pokemon cries');
+    const muteButton = screen.getByTitle('Mute Pokémon cries');
     expect(muteButton).toHaveTextContent('🔊');
     
     fireEvent.click(muteButton);
@@ -127,6 +127,6 @@ describe('GameControls', () => {
     const mutedGameState = createMockGameState({ isMuted: true });
     rerender(<GameControls {...defaultProps} gameState={mutedGameState} />);
     
-    expect(screen.getByTitle('Unmute Pokemon cries')).toHaveTextContent('🔇');
+    expect(screen.getByTitle('Unmute Pokémon cries')).toHaveTextContent('🔇');
   });
 });

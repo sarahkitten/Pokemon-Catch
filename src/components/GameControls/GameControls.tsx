@@ -20,9 +20,9 @@ export function GameControls({ gameState, onStartOver, onGiveUp }: GameControlsP
               <span>.</span><span>.</span><span>.</span>
             </span>
           ) : gameState.caughtPokemon.length === gameState.totalPokemon ? (
-            `Congratulations! You've caught all ${gameState.totalPokemon} Pokemon!`
+            `Congratulations! You've caught all ${gameState.totalPokemon} Pokémon!`
           ) : (
-            `You've caught ${gameState.caughtPokemon.length} Pokemon! ${gameState.totalPokemon - gameState.caughtPokemon.length} to go!`
+            `You've caught ${gameState.caughtPokemon.length} Pokémon! ${gameState.totalPokemon - gameState.caughtPokemon.length} to go!`
           )}
         </p>
       )}
@@ -44,7 +44,7 @@ export function GameControls({ gameState, onStartOver, onGiveUp }: GameControlsP
         <button
           className={`mute-button ${gameState.isMuted ? 'muted' : ''}`}
           onClick={() => gameState.setIsMuted(!gameState.isMuted)}
-          title={gameState.isMuted ? "Unmute Pokemon cries" : "Mute Pokemon cries"}
+          title={gameState.isMuted ? "Unmute Pokémon cries" : "Mute Pokémon cries"}
         >
           {gameState.isMuted ? "🔇" : "🔊"}
         </button>

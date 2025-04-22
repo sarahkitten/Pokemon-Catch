@@ -34,7 +34,7 @@ function App() {
     if (gameState.caughtPokemon.length === 0 && gameState.revealedPokemon.length === 0) return;
 
     const confirmReset = window.confirm(
-      `Are you sure you want to start over?${gameState.caughtPokemon.length > 0 ? ` This will release all ${gameState.caughtPokemon.length} Pokemon.` : ''}`
+      `Are you sure you want to start over?${gameState.caughtPokemon.length > 0 ? ` This will release all ${gameState.caughtPokemon.length} Pokémon.` : ''}`
     );
 
     if (confirmReset) {
@@ -79,16 +79,16 @@ function App() {
             pokemonExists.name.toLowerCase().startsWith(gameState.selectedLetter.toLowerCase());
 
           if (!matchesLetter) {
-            gameState.setError(`That Pokemon doesn't start with the letter ${gameState.selectedLetter}!`);
+            gameState.setError(`That Pokémon doesn't start with the letter ${gameState.selectedLetter}!`);
           } else if (!inGeneration) {
-            gameState.setError(`That Pokemon is not in ${gameState.selectedGeneration.name}!`);
+            gameState.setError(`That Pokémon is not in ${gameState.selectedGeneration.name}!`);
           } else if (!matchesType) {
-            gameState.setError(`That Pokemon is not a ${gameState.selectedType} type!`);
+            gameState.setError(`That Pokémon is not a ${gameState.selectedType} type!`);
           } else {
-            gameState.setError('That\'s not a valid Pokemon name!');
+            gameState.setError('That\'s not a valid Pokémon name!');
           }
         } else {
-          gameState.setError('That\'s not a valid Pokemon name!');
+          gameState.setError('That\'s not a valid Pokémon name!');
         }
         setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
         return;
@@ -168,7 +168,7 @@ function App() {
     }
 
     const confirmGiveUp = window.confirm(
-      `Are you sure you want to give up? This will reveal all remaining Pokemon!`
+      `Are you sure you want to give up? This will reveal all remaining Pokémon!`
     );
 
     if (!confirmGiveUp) return;
@@ -200,7 +200,7 @@ function App() {
       }
       gameState.setRevealedPokemon(revealed);
     } catch (err) {
-      console.error('Error fetching remaining Pokemon sprites:', err);
+      console.error('Error fetching remaining Pokémon sprites:', err);
     } finally {
       gameState.setIsGivingUp(false);
     }
@@ -213,7 +213,7 @@ function App() {
           <img src={titleImageFull} alt="Pokemon Catcher Title Part 1" className="title-image" />
         </div>
         <div className="pokemon-section">
-          <h2>How many Pokemon can you catch?</h2>
+          <h2>How many Pokémon can you catch?</h2>
           <SearchForm 
             gameState={gameState} 
             onSubmit={handleSubmit}
