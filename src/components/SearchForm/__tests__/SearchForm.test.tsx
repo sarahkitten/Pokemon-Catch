@@ -41,7 +41,7 @@ describe('SearchForm', () => {
     });
     render(<SearchForm {...defaultProps} gameState={gameState} />);
     
-    const input = screen.getByPlaceholderText("Click 'Start Over' to catch more Pokemon");
+    const input = screen.getByPlaceholderText("Nice job!");
     expect(input).toBeInTheDocument();
     expect(input).toBeDisabled();
   });
