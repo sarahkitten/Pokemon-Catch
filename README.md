@@ -28,6 +28,9 @@ A fun and interactive web application where you can catch Pokemon by guessing th
 - Vite
 - CSS3
 - Pokemon API
+- Jest & Testing Library
+- ESLint
+- GitHub Pages
 
 ## Getting Started
 
@@ -59,11 +62,25 @@ npm run dev
 npm run build
 ```
 
+### Available Scripts
+
+```bash
+npm run dev           # Start development server
+npm run build        # Build for production
+npm run preview      # Preview production build
+npm test            # Run tests
+npm run test:watch  # Run tests in watch mode
+npm run test:coverage # Generate test coverage report
+npm run lint        # Check code style
+npm run lint:fix    # Fix code style issues
+npm run download-sprites # Download Pokemon sprites
+```
+
 ### Generating Pokemon Data
 
-The app uses a local TypeScript file containing Pokemon data. To refresh this data:
+The app uses local data files for both Pokemon information and sprites. There are two scripts available to refresh this data:
 
-1. Run the generation script:
+1. Generate Pokemon data:
 ```bash
 npx ts-node scripts/generatePokemonData.ts
 ```
@@ -74,7 +91,42 @@ This script will:
 - Include information about Pokemon IDs, names, types, generations, and forms
 - Display progress as it fetches data for each Pokemon
 
-Note: The script includes a rate limiter to avoid overwhelming the PokeAPI. The full generation process may take a few minutes.
+2. Download Pokemon sprites:
+```bash
+npm run download-sprites
+```
+
+This script will:
+- Download sprite images for all Pokemon in the data
+- Save sprites to the `src/data/sprites` directory
+- Create/update the sprite index file for the application
+- Show download progress for each sprite
+
+Note: Both scripts include rate limiters to avoid overwhelming the PokeAPI. The full generation process may take a few minutes to complete.
+
+### Testing
+
+The project uses Jest and Testing Library for comprehensive testing. Tests are located in `__tests__` directories throughout the project.
+
+To run tests:
+- `npm test` - Run all tests
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:coverage` - Generate coverage report
+
+### Test Coverage
+
+The project maintains high test coverage across the codebase:
+- Statement coverage: 88%
+- Branch coverage: 91%
+- Function coverage: 89%
+
+Run `npm run test:coverage` to generate a detailed coverage report.
+
+### Code Quality
+
+ESLint is configured for code quality and style consistency. Run the linter with:
+- `npm run lint` - Check code style
+- `npm run lint:fix` - Automatically fix code style issues
 
 ## Deployment
 
@@ -99,3 +151,4 @@ This project is open source and available under the [MIT License](LICENSE).
 
 - Pokemon data provided by the Pokemon API
 - Inspired by the classic Pokemon games
+- Playtested by my brother and his girlfriend
