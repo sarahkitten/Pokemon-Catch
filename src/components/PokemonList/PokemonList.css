@@ -16,6 +16,14 @@
   text-align: center;
 }
 
+.collection-title {
+  font-family: 'Pokemon GB', system-ui, -apple-system, sans-serif;
+  margin-bottom: 1em;
+  color: #333;
+  font-size: clamp(1.1em, 2.5vw, 1.3em);
+  text-align: center;
+}
+
 .caught-list.success {
   background-color: rgba(46, 125, 50, 0.1);
   border: 2px solid rgba(46, 125, 50, 0.2);

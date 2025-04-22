@@ -10,6 +10,7 @@ import type { CaughtPokemon, Pokemon } from './types'
 import { UI_CONSTANTS } from './constants'
 import { useGameState } from './hooks/useGameState'
 import { findClosestPokemon, fetchFormSprite, playPokemonCry, calculateConfettiPosition } from './utils/pokemonUtils'
+import titleImageFull from './assets/PokemonCatcherTitleFull.png'
 
 function App() {
   const gameState = useGameState();
@@ -208,7 +209,9 @@ function App() {
   return (
     <div className="app">
       <div className={`main-content ${isSidebarCollapsed ? 'expanded' : ''}`}>
-        <h1>Catch them all!</h1>
+        <div className="title-container">
+          <img src={titleImageFull} alt="Pokemon Catcher Title Part 1" className="title-image" />
+        </div>
         <div className="pokemon-section">
           <h2>How many Pokemon can you catch?</h2>
           <SearchForm 

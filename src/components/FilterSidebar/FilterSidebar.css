@@ -142,12 +142,21 @@
   user-select: none;
   color: #333;
   font-size: 0.9rem;
+  line-height: 1;
 }
 
-.easy-mode-toggle input[type="checkbox"] {
+.easy-mode-toggle label input[type="checkbox"] {
   cursor: pointer;
-  width: auto;
-  margin: 0;
+  width: 16px !important;
+  height: 16px !important;
+  min-height: 16px !important;
+  max-height: 16px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  flex: 0 0 16px !important;
+  box-sizing: border-box !important;
+  -webkit-appearance: checkbox !important;
+  appearance: checkbox !important;
 }
 
 .filter-row button {

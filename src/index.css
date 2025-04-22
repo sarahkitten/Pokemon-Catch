@@ -1,4 +1,32 @@
+/* Font declarations - Add your @font-face rules here when you have font files
+@font-face {
+  font-family: 'YourCustomFont';
+  src: url('./assets/fonts/your-font.woff2') format('woff2'),
+       url('./assets/fonts/your-font.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+*/
+
+@font-face {
+  font-family: 'Pokemon Solid';
+  src: url('./assets/fonts/Pokemon Solid.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pokemon GB';
+  src: url('./assets/fonts/Pokemon GB.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
+  /* Primary font stack */
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;

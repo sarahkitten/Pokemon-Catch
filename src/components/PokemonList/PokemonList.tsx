@@ -16,7 +16,7 @@ export function PokemonList({ caughtPokemon, revealedPokemon, filteredPokemon: p
 
   return (
     <div className={`caught-list ${caughtPokemon.length === totalPokemon ? 'success' : ''}`}>
-      <h3>Pokemon Collection:</h3>
+      <h3 className="collection-title">Pokemon Collection:</h3>
       <div className="pokemon-list">
         {caughtPokemon.map((pokemon) => (
           <div
