@@ -5,16 +5,10 @@ import './FilterSidebar.css';
 
 interface FilterSidebarProps {
   gameState: GameState;
-  isSidebarCollapsed: boolean;
-  isSmallScreen: boolean;
-  onToggleSidebar: () => void;
 }
 
 export function FilterSidebar({
   gameState,
-  isSidebarCollapsed,
-  isSmallScreen,
-  onToggleSidebar
 }: FilterSidebarProps) {
   const handleFilterChange = async <T extends string | number>(
     event: ChangeEvent<HTMLSelectElement>,
@@ -65,19 +59,7 @@ export function FilterSidebar({
   };
 
   return (
-    <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
-      <button
-        className="sidebar-toggle"
-        onClick={onToggleSidebar}
-        title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-      >
-        {isSmallScreen ? (
-          isSidebarCollapsed ? "▲" : "▼"
-        ) : (
-          isSidebarCollapsed ? "▶" : "◀"
-        )}
-      </button>
-
+    <div className="sidebar">
       <div className="filters">
         <div className="generation-selector">
           <label htmlFor="generation">Choose your region:</label>

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import './App.css'
 import PokemonConfetti from './PokemonConfetti'
 import { SearchForm } from './components/SearchForm/SearchForm'
@@ -16,19 +16,6 @@ function App() {
   const gameState = useGameState();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsSmallScreen(window.innerWidth <= UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT);
-    };
-
-    handleResize();
-
-    window.addEventListener('resize', handleResize);
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const handleStartOver = () => {
     if (gameState.caughtPokemon.length === 0 && gameState.revealedPokemon.length === 0) return;
@@ -236,7 +223,6 @@ function App() {
       <FilterSidebar 
         gameState={gameState}
         isSidebarCollapsed={isSidebarCollapsed}
-        isSmallScreen={isSmallScreen}
         onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
       {gameState.confettiProps && (

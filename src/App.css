@@ -80,22 +80,3 @@ h2 {
   padding: 0 1rem;
 }
 
-@media (max-width: 700px) {
-  .app {
-    flex-direction: column;
-  }
-
-  .main-content {
-    margin-left: 0;
-    order: 2;
-  }
-
-  .main-content.expanded {
-    margin-top: 0;
-  }
-  
-  .app {
-    padding: 0.5rem;
-  }
-}
-
