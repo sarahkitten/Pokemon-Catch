@@ -1,18 +1,14 @@
 import { jest } from '@jest/globals';
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { FilterSidebar } from '../FilterSidebar';
+import { FilterMenu } from '../FilterMenu';
 import { createMockGameState } from '../../../test/testUtils';
 import type { GameState } from '../../../hooks/useGameState';
 
-describe('FilterSidebar', () => {
+describe('FilterMenu', () => {
   const mockGameState = createMockGameState();
-
   const defaultProps = {
     gameState: mockGameState,
-    isSidebarCollapsed: false,
-    isSmallScreen: false,
-    onToggleSidebar: jest.fn()
   };
 
   beforeEach(() => {
@@ -20,33 +16,8 @@ describe('FilterSidebar', () => {
     window.confirm = jest.fn(() => true);
   });
 
-  test('renders all filter sections', () => {
-    render(<FilterSidebar {...defaultProps} />);
-    
-    expect(screen.getByLabelText(/choose your region/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/choose pokemon type/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/first letter must be/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/easy mode/i)).toBeInTheDocument();
-  });
-
-  test('handles sidebar collapse/expand', () => {
-    render(<FilterSidebar {...defaultProps} />);
-    const toggleButton = screen.getByTitle(/collapse sidebar/i);
-    
-    fireEvent.click(toggleButton);
-    expect(defaultProps.onToggleSidebar).toHaveBeenCalled();
-  });
-
-  test('renders correct toggle button based on screen size', () => {
-    const { rerender } = render(<FilterSidebar {...defaultProps} />);
-    expect(screen.getByText('◀')).toBeInTheDocument();
-
-    rerender(<FilterSidebar {...defaultProps} isSmallScreen={true} />);
-    expect(screen.getByText('▼')).toBeInTheDocument();
-  });
-
   test('handles generation filter change', async () => {
-    render(<FilterSidebar {...defaultProps} />);
+    render(<FilterMenu {...defaultProps} />);
     const select = screen.getByLabelText(/choose your region/i);
     
     fireEvent.change(select, { target: { value: '1' } });
@@ -54,7 +25,7 @@ describe('FilterSidebar', () => {
   });
 
   test('handles type filter change', async () => {
-    render(<FilterSidebar {...defaultProps} />);
+    render(<FilterMenu {...defaultProps} />);
     const select = screen.getByLabelText(/choose pokemon type/i);
     
     fireEvent.change(select, { target: { value: 'Fire' } });
@@ -62,7 +33,7 @@ describe('FilterSidebar', () => {
   });
 
   test('handles letter filter change', async () => {
-    render(<FilterSidebar {...defaultProps} />);
+    render(<FilterMenu {...defaultProps} />);
     const select = screen.getByLabelText(/first letter must be/i);
     
     fireEvent.change(select, { target: { value: 'A' } });
@@ -78,7 +49,7 @@ describe('FilterSidebar', () => {
       }]
     });
     
-    render(<FilterSidebar {...defaultProps} gameState={gameStateWithCaught} />);
+    render(<FilterMenu {...defaultProps} gameState={gameStateWithCaught} />);
     const select = screen.getByLabelText(/choose your region/i);
     
     fireEvent.change(select, { target: { value: '1' } });
@@ -86,7 +57,7 @@ describe('FilterSidebar', () => {
   });
 
   test('handles randomize buttons', () => {
-    render(<FilterSidebar {...defaultProps} />);
+    render(<FilterMenu {...defaultProps} />);
     
     const randomizeButtons = screen.getAllByText('🎲');
     fireEvent.click(randomizeButtons[0]); // Generation randomize
@@ -109,7 +80,7 @@ describe('FilterSidebar', () => {
       resetLetter: mockGameState.resetLetter
     });
     
-    render(<FilterSidebar {...defaultProps} gameState={gameStateWithFilters} />);
+    render(<FilterMenu {...defaultProps} gameState={gameStateWithFilters} />);
     
     const resetButtons = screen.getAllByText('↺');
     fireEvent.click(resetButtons[0]); // Generation reset
@@ -123,7 +94,7 @@ describe('FilterSidebar', () => {
   });
 
   test('handles easy mode toggle', () => {
-    render(<FilterSidebar {...defaultProps} />);
+    render(<FilterMenu {...defaultProps} />);
     const checkbox = screen.getByLabelText(/easy mode/i);
     
     fireEvent.click(checkbox);
@@ -131,7 +102,7 @@ describe('FilterSidebar', () => {
   });
 
   test('handles randomize all filters', () => {
-    render(<FilterSidebar {...defaultProps} />);
+    render(<FilterMenu {...defaultProps} />);
     const randomizeAllButton = screen.getByTitle('Randomly set all filters');
     
     fireEvent.click(randomizeAllButton);
@@ -146,7 +117,7 @@ describe('FilterSidebar', () => {
       resetAllFilters: mockGameState.resetAllFilters
     });
     
-    render(<FilterSidebar {...defaultProps} gameState={gameStateWithFilters} />);
+    render(<FilterMenu {...defaultProps} gameState={gameStateWithFilters} />);
     const resetAllButton = screen.getByText(/reset all filters/i);
     
     fireEvent.click(resetAllButton);
@@ -159,7 +130,7 @@ describe('FilterSidebar', () => {
       getValidOptions: mockGetValidOptions
     });
     
-    render(<FilterSidebar {...defaultProps} gameState={gameStateNoOptions} />);
+    render(<FilterMenu {...defaultProps} gameState={gameStateNoOptions} />);
     const randomizeButtons = screen.getAllByText('🎲');
     
     randomizeButtons.forEach(button => {

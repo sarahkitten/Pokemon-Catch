@@ -1,35 +1,32 @@
 import { type ChangeEvent } from 'react';
 import type { GameState } from '../../hooks/useGameState';
 import { GENERATIONS, POKEMON_TYPES } from '../../constants';
-import './FilterSidebar.css';
+import './FilterMenu.css';
 
-interface FilterSidebarProps {
+interface FilterMenuProps {
   gameState: GameState;
 }
 
-export function FilterSidebar({
+export function FilterMenu({
   gameState,
-}: FilterSidebarProps) {
+}: FilterMenuProps) {
   const handleFilterChange = async <T extends string | number>(
     event: ChangeEvent<HTMLSelectElement>,
     filterType: 'generation' | 'type' | 'letter',
     changeFunction: (value: T) => Promise<void>
   ) => {
     const value = filterType === 'generation' ? parseInt(event.target.value) : event.target.value;
-
     if (gameState.caughtPokemon.length > 0) {
       const filterName = {
         'generation': 'generations',
         'type': 'types',
         'letter': 'starting letter'
       }[filterType];
-
       const confirmChange = window.confirm(
         `Changing ${filterName} will reset your current progress. Are you sure?`
       );
       if (!confirmChange) return;
     }
-
     await changeFunction(value as T);
   };
 
@@ -40,7 +37,6 @@ export function FilterSidebar({
     resetFunction: () => Promise<void>
   ) => {
     if (currentValue === defaultValue) return;
-
     if (gameState.caughtPokemon.length > 0) {
       const filterName = {
         'generation': 'generation',
@@ -48,18 +44,17 @@ export function FilterSidebar({
         'letter': 'letter filter',
         'all': 'all filters'
       }[filterType];
-
       const confirmChange = window.confirm(
         `Resetting ${filterName} will reset your current progress. Are you sure?`
       );
       if (!confirmChange) return;
     }
-
     await resetFunction();
   };
 
   return (
-    <div className="sidebar">
+    <div className="menu">
+
       <div className="filters">
         <div className="generation-selector">
           <label htmlFor="generation">Choose your region:</label>
@@ -191,6 +186,7 @@ export function FilterSidebar({
         >
           🎲 Randomize Filters
         </button>
+
         <button
           className="reset-all-button"
           onClick={() => handleReset(
