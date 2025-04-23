@@ -66,7 +66,7 @@ export function FilterMenu({
           onClick={onToggleSidebar}
           title="Open Filter Menu"
         >
-          ⚙️ Filters
+          <span>⚙️ Filters</span>
         </button>
       </div>
     );
@@ -112,7 +112,7 @@ export function FilterMenu({
               disabled={gameState.getValidOptions('generation').length <= 1}
               title={gameState.getValidOptions('generation').length <= 1 ? "No other valid options" : "Random generation"}
             >
-              🎲
+              <span>🎲</span>
             </button>
             <button
               className="reset-filter nes-btn"
@@ -120,7 +120,7 @@ export function FilterMenu({
               disabled={gameState.selectedGenerationIndex === 0}
               title={gameState.selectedGenerationIndex === 0 ? "Already at default" : "Reset to All Generations"}
             >
-              ↺
+              <span>↺</span>
             </button>
           </div>
         </div>
@@ -151,7 +151,7 @@ export function FilterMenu({
               disabled={gameState.getValidOptions('type').length <= 1}
               title={gameState.getValidOptions('type').length <= 1 ? "No other valid options" : "Random type"}
             >
-              🎲
+              <span>🎲</span>
             </button>
             <button
               className="reset-filter nes-btn"
@@ -159,7 +159,7 @@ export function FilterMenu({
               disabled={gameState.selectedType === POKEMON_TYPES[0]}
               title={gameState.selectedType === POKEMON_TYPES[0] ? "Already at default" : "Reset to All Types"}
             >
-              ↺
+              <span>↺</span>
             </button>
           </div>
         </div>
@@ -191,7 +191,7 @@ export function FilterMenu({
               disabled={gameState.getValidOptions('letter').length <= 1}
               title={gameState.getValidOptions('letter').length <= 1 ? "No other valid options" : "Random letter"}
             >
-              🎲
+              <span>🎲</span>
             </button>
             <button
               className="reset-filter nes-btn"
@@ -199,7 +199,7 @@ export function FilterMenu({
               disabled={gameState.selectedLetter === "All"}
               title={gameState.selectedLetter === "All" ? "Already at default" : "Reset to All Letters"}
             >
-              ↺
+              <span>↺</span>
             </button>
           </div>
         </div>
@@ -221,7 +221,7 @@ export function FilterMenu({
           onClick={gameState.randomizeAllFilters}
           title="Randomly set all filters"
         >
-          🎲 Randomize Filters
+          <span>🎲 Randomize Filters</span>
         </button>
 
         <button
@@ -245,7 +245,7 @@ export function FilterMenu({
               : "Reset all filters to default values"
           }
         >
-          ↺ Reset All Filters
+          <span>↺ Reset All Filters</span>
         </button>
       </div>
     </div>

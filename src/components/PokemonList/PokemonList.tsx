@@ -12,23 +12,26 @@ interface PokemonListProps {
 
 export function PokemonList({ caughtPokemon, revealedPokemon, filteredPokemon: pokemonData, isMuted, totalPokemon }: PokemonListProps) {
   const shouldShow = caughtPokemon.length > 0 || revealedPokemon.length > 0;
+  
   if (!shouldShow) return null;
-
+  
   return (
-    <div className={`caught-list ${caughtPokemon.length === totalPokemon ? 'success' : ''}`}>
-      <h3 className="collection-title">Pokemon Collection:</h3>
+    <div className={`caught-list nes-container with-title ${caughtPokemon.length === totalPokemon ? 'is-success' : ''}`}>
+      <h3 className="title">Pokemon Collection:</h3>
       <div className="pokemon-list">
         {caughtPokemon.map((pokemon) => (
           <div
             key={pokemon.name}
-            className="pokemon-card"
+            className="pokemon-card nes-container is-rounded"
             onClick={() => handlePokemonClick(pokemon, pokemonData, isMuted)}
           >
-            <img src={pokemon.sprite} alt={pokemon.name} className="pokemon-sprite" />
-            <span>{pokemon.name}</span>
+            <img src={pokemon.sprite} alt={pokemon.name} className="pokemon-sprite nes-pointer" />
+            <span className="nes-text">{pokemon.name}</span>
             <div className="pokemon-types">
               {pokemon.types.map(type => (
-                <span key={type} className={`type-tag ${type}`}>{type}</span>
+                <span key={type} className={`type-tag ${type}`}>
+                  {type}
+                </span>
               ))}
             </div>
           </div>
@@ -36,14 +39,16 @@ export function PokemonList({ caughtPokemon, revealedPokemon, filteredPokemon: p
         {revealedPokemon.map((pokemon) => (
           <div
             key={pokemon.name}
-            className="pokemon-card uncaught"
+            className="pokemon-card nes-container is-rounded uncaught"
             onClick={() => handlePokemonClick(pokemon, pokemonData, isMuted)}
           >
-            <img src={pokemon.sprite} alt={pokemon.name} className="pokemon-sprite" />
-            <span>{pokemon.name}</span>
+            <img src={pokemon.sprite} alt={pokemon.name} className="pokemon-sprite nes-pointer" />
+            <span className="nes-text">{pokemon.name}</span>
             <div className="pokemon-types">
               {pokemon.types.map(type => (
-                <span key={type} className={`type-tag ${type}`}>{type}</span>
+                <span key={type} className={`type-tag ${type}`}>
+                  {type}
+                </span>
               ))}
             </div>
           </div>

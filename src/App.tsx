@@ -206,12 +206,12 @@ function App() {
   };
 
   return (
-    <div className="app nes-container">
+    <div className="app">
       <div className={`main-content ${isSidebarCollapsed ? 'expanded' : ''}`}>
         <div className="title-container">
           <img src={titleImageFull} alt="Pokemon Catcher Title Part 1" className="title-image" />
         </div>
-        <div className="pokemon-section nes-container with-title">
+        <div className="pokemon-section">
           <h2 className="title">How many Pokémon can you catch?</h2>
           <SearchForm 
             gameState={gameState} 

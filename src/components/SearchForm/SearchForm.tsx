@@ -11,10 +11,11 @@ interface SearchFormProps {
 export function SearchForm({ gameState, onSubmit, inputRef }: SearchFormProps) {
   return (
     <>
-      <form onSubmit={onSubmit}>
+      <form onSubmit={onSubmit} className="nes-field">
         <input
           ref={inputRef}
           type="text"
+          className="nes-input"
           value={gameState.inputValue}
           onChange={(e) => gameState.setInputValue(e.target.value)}
           placeholder={
@@ -28,14 +29,14 @@ export function SearchForm({ gameState, onSubmit, inputRef }: SearchFormProps) {
         />
       </form>
       <div className="message-container">
-        {gameState.isLoading && <p className="loading">Searching for Pokémon...</p>}
-        {gameState.isFetchingData && <p className="loading">Loading Pokémon data...</p>}
+        {gameState.isLoading && <p className="nes-text is-primary loading">Searching for Pokémon...</p>}
+        {gameState.isFetchingData && <p className="nes-text is-primary loading">Loading Pokémon data...</p>}
         {gameState.error && !gameState.isLoading && !gameState.isFetchingData && (
-          <p className="error">{gameState.error}</p>
+          <p className="nes-text is-error error">{gameState.error}</p>
         )}
-        {gameState.noResults && <p className="error">No Pokémon found matching these filters!</p>}
+        {gameState.noResults && <p className="nes-text is-error error">No Pokémon found matching these filters!</p>}
         {gameState.revealedPokemon.length > 0 && (
-          <p className="info">Click 'Start Over' to try catching Pokémon again!</p>
+          <p className="nes-text is-success info">Click 'Start Over' to try catching Pokémon again!</p>
         )}
       </div>
     </>

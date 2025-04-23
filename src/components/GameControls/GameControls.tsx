@@ -14,7 +14,7 @@ export function GameControls({ gameState, onStartOver, onGiveUp }: GameControlsP
   return (
     <div className="controls">
       {!gameState.noResults && (
-        <p className={`counter ${gameState.caughtPokemon.length === gameState.totalPokemon ? 'success' : ''}`}>
+        <p className={`counter nes-text ${gameState.caughtPokemon.length === gameState.totalPokemon ? 'is-success' : ''}`}>
           {gameState.isTotalLoading ? (
             <span className="loading-dots" role="status" aria-label="Loading">
               <span>.</span><span>.</span><span>.</span>
@@ -28,13 +28,13 @@ export function GameControls({ gameState, onStartOver, onGiveUp }: GameControlsP
       )}
       <div className="button-group">
         {showControls && (
-          <button onClick={onStartOver} className="start-over-button">
+          <button onClick={onStartOver} className="nes-btn is-primary start-over-button">
             Start Over
           </button>
         )}
         {showGiveUp && (
           <button
-            className="give-up-button"
+            className="nes-btn is-warning give-up-button"
             onClick={onGiveUp}
             disabled={gameState.isGivingUp}
           >
@@ -42,7 +42,7 @@ export function GameControls({ gameState, onStartOver, onGiveUp }: GameControlsP
           </button>
         )}
         <button
-          className={`mute-button ${gameState.isMuted ? 'muted' : ''}`}
+          className={`nes-btn ${gameState.isMuted ? 'is-error' : 'is-success'} mute-button`}
           onClick={() => gameState.setIsMuted(!gameState.isMuted)}
           title={gameState.isMuted ? "Unmute Pokémon cries" : "Mute Pokémon cries"}
         >

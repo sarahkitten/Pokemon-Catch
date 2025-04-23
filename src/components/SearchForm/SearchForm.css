@@ -12,38 +12,30 @@ form {
   align-self: center;
 }
 
-input {
-  padding: 0.5em 1.2em;
-  min-height: 3.5em;
-  font-size: clamp(0.7em, 1.8vw, 0.9em);
-  line-height: 2.5em;
-  border-radius: 999px;
-  border: none;
+/* Override NES.css input styles to better fit our app */
+.nes-input {
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  font-family: 'Pokemon GB', sans-serif;
-  box-sizing: border-box;
+  font-size: clamp(0.7em, 1.8vw, 0.9em);
+  font-family: 'Press Start 2P', 'Pokemon GB', sans-serif;
+  border-image-repeat: stretch !important;
+  margin-bottom: 1rem;
 }
 
-input::placeholder {
-  color: #666;
-  line-height: inherit;
-  padding-top: 0.3em;
+.nes-input::placeholder {
+  color: #777;
+  opacity: 0.7;
 }
 
-input:focus {
-  outline: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-input:disabled {
+.nes-input:disabled {
   background-color: #f0f0f0;
   cursor: not-allowed;
+  opacity: 0.7;
 }
 
-message-container {
-  height: 1.2em;
+.message-container {
+  height: auto;
+  min-height: 1.2em;
   margin: 0.5em 0;
   display: flex;
   justify-content: center;
@@ -51,23 +43,34 @@ message-container {
   font-size: 0.75em;
   padding: 0 1rem;
   text-align: center;
-  font-family: 'Pokemon GB', sans-serif;
+  font-family: 'Press Start 2P', 'Pokemon GB', sans-serif;
+  flex-wrap: wrap;
 }
 
 .message-container .info {
-  color: #1976d2;
-  font-weight: 500;
   margin: 0;
+  padding: 0.5em 0;
 }
 
 .error {
-  color: #ff4444;
   margin: 0;
-  font-weight: 500;
+  padding: 0.5em 0;
 }
 
 .loading {
-  color: #2196f3;
   margin: 0;
-  font-weight: 500;
+  padding: 0.5em 0;
+}
+
+/* Force nes-text colors to be more visible */
+.nes-text.is-primary {
+  color: #209cee !important;
+}
+
+.nes-text.is-success {
+  color: #92cc41 !important;
+}
+
+.nes-text.is-error {
+  color: #e76e55 !important;
 }
