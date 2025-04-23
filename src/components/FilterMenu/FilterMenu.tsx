@@ -5,10 +5,16 @@ import './FilterMenu.css';
 
 interface FilterMenuProps {
   gameState: GameState;
+  isSidebarCollapsed: boolean;
+  isSmallScreen: boolean;
+  onToggleSidebar: () => void;
 }
 
 export function FilterMenu({
   gameState,
+  isSidebarCollapsed,
+  isSmallScreen,
+  onToggleSidebar,
 }: FilterMenuProps) {
   const handleFilterChange = async <T extends string | number>(
     event: ChangeEvent<HTMLSelectElement>,
@@ -52,26 +58,52 @@ export function FilterMenu({
     await resetFunction();
   };
 
+  if (isSidebarCollapsed) {
+    return (
+      <div className="menu-toggle-button-container">
+        <button 
+          className="menu-toggle-button nes-btn is-primary" 
+          onClick={onToggleSidebar}
+          title="Open Filter Menu"
+        >
+          ⚙️ Filters
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="menu">
+    <div className={`menu nes-container with-title ${isSmallScreen ? 'mobile-menu' : ''}`}>
+      <div className="menu-header">
+        <h2 className="title">Filter Options</h2>
+        <button 
+          className="close-menu-button nes-btn is-error" 
+          onClick={onToggleSidebar}
+          title="Close Filter Menu"
+        >
+          ✕
+        </button>
+      </div>
 
       <div className="filters">
         <div className="generation-selector">
           <label htmlFor="generation">Choose your region:</label>
           <div className="filter-row">
-            <select
-              id="generation"
-              onChange={(e) => handleFilterChange(e, 'generation', gameState.changeGeneration)}
-              value={gameState.selectedGenerationIndex}
-            >
-              {GENERATIONS.map((gen, index) => (
-                <option key={gen.name} value={index}>
-                  {gen.name}
-                </option>
-              ))}
-            </select>
+            <div className="nes-select">
+              <select
+                id="generation"
+                onChange={(e) => handleFilterChange(e, 'generation', gameState.changeGeneration)}
+                value={gameState.selectedGenerationIndex}
+              >
+                {GENERATIONS.map((gen, index) => (
+                  <option key={gen.name} value={index}>
+                    {gen.name}
+                  </option>
+                ))}
+              </select>
+            </div>
             <button
-              className="randomize-filter"
+              className="randomize-filter nes-btn is-success"
               onClick={() => handleFilterChange(
                 { target: { value: "" } } as ChangeEvent<HTMLSelectElement>,
                 'generation', 
@@ -83,7 +115,7 @@ export function FilterMenu({
               🎲
             </button>
             <button
-              className="reset-filter"
+              className="reset-filter nes-btn"
               onClick={() => handleReset('generation', gameState.selectedGenerationIndex, 0, gameState.resetGeneration)}
               disabled={gameState.selectedGenerationIndex === 0}
               title={gameState.selectedGenerationIndex === 0 ? "Already at default" : "Reset to All Generations"}
@@ -96,19 +128,21 @@ export function FilterMenu({
         <div className="type-selector">
           <label htmlFor="type">Choose Pokemon type:</label>
           <div className="filter-row">
-            <select
-              id="type"
-              onChange={(e) => handleFilterChange(e, 'type', gameState.changeType)}
-              value={gameState.selectedType}
-            >
-              {POKEMON_TYPES.map(type => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
+            <div className="nes-select">
+              <select
+                id="type"
+                onChange={(e) => handleFilterChange(e, 'type', gameState.changeType)}
+                value={gameState.selectedType}
+              >
+                {POKEMON_TYPES.map(type => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
             <button
-              className="randomize-filter"
+              className="randomize-filter nes-btn is-success"
               onClick={() => handleFilterChange(
                 { target: { value: "" } } as ChangeEvent<HTMLSelectElement>,
                 'type',
@@ -120,7 +154,7 @@ export function FilterMenu({
               🎲
             </button>
             <button
-              className="reset-filter"
+              className="reset-filter nes-btn"
               onClick={() => handleReset('type', gameState.selectedType, POKEMON_TYPES[0], gameState.resetType)}
               disabled={gameState.selectedType === POKEMON_TYPES[0]}
               title={gameState.selectedType === POKEMON_TYPES[0] ? "Already at default" : "Reset to All Types"}
@@ -133,20 +167,22 @@ export function FilterMenu({
         <div className="letter-selector">
           <label htmlFor="letter">First letter must be:</label>
           <div className="filter-row">
-            <select
-              id="letter"
-              onChange={(e) => handleFilterChange(e, 'letter', gameState.changeLetter)}
-              value={gameState.selectedLetter}
-            >
-              <option value="All">All Letters</option>
-              {Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ').map(letter => (
-                <option key={letter} value={letter}>
-                  {letter}
-                </option>
-              ))}
-            </select>
+            <div className="nes-select">
+              <select
+                id="letter"
+                onChange={(e) => handleFilterChange(e, 'letter', gameState.changeLetter)}
+                value={gameState.selectedLetter}
+              >
+                <option value="All">All Letters</option>
+                {Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ').map(letter => (
+                  <option key={letter} value={letter}>
+                    {letter}
+                  </option>
+                ))}
+              </select>
+            </div>
             <button
-              className="randomize-filter"
+              className="randomize-filter nes-btn is-success"
               onClick={() => handleFilterChange(
                 { target: { value: "" } } as ChangeEvent<HTMLSelectElement>,
                 'letter',
@@ -158,7 +194,7 @@ export function FilterMenu({
               🎲
             </button>
             <button
-              className="reset-filter"
+              className="reset-filter nes-btn"
               onClick={() => handleReset('letter', gameState.selectedLetter, "All", gameState.resetLetter)}
               disabled={gameState.selectedLetter === "All"}
               title={gameState.selectedLetter === "All" ? "Already at default" : "Reset to All Letters"}
@@ -168,19 +204,20 @@ export function FilterMenu({
           </div>
         </div>
 
-        <div className="easy-mode-toggle">
+        <div className="easy-mode-toggle nes-checkbox-container">
           <label>
             <input
               type="checkbox"
+              className="nes-checkbox"
               checked={gameState.isEasyMode}
               onChange={(e) => gameState.setIsEasyMode(e.target.checked)}
             />
-            Easy Mode (Accept close spellings)
+            <span>Easy Mode (Accept close spellings)</span>
           </label>
         </div>
 
         <button
-          className="randomize-button"
+          className="randomize-button nes-btn is-primary"
           onClick={gameState.randomizeAllFilters}
           title="Randomly set all filters"
         >
@@ -188,7 +225,7 @@ export function FilterMenu({
         </button>
 
         <button
-          className="reset-all-button"
+          className="reset-all-button nes-btn is-warning"
           onClick={() => handleReset(
             'all',
             `${gameState.selectedGenerationIndex}-${gameState.selectedType}-${gameState.selectedLetter}`,

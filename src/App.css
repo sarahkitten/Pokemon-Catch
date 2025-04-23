@@ -24,9 +24,13 @@
 
 .main-content {
   flex: 1;
-  transition: margin-left 0.3s ease;
+  transition: margin-left 0.3s ease, width 0.3s ease;
   min-width: 0;
   order: 2;
+}
+
+.main-content.expanded {
+  width: 100%;
   margin-left: 0;
 }
 
@@ -78,5 +82,20 @@ h2 {
   margin-bottom: 1em;
   text-align: center;
   padding: 0 1rem;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+  .app {
+    flex-direction: column;
+  }
+  
+  .main-content {
+    order: 1;
+  }
+  
+  .main-content.expanded {
+    margin-top: 60px; /* Space for the filter toggle button */
+  }
 }
 
