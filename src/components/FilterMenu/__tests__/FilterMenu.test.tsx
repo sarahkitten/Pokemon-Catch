@@ -59,7 +59,7 @@ describe('FilterMenu', () => {
   test('handles randomize buttons', () => {
     render(<FilterMenu {...defaultProps} />);
     
-    const randomizeButtons = screen.getAllByText('🎲');
+    const randomizeButtons = screen.getAllByAltText('Random');
     fireEvent.click(randomizeButtons[0]); // Generation randomize
     expect(mockGameState.randomizeGeneration).toHaveBeenCalled();
     
@@ -82,7 +82,7 @@ describe('FilterMenu', () => {
     
     render(<FilterMenu {...defaultProps} gameState={gameStateWithFilters} />);
     
-    const resetButtons = screen.getAllByText('↺');
+    const resetButtons = screen.getAllByAltText('Reset');
     fireEvent.click(resetButtons[0]); // Generation reset
     expect(mockGameState.resetGeneration).toHaveBeenCalled();
     
@@ -131,9 +131,16 @@ describe('FilterMenu', () => {
     });
     
     render(<FilterMenu {...defaultProps} gameState={gameStateNoOptions} />);
-    const randomizeButtons = screen.getAllByText('🎲');
     
-    randomizeButtons.forEach(button => {
+    // Get the specific filter row buttons directly
+    const randomizeButtons = screen.getAllByRole('button', { name: /Random/i });
+    
+    // Filter out the "Randomize Filters" button which might not be disabled
+    const filterRowButtons = randomizeButtons.filter(button => 
+      button.classList.contains('randomize-filter')
+    );
+    
+    filterRowButtons.forEach(button => {
       expect(button).toBeDisabled();
     });
   });

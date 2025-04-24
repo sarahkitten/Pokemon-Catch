@@ -126,7 +126,7 @@ describe('PokemonList', () => {
     );
     
     const caughtList = container.querySelector('.caught-list');
-    expect(caughtList).toHaveClass('success');
+    expect(caughtList?.className).toContain('is-success');
   });
 
   // For click tests, we'll use a behavioral approach instead 

@@ -118,15 +118,17 @@ describe('GameControls', () => {
     const { rerender } = render(<GameControls {...defaultProps} gameState={gameState} />);
     
     const muteButton = screen.getByTitle('Mute Pokémon cries');
-    expect(muteButton).toHaveTextContent('🔊');
+    // Check for the volume-on image instead of text content
+    expect(muteButton.querySelector('img')).toHaveAttribute('alt', 'Mute');
     
     fireEvent.click(muteButton);
     expect(gameState.setIsMuted).toHaveBeenCalledWith(true);
-
+    
     // Simulate the state change
     const mutedGameState = createMockGameState({ isMuted: true });
     rerender(<GameControls {...defaultProps} gameState={mutedGameState} />);
     
-    expect(screen.getByTitle('Unmute Pokémon cries')).toHaveTextContent('🔇');
+    // Check for the volume-off image
+    expect(screen.getByTitle('Unmute Pokémon cries').querySelector('img')).toHaveAttribute('alt', 'Unmute');
   });
 });
