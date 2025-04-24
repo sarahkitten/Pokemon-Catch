@@ -9,6 +9,9 @@ describe('FilterMenu', () => {
   const mockGameState = createMockGameState();
   const defaultProps = {
     gameState: mockGameState,
+    isSidebarCollapsed: false,
+    isSmallScreen: false,
+    onToggleSidebar: jest.fn()
   };
 
   beforeEach(() => {
@@ -93,14 +96,6 @@ describe('FilterMenu', () => {
     expect(mockGameState.resetLetter).toHaveBeenCalled();
   });
 
-  test('handles easy mode toggle', () => {
-    render(<FilterMenu {...defaultProps} />);
-    const checkbox = screen.getByLabelText(/easy mode/i);
-    
-    fireEvent.click(checkbox);
-    expect(mockGameState.setIsEasyMode).toHaveBeenCalledWith(true);
-  });
-
   test('handles randomize all filters', () => {
     render(<FilterMenu {...defaultProps} />);
     const randomizeAllButton = screen.getByTitle('Randomly set all filters');
@@ -143,5 +138,15 @@ describe('FilterMenu', () => {
     filterRowButtons.forEach(button => {
       expect(button).toBeDisabled();
     });
+  });
+
+  test('handles collapsed sidebar', () => {
+    render(<FilterMenu {...defaultProps} isSidebarCollapsed={true} />);
+    
+    const toggleButton = screen.getByTitle('Open Filter Menu');
+    expect(toggleButton).toBeInTheDocument();
+    
+    fireEvent.click(toggleButton);
+    expect(defaultProps.onToggleSidebar).toHaveBeenCalled();
   });
 });

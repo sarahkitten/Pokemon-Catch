@@ -55,6 +55,17 @@ export function GameControls({ gameState, onStartOver, onGiveUp }: GameControlsP
           />
         </button>
       </div>
+      <div className="easy-mode-toggle nes-checkbox-container">
+        <label>
+          <input
+            type="checkbox"
+            className="nes-checkbox"
+            checked={gameState.isEasyMode}
+            onChange={(e) => gameState.setIsEasyMode(e.target.checked)}
+          />
+          <span>Easy Mode (Accept close spellings)</span>
+        </label>
+      </div>
     </div>
   );
 }

@@ -131,4 +131,26 @@ describe('GameControls', () => {
     // Check for the volume-off image
     expect(screen.getByTitle('Unmute Pokémon cries').querySelector('img')).toHaveAttribute('alt', 'Unmute');
   });
+
+  it('handles easy mode toggle', () => {
+    const gameState = createMockGameState({ isEasyMode: false });
+    const { unmount } = render(<GameControls {...defaultProps} gameState={gameState} />);
+    
+    const checkbox = screen.getByLabelText(/easy mode/i);
+    expect(checkbox).toBeInTheDocument();
+    expect(checkbox).not.toBeChecked();
+    
+    fireEvent.click(checkbox);
+    expect(gameState.setIsEasyMode).toHaveBeenCalledWith(true);
+    
+    // Unmount first to avoid having multiple instances in the DOM
+    unmount();
+    
+    // Simulate the state change with a new render
+    const easyModeGameState = createMockGameState({ isEasyMode: true });
+    render(<GameControls {...defaultProps} gameState={easyModeGameState} />);
+    
+    // Check that it renders with the updated state
+    expect(screen.getByLabelText(/easy mode/i)).toBeChecked();
+  });
 });

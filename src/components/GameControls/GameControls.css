@@ -81,6 +81,26 @@
   object-fit: contain;
 }
 
+.easy-mode-toggle {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
+  font-size: clamp(0.5em, 1.3vw, 0.7em);
+}
+
+.easy-mode-toggle label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.nes-checkbox-container {
+  margin-bottom: 0.5rem;
+}
+
 /* Responsive adjustments */
 @media (max-width: 480px) {
   .button-group {

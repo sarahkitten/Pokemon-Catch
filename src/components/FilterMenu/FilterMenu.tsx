@@ -208,18 +208,6 @@ export function FilterMenu({
           </div>
         </div>
 
-        <div className="easy-mode-toggle nes-checkbox-container">
-          <label>
-            <input
-              type="checkbox"
-              className="nes-checkbox"
-              checked={gameState.isEasyMode}
-              onChange={(e) => gameState.setIsEasyMode(e.target.checked)}
-            />
-            <span>Easy Mode (Accept close spellings)</span>
-          </label>
-        </div>
-
         <button
           className="randomize-button nes-btn is-primary"
           onClick={gameState.randomizeAllFilters}
