@@ -1,0 +1,52 @@
+/* Dialog styling */
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.nes-dialog {
+  max-width: 90%;
+  width: 400px;
+  background-color: #fff;
+  border-image-repeat: stretch !important;
+}
+
+.nes-dialog .title {
+  margin-bottom: 1rem;
+  font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
+  font-size: 1rem;
+}
+
+.nes-dialog p {
+  font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.dialog-menu {
+  padding: 1rem 0;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .nes-dialog {
+    width: 300px;
+  }
+  
+  .nes-dialog .title {
+    font-size: 0.9rem;
+  }
+  
+  .nes-dialog p {
+    font-size: 0.7rem;
+  }
+}

@@ -7,6 +7,7 @@ import type { GameState } from '../../../hooks/useGameState';
 
 describe('FilterMenu', () => {
   const mockGameState = createMockGameState();
+  
   const defaultProps = {
     gameState: mockGameState,
     isSidebarCollapsed: false,
@@ -16,7 +17,6 @@ describe('FilterMenu', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    window.confirm = jest.fn(() => true);
   });
 
   test('handles generation filter change', async () => {
@@ -43,7 +43,7 @@ describe('FilterMenu', () => {
     expect(mockGameState.changeLetter).toHaveBeenCalledWith('A');
   });
 
-  test('confirms before changing filters when Pokemon are caught', () => {
+  test('shows confirmation dialog before changing filters when Pokemon are caught', () => {
     const gameStateWithCaught = createMockGameState({
       caughtPokemon: [{
         name: 'Pikachu',
@@ -56,7 +56,40 @@ describe('FilterMenu', () => {
     const select = screen.getByLabelText(/choose your region/i);
     
     fireEvent.change(select, { target: { value: '1' } });
-    expect(window.confirm).toHaveBeenCalled();
+    
+    // Check for dialog
+    const dialogElement = screen.getByText(/changing generations will reset your current progress/i);
+    expect(dialogElement).toBeInTheDocument();
+    
+    // Confirm dialog
+    const confirmButton = screen.getByText('Confirm');
+    fireEvent.click(confirmButton);
+    
+    expect(gameStateWithCaught.changeGeneration).toHaveBeenCalledWith(1);
+  });
+
+  test('cancels filter change when dialog is canceled', () => {
+    const gameStateWithCaught = createMockGameState({
+      caughtPokemon: [{
+        name: 'Pikachu',
+        sprite: '/sprites/pikachu.png',
+        types: ['Electric']
+      }]
+    });
+    
+    render(<FilterMenu {...defaultProps} gameState={gameStateWithCaught} />);
+    const select = screen.getByLabelText(/choose your region/i);
+    
+    fireEvent.change(select, { target: { value: '1' } });
+    
+    // Check for dialog
+    expect(screen.getByText(/changing generations will reset your current progress/i)).toBeInTheDocument();
+    
+    // Cancel dialog
+    const cancelButton = screen.getByText('Cancel');
+    fireEvent.click(cancelButton);
+    
+    expect(gameStateWithCaught.changeGeneration).not.toHaveBeenCalled();
   });
 
   test('handles randomize buttons', () => {

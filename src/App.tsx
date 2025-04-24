@@ -5,6 +5,7 @@ import { SearchForm } from './components/SearchForm/SearchForm'
 import { GameControls } from './components/GameControls/GameControls'
 import { PokemonList } from './components/PokemonList/PokemonList'
 import { FilterMenu } from './components/FilterMenu/FilterMenu'
+import { ConfirmDialog } from './components/Dialog/ConfirmDialog'
 import { POKEMON_DATA } from './data/pokemonData'
 import type { CaughtPokemon, Pokemon } from './types'
 import { UI_CONSTANTS } from './constants'
@@ -12,11 +13,34 @@ import { useGameState } from './hooks/useGameState'
 import { findClosestPokemon, fetchFormSprite, playPokemonCry, calculateConfettiPosition } from './utils/pokemonUtils'
 import titleImageFull from './assets/PokemonCatcherTitleFull.png'
 
+interface DialogConfig {
+  isOpen: boolean;
+  message: string;
+  onConfirm: () => void;
+}
+
 function App() {
   const gameState = useGameState();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
+  const [dialogConfig, setDialogConfig] = useState<DialogConfig>({
+    isOpen: false,
+    message: '',
+    onConfirm: () => {}
+  });
+
+  const showConfirmDialog = (message: string, onConfirm: () => void) => {
+    setDialogConfig({
+      isOpen: true,
+      message,
+      onConfirm
+    });
+  };
+
+  const closeDialog = () => {
+    setDialogConfig(prev => ({ ...prev, isOpen: false }));
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -32,13 +56,13 @@ function App() {
   const handleStartOver = () => {
     if (gameState.caughtPokemon.length === 0 && gameState.revealedPokemon.length === 0) return;
 
-    const confirmReset = window.confirm(
-      `Are you sure you want to start over?${gameState.caughtPokemon.length > 0 ? ` This will release all ${gameState.caughtPokemon.length} Pokémon.` : ''}`
+    showConfirmDialog(
+      `Are you sure you want to start over?${gameState.caughtPokemon.length > 0 ? ` This will release all ${gameState.caughtPokemon.length} Pokémon.` : ''}`,
+      () => {
+        gameState.resetProgress();
+        closeDialog();
+      }
     );
-
-    if (confirmReset) {
-      gameState.resetProgress();
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -166,43 +190,43 @@ function App() {
       return;
     }
 
-    const confirmGiveUp = window.confirm(
-      `Are you sure you want to give up? This will reveal all remaining Pokémon!`
-    );
+    showConfirmDialog(
+      `Are you sure you want to give up? This will reveal all remaining Pokémon!`,
+      async () => {
+        gameState.setIsGivingUp(true);
+        gameState.setError('');
+        gameState.setInputValue('');
+        const revealed: Pokemon[] = [];
 
-    if (!confirmGiveUp) return;
+        try {
+          const revealedPokemonData = gameState.filteredPokemon.filter(pokemon =>
+            !gameState.caughtPokemon.some(caught =>
+              caught.name === pokemon.name ||
+              pokemon.forms.some(f => f.name === caught.name)
+            )
+          );
 
-    gameState.setIsGivingUp(true);
-    gameState.setError('');
-    gameState.setInputValue('');
-    const revealed: Pokemon[] = [];
+          for (const pokemon of revealedPokemonData) {
+            const defaultForm = pokemon.forms.find(f => f.isDefault);
+            const formNameToUse = defaultForm ? defaultForm.name : pokemon.name;
 
-    try {
-      const revealedPokemonData = gameState.filteredPokemon.filter(pokemon =>
-        !gameState.caughtPokemon.some(caught =>
-          caught.name === pokemon.name ||
-          pokemon.forms.some(f => f.name === caught.name)
-        )
-      );
-
-      for (const pokemon of revealedPokemonData) {
-        const defaultForm = pokemon.forms.find(f => f.isDefault);
-        const formNameToUse = defaultForm ? defaultForm.name : pokemon.name;
-
-        const sprite = await fetchFormSprite(formNameToUse);
-        revealed.push({
-          id: pokemon.id,
-          name: pokemon.name,
-          sprite: sprite || '',
-          types: pokemon.types
-        });
+            const sprite = await fetchFormSprite(formNameToUse);
+            revealed.push({
+              id: pokemon.id,
+              name: pokemon.name,
+              sprite: sprite || '',
+              types: pokemon.types
+            });
+          }
+          gameState.setRevealedPokemon(revealed);
+        } catch (err) {
+          console.error('Error fetching remaining Pokémon sprites:', err);
+        } finally {
+          gameState.setIsGivingUp(false);
+          closeDialog();
+        }
       }
-      gameState.setRevealedPokemon(revealed);
-    } catch (err) {
-      console.error('Error fetching remaining Pokémon sprites:', err);
-    } finally {
-      gameState.setIsGivingUp(false);
-    }
+    );
   };
 
   return (
@@ -244,6 +268,13 @@ function App() {
           inputPosition={gameState.confettiProps.position}
         />
       )}
+
+      <ConfirmDialog 
+        isOpen={dialogConfig.isOpen}
+        message={dialogConfig.message}
+        onConfirm={dialogConfig.onConfirm}
+        onCancel={closeDialog}
+      />
     </div>
   );
 }
