@@ -2,6 +2,10 @@ import { type ChangeEvent } from 'react';
 import type { GameState } from '../../hooks/useGameState';
 import { GENERATIONS, POKEMON_TYPES } from '../../constants';
 import './FilterMenu.css';
+import dieImage from '../../assets/die.png';
+import resetImage from '../../assets/reset.png';
+import xImage from '../../assets/x.png';
+import settingsImage from '../../assets/settings.png';
 
 interface FilterMenuProps {
   gameState: GameState;
@@ -66,7 +70,7 @@ export function FilterMenu({
           onClick={onToggleSidebar}
           title="Open Filter Menu"
         >
-          <span>⚙️ Filters</span>
+          <img src={settingsImage} alt="Settings" className="icon-image" /> Filters
         </button>
       </div>
     );
@@ -81,7 +85,7 @@ export function FilterMenu({
           onClick={onToggleSidebar}
           title="Close Filter Menu"
         >
-          ✕
+          <img src={xImage} alt="Close" className="icon-image" />
         </button>
       </div>
 
@@ -112,7 +116,7 @@ export function FilterMenu({
               disabled={gameState.getValidOptions('generation').length <= 1}
               title={gameState.getValidOptions('generation').length <= 1 ? "No other valid options" : "Random generation"}
             >
-              <span>🎲</span>
+              <img src={dieImage} alt="Random" className="icon-image" />
             </button>
             <button
               className="reset-filter nes-btn"
@@ -120,7 +124,7 @@ export function FilterMenu({
               disabled={gameState.selectedGenerationIndex === 0}
               title={gameState.selectedGenerationIndex === 0 ? "Already at default" : "Reset to All Generations"}
             >
-              <span>↺</span>
+              <img src={resetImage} alt="Reset" className="icon-image" />
             </button>
           </div>
         </div>
@@ -151,7 +155,7 @@ export function FilterMenu({
               disabled={gameState.getValidOptions('type').length <= 1}
               title={gameState.getValidOptions('type').length <= 1 ? "No other valid options" : "Random type"}
             >
-              <span>🎲</span>
+              <img src={dieImage} alt="Random" className="icon-image" />
             </button>
             <button
               className="reset-filter nes-btn"
@@ -159,7 +163,7 @@ export function FilterMenu({
               disabled={gameState.selectedType === POKEMON_TYPES[0]}
               title={gameState.selectedType === POKEMON_TYPES[0] ? "Already at default" : "Reset to All Types"}
             >
-              <span>↺</span>
+              <img src={resetImage} alt="Reset" className="icon-image" />
             </button>
           </div>
         </div>
@@ -191,7 +195,7 @@ export function FilterMenu({
               disabled={gameState.getValidOptions('letter').length <= 1}
               title={gameState.getValidOptions('letter').length <= 1 ? "No other valid options" : "Random letter"}
             >
-              <span>🎲</span>
+              <img src={dieImage} alt="Random" className="icon-image" />
             </button>
             <button
               className="reset-filter nes-btn"
@@ -199,7 +203,7 @@ export function FilterMenu({
               disabled={gameState.selectedLetter === "All"}
               title={gameState.selectedLetter === "All" ? "Already at default" : "Reset to All Letters"}
             >
-              <span>↺</span>
+              <img src={resetImage} alt="Reset" className="icon-image" />
             </button>
           </div>
         </div>
@@ -221,7 +225,7 @@ export function FilterMenu({
           onClick={gameState.randomizeAllFilters}
           title="Randomly set all filters"
         >
-          <span>🎲 Randomize Filters</span>
+          <img src={dieImage} alt="Random" className="icon-image" /> Randomize Filters
         </button>
 
         <button
@@ -245,7 +249,7 @@ export function FilterMenu({
               : "Reset all filters to default values"
           }
         >
-          <span>↺ Reset All Filters</span>
+          <img src={resetImage} alt="Reset" className="icon-image" /> Reset All Filters
         </button>
       </div>
     </div>

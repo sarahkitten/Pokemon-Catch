@@ -90,6 +90,27 @@
   align-items: center;
 }
 
+.filter-row button {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  padding: 0 !important;
+}
+
+.icon-image {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.randomize-button .icon-image,
+.reset-all-button .icon-image {
+  margin-right: 5px;
+}
+
 /* NES.css select overrides */
 .nes-select {
   flex: 1;
@@ -99,6 +120,13 @@
   font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
   font-size: 0.7em !important;
   padding-right: 2em !important;
+  background-color: white !important;
+  color: black !important;
+}
+
+.nes-select select option {
+  background-color: white;
+  color: black !important;
 }
 
 .generation-selector label,
@@ -144,16 +172,6 @@
 
 .nes-checkbox-container {
   margin: 1rem 0;
-}
-
-.filter-row button {
-  width: 2.5rem;
-  height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  padding: 0 !important;
 }
 
 .filter-row button:disabled {

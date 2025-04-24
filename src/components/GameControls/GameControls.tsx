@@ -1,5 +1,7 @@
 import type { GameState } from '../../hooks/useGameState';
 import './GameControls.css';
+import volumeOnImage from '../../assets/volume-on.png';
+import volumeOffImage from '../../assets/volume-off.png';
 
 interface GameControlsProps {
   gameState: GameState;
@@ -46,7 +48,11 @@ export function GameControls({ gameState, onStartOver, onGiveUp }: GameControlsP
           onClick={() => gameState.setIsMuted(!gameState.isMuted)}
           title={gameState.isMuted ? "Unmute Pokémon cries" : "Mute Pokémon cries"}
         >
-          {gameState.isMuted ? "🔇" : "🔊"}
+          <img 
+            src={gameState.isMuted ? volumeOffImage : volumeOnImage} 
+            alt={gameState.isMuted ? "Unmute" : "Mute"} 
+            className="volume-icon" 
+          />
         </button>
       </div>
     </div>

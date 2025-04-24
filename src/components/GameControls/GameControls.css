@@ -66,6 +66,21 @@
   }
 }
 
+.mute-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0 !important;
+}
+
+.volume-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
 /* Responsive adjustments */
 @media (max-width: 480px) {
   .button-group {
