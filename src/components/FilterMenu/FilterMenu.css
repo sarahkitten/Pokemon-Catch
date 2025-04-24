@@ -1,7 +1,7 @@
 .menu {
   width: 420px;  /* Increased from 300px */
   background-color: #fff;
-  height: 100vh;
+  max-height: 90vh; /* Adding max-height to prevent it from being too tall */
   overflow-y: auto;
   position: sticky;
   top: 0;

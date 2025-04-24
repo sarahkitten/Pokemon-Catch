@@ -12,6 +12,14 @@ form {
   align-self: center;
 }
 
+.search-form-container {
+  display: flex;
+  width: 100%;
+  gap: 8px;
+  justify-content: center;
+  align-items: stretch; /* Changed from flex-start to stretch */
+}
+
 /* Override NES.css input styles to better fit our app */
 .nes-input {
   width: 100%;
@@ -20,6 +28,7 @@ form {
   font-family: 'Press Start 2P', 'Pokemon GB', sans-serif;
   border-image-repeat: stretch !important;
   margin-bottom: 1rem;
+  height: 48px; /* Set explicit height */
 }
 
 .nes-input::placeholder {
@@ -31,6 +40,23 @@ form {
   background-color: #f0f0f0;
   cursor: not-allowed;
   opacity: 0.7;
+}
+
+.search-button {
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 48px;
+  height: 48px; /* Match input height exactly */
+  align-self: flex-start; /* Align with the top of the input */
+}
+
+.arrow-icon {
+  width: 24px;
+  height: 24px;
+  display: block;
 }
 
 .message-container {

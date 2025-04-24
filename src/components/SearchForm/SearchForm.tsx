@@ -1,6 +1,7 @@
 import React, { type FormEvent } from 'react';
 import type { GameState } from '../../hooks/useGameState';
 import './SearchForm.css';
+import rightArrowImage from '../../assets/right-arrow.png';
 
 interface SearchFormProps {
   gameState: GameState;
@@ -11,22 +12,32 @@ interface SearchFormProps {
 export function SearchForm({ gameState, onSubmit, inputRef }: SearchFormProps) {
   return (
     <>
-      <form onSubmit={onSubmit} className="nes-field">
-        <input
-          ref={inputRef}
-          type="text"
-          className="nes-input"
-          value={gameState.inputValue}
-          onChange={(e) => gameState.setInputValue(e.target.value)}
-          placeholder={
-            gameState.isFetchingData
-              ? "Loading Pokémon data..."
-              : gameState.revealedPokemon.length > 0
-              ? "Nice job!"
-              : "Enter a Pokémon name"
-          }
-          disabled={gameState.isLoading || gameState.revealedPokemon.length > 0 || gameState.isFetchingData}
-        />
+      <form onSubmit={onSubmit} className="nes-field search-form">
+        <div className="search-form-container">
+          <input
+            ref={inputRef}
+            type="text"
+            className="nes-input"
+            value={gameState.inputValue}
+            onChange={(e) => gameState.setInputValue(e.target.value)}
+            placeholder={
+              gameState.isFetchingData
+                ? "Loading Pokémon data..."
+                : gameState.revealedPokemon.length > 0
+                ? "Nice job!"
+                : "Enter a Pokémon name"
+            }
+            disabled={gameState.isLoading || gameState.revealedPokemon.length > 0 || gameState.isFetchingData}
+          />
+          <button 
+            type="submit" 
+            className="nes-btn is-primary search-button"
+            disabled={gameState.isLoading || gameState.revealedPokemon.length > 0 || gameState.isFetchingData || !gameState.inputValue.trim()}
+            aria-label="Search"
+          >
+            <img src={rightArrowImage} alt="Search" className="arrow-icon" />
+          </button>
+        </div>
       </form>
       <div className="message-container">
         {gameState.isLoading && <p className="nes-text is-primary loading">Searching for Pokémon...</p>}
