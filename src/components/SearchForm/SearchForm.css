@@ -17,7 +17,8 @@ form {
   width: 100%;
   gap: 8px;
   justify-content: center;
-  align-items: stretch; /* Changed from flex-start to stretch */
+  align-items: stretch;
+  height: 48px;
 }
 
 /* Override NES.css input styles to better fit our app */
@@ -27,7 +28,6 @@ form {
   font-size: clamp(0.7em, 1.8vw, 0.9em);
   font-family: 'Press Start 2P', 'Pokemon GB', sans-serif;
   border-image-repeat: stretch !important;
-  margin-bottom: 1rem;
   height: 48px; /* Set explicit height */
 }
 
@@ -49,8 +49,8 @@ form {
   justify-content: center;
   align-items: center;
   min-width: 48px;
-  height: 48px; /* Match input height exactly */
-  align-self: flex-start; /* Align with the top of the input */
+  min-height: 48px;
+  align-self: stretch;
 }
 
 .arrow-icon {
@@ -62,7 +62,6 @@ form {
 .message-container {
   height: auto;
   min-height: 1.2em;
-  margin: 0.5em 0;
   display: flex;
   justify-content: center;
   align-items: center;
