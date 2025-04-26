@@ -37,7 +37,8 @@ describe('PokemonList', () => {
     revealedPokemon: [],
     filteredPokemon: mockPokemonData,
     isMuted: false,
-    totalPokemon: 3
+    totalPokemon: 3,
+    allCaught: false
   };
 
   beforeEach(() => {
