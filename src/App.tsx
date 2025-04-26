@@ -30,6 +30,32 @@ function App() {
     onConfirm: () => {}
   });
 
+  const getFilteredTitle = () => {
+    let title = 'How many';
+    
+    // Add generation filter
+    if (gameState.selectedGeneration.name !== "All Generations") {
+      const genMatch = gameState.selectedGeneration.name.match(/Gen (\d+)/);
+      const genNum = genMatch ? genMatch[0] : '';
+      title += ` <span class="gen-filter">${genNum}</span>`;
+    }
+
+    // Add type filter
+    if (gameState.selectedType !== "All Types") {
+      title += ` <span class="type-filter">${gameState.selectedType}</span><span class="type-filter">-type</span>`;
+    }
+
+    // Add letter filter
+    if (gameState.selectedLetter !== "All") {
+      title += ` Pokémon starting with <span class="letter-filter">'</span><span class="letter-filter">${gameState.selectedLetter}</span><span class="letter-filter">'</span>`;
+    } else {
+      title += ' Pokémon';
+    }
+
+    title += ' can you catch?';
+    return title;
+  };
+
   const showConfirmDialog = (message: string, onConfirm: () => void) => {
     setDialogConfig({
       isOpen: true,
@@ -233,10 +259,10 @@ function App() {
     <div className="app">
       <div className={`main-content ${isSidebarCollapsed ? 'expanded' : ''}`}>
         <div className="title-container">
-          <img src={titleImageFull} alt="Pokemon Catcher Title Part 1" className="title-image" />
+          <img src={titleImageFull} alt="Pokemon Catcher Title" className="title-image" />
         </div>
         <div className="pokemon-section">
-          <h2 className="title">How many Pokémon can you catch?</h2>
+          <h2 className="title" dangerouslySetInnerHTML={{ __html: getFilteredTitle() }}></h2>
           <SearchForm 
             gameState={gameState} 
             onSubmit={handleSubmit}

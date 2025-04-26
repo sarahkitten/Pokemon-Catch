@@ -90,6 +90,25 @@ h2 {
   font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
 }
 
+.title {
+  text-align: center;
+  margin: 1rem 0;
+  font-size: 1.2rem;
+  line-height: 1.5;
+}
+
+.gen-filter {
+  color: #e23333;
+}
+
+.type-filter {
+  color: #105dc8;
+}
+
+.letter-filter {
+  color: #edf99d;
+}
+
 /* NES.css specific overrides */
 .nes-container {
   margin-bottom: 1rem;
