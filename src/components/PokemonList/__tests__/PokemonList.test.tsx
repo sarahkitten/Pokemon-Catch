@@ -120,8 +120,8 @@ describe('PokemonList', () => {
     const { container } = render(
       <PokemonList 
         {...defaultProps} 
-        caughtPokemon={caughtPokemon} 
-        totalPokemon={3} 
+        caughtPokemon={caughtPokemon}
+        allCaught={true}
       />
     );
     

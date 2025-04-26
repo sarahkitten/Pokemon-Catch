@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import '@testing-library/jest-dom';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { FilterMenu } from '../FilterMenu';
 import { createMockGameState } from '../../../test/testUtils';
 import type { GameState } from '../../../hooks/useGameState';
@@ -23,7 +23,9 @@ describe('FilterMenu', () => {
     render(<FilterMenu {...defaultProps} />);
     const select = screen.getByLabelText(/choose your region/i);
     
-    fireEvent.change(select, { target: { value: '1' } });
+    await act(async () => {
+      fireEvent.change(select, { target: { value: '1' } });
+    });
     expect(mockGameState.changeGeneration).toHaveBeenCalledWith(1);
   });
 
@@ -31,7 +33,9 @@ describe('FilterMenu', () => {
     render(<FilterMenu {...defaultProps} />);
     const select = screen.getByLabelText(/choose pokemon type/i);
     
-    fireEvent.change(select, { target: { value: 'Fire' } });
+    await act(async () => {
+      fireEvent.change(select, { target: { value: 'Fire' } });
+    });
     expect(mockGameState.changeType).toHaveBeenCalledWith('Fire');
   });
 
@@ -39,11 +43,13 @@ describe('FilterMenu', () => {
     render(<FilterMenu {...defaultProps} />);
     const select = screen.getByLabelText(/first letter must be/i);
     
-    fireEvent.change(select, { target: { value: 'A' } });
+    await act(async () => {
+      fireEvent.change(select, { target: { value: 'A' } });
+    });
     expect(mockGameState.changeLetter).toHaveBeenCalledWith('A');
   });
 
-  test('shows confirmation dialog before changing filters when Pokemon are caught', () => {
+  test('shows confirmation dialog before changing filters when Pokemon are caught', async () => {
     const gameStateWithCaught = createMockGameState({
       caughtPokemon: [{
         name: 'Pikachu',
@@ -55,20 +61,23 @@ describe('FilterMenu', () => {
     render(<FilterMenu {...defaultProps} gameState={gameStateWithCaught} />);
     const select = screen.getByLabelText(/choose your region/i);
     
-    fireEvent.change(select, { target: { value: '1' } });
+    await act(async () => {
+      fireEvent.change(select, { target: { value: '1' } });
+    });
     
     // Check for dialog
     const dialogElement = screen.getByText(/changing generations will reset your current progress/i);
     expect(dialogElement).toBeInTheDocument();
     
     // Confirm dialog
-    const confirmButton = screen.getByText('Confirm');
-    fireEvent.click(confirmButton);
+    await act(async () => {
+      fireEvent.click(screen.getByText('Confirm'));
+    });
     
     expect(gameStateWithCaught.changeGeneration).toHaveBeenCalledWith(1);
   });
 
-  test('cancels filter change when dialog is canceled', () => {
+  test('cancels filter change when dialog is canceled', async () => {
     const gameStateWithCaught = createMockGameState({
       caughtPokemon: [{
         name: 'Pikachu',
@@ -80,33 +89,42 @@ describe('FilterMenu', () => {
     render(<FilterMenu {...defaultProps} gameState={gameStateWithCaught} />);
     const select = screen.getByLabelText(/choose your region/i);
     
-    fireEvent.change(select, { target: { value: '1' } });
+    await act(async () => {
+      fireEvent.change(select, { target: { value: '1' } });
+    });
     
     // Check for dialog
     expect(screen.getByText(/changing generations will reset your current progress/i)).toBeInTheDocument();
     
     // Cancel dialog
-    const cancelButton = screen.getByText('Cancel');
-    fireEvent.click(cancelButton);
+    await act(async () => {
+      fireEvent.click(screen.getByText('Cancel'));
+    });
     
     expect(gameStateWithCaught.changeGeneration).not.toHaveBeenCalled();
   });
 
-  test('handles randomize buttons', () => {
+  test('handles randomize buttons', async () => {
     render(<FilterMenu {...defaultProps} />);
     
     const randomizeButtons = screen.getAllByAltText('Random');
-    fireEvent.click(randomizeButtons[0]); // Generation randomize
+    await act(async () => {
+      fireEvent.click(randomizeButtons[0]); // Generation randomize
+    });
     expect(mockGameState.randomizeGeneration).toHaveBeenCalled();
     
-    fireEvent.click(randomizeButtons[1]); // Type randomize
+    await act(async () => {
+      fireEvent.click(randomizeButtons[1]); // Type randomize
+    });
     expect(mockGameState.randomizeType).toHaveBeenCalled();
     
-    fireEvent.click(randomizeButtons[2]); // Letter randomize
+    await act(async () => {
+      fireEvent.click(randomizeButtons[2]); // Letter randomize
+    });
     expect(mockGameState.randomizeLetter).toHaveBeenCalled();
   });
 
-  test('handles reset buttons', () => {
+  test('handles reset buttons', async () => {
     const gameStateWithFilters = createMockGameState({
       selectedGenerationIndex: 1,
       selectedType: 'Fire',
@@ -119,25 +137,33 @@ describe('FilterMenu', () => {
     render(<FilterMenu {...defaultProps} gameState={gameStateWithFilters} />);
     
     const resetButtons = screen.getAllByAltText('Reset');
-    fireEvent.click(resetButtons[0]); // Generation reset
+    await act(async () => {
+      fireEvent.click(resetButtons[0]); // Generation reset
+    });
     expect(mockGameState.resetGeneration).toHaveBeenCalled();
     
-    fireEvent.click(resetButtons[1]); // Type reset
+    await act(async () => {
+      fireEvent.click(resetButtons[1]); // Type reset
+    });
     expect(mockGameState.resetType).toHaveBeenCalled();
     
-    fireEvent.click(resetButtons[2]); // Letter reset
+    await act(async () => {
+      fireEvent.click(resetButtons[2]); // Letter reset
+    });
     expect(mockGameState.resetLetter).toHaveBeenCalled();
   });
 
-  test('handles randomize all filters', () => {
+  test('handles randomize all filters', async () => {
     render(<FilterMenu {...defaultProps} />);
     const randomizeAllButton = screen.getByTitle('Randomly set all filters');
     
-    fireEvent.click(randomizeAllButton);
+    await act(async () => {
+      fireEvent.click(randomizeAllButton);
+    });
     expect(mockGameState.randomizeAllFilters).toHaveBeenCalled();
   });
 
-  test('handles reset all filters', () => {
+  test('handles reset all filters', async () => {
     const gameStateWithFilters = createMockGameState({
       selectedGenerationIndex: 1,
       selectedType: 'Fire',
@@ -148,7 +174,9 @@ describe('FilterMenu', () => {
     render(<FilterMenu {...defaultProps} gameState={gameStateWithFilters} />);
     const resetAllButton = screen.getByText(/reset all filters/i);
     
-    fireEvent.click(resetAllButton);
+    await act(async () => {
+      fireEvent.click(resetAllButton);
+    });
     expect(mockGameState.resetAllFilters).toHaveBeenCalled();
   });
 
@@ -160,10 +188,8 @@ describe('FilterMenu', () => {
     
     render(<FilterMenu {...defaultProps} gameState={gameStateNoOptions} />);
     
-    // Get the specific filter row buttons directly
     const randomizeButtons = screen.getAllByRole('button', { name: /Random/i });
     
-    // Filter out the "Randomize Filters" button which might not be disabled
     const filterRowButtons = randomizeButtons.filter(button => 
       button.classList.contains('randomize-filter')
     );
@@ -173,13 +199,15 @@ describe('FilterMenu', () => {
     });
   });
 
-  test('handles collapsed sidebar', () => {
+  test('handles collapsed sidebar', async () => {
     render(<FilterMenu {...defaultProps} isSidebarCollapsed={true} />);
     
     const toggleButton = screen.getByTitle('Open Filter Menu');
     expect(toggleButton).toBeInTheDocument();
     
-    fireEvent.click(toggleButton);
+    await act(async () => {
+      fireEvent.click(toggleButton);
+    });
     expect(defaultProps.onToggleSidebar).toHaveBeenCalled();
   });
 });
