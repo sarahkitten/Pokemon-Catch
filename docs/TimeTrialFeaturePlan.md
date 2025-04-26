@@ -349,14 +349,6 @@ The following areas require Time Trial specific implementations:
 4. **Social Media Integration**:
    - Direct sharing to various platforms with challenge preview
 
-## Important instructions for all changes
-
-Whenever making changes related to this feature, follow these rules:
-- Any time a significant change is made, consider whether a unit test should be added.  If so, add the unit test.
-- Any time a significant change is made OR a unit test is added, run all unit tests.  If any are failing, fix them.
-- Any time a task in the section below is completed, update this document to reflect that and update the section below with the next tasks to complete
-- Any time you decide to do something differently than is laid out in this plan, update the plan. 
-
 ## Next Steps: First Implementation Task
 
 To begin implementing the Time Trial mode, we should focus first on laying the foundational architecture by creating the shared utilities and the Time Trial state hook. This will establish the core structure needed for all subsequent tasks.
