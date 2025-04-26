@@ -4,12 +4,17 @@
   margin: 0;
   padding: 0;
   background-color: #74c6e7;
-  background-image: url('./assets/bg.png');
+  background-image: url('./assets/bg-regular.jpeg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
   font-family: 'Press Start 2P', cursive;
+  transition: background-image 2s ease;
+}
+
+#root.all-caught {
+  background-image: url('./assets/bg-sunset.jpeg');
 }
 
 .app {

@@ -30,6 +30,18 @@ function App() {
     onConfirm: () => {}
   });
 
+  // Update background effect to use allCaught
+  useEffect(() => {
+    const rootElement = document.getElementById('root');
+    if (rootElement) {
+      if (gameState.allCaught) {
+        rootElement.classList.add('all-caught');
+      } else {
+        rootElement.classList.remove('all-caught');
+      }
+    }
+  }, [gameState.allCaught]);
+
   const getFilteredTitle = () => {
     let title = 'How many';
     
@@ -278,7 +290,7 @@ function App() {
             revealedPokemon={gameState.revealedPokemon}
             filteredPokemon={gameState.filteredPokemon}
             isMuted={gameState.isMuted}
-            totalPokemon={gameState.totalPokemon}
+            allCaught={gameState.allCaught}
           />
         </div>
       </div>
@@ -288,13 +300,20 @@ function App() {
         isSmallScreen={isSmallScreen}
         onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
+      {/* Regular confetti for catching a Pokemon */}
       {gameState.confettiProps && (
         <PokemonConfetti
           spriteUrl={gameState.confettiProps.sprite}
           inputPosition={gameState.confettiProps.position}
         />
       )}
-
+      {/* Continuous confetti when all Pokemon are caught */}
+      {gameState.allCaught && (
+        <PokemonConfetti
+          caughtSprites={gameState.caughtPokemon.map(p => p.sprite)}
+          isContinuous={true}
+        />
+      )}
       <ConfirmDialog 
         isOpen={dialogConfig.isOpen}
         message={dialogConfig.message}

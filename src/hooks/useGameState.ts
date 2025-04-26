@@ -24,6 +24,7 @@ export interface GameState {
   error: string;
   isLoading: boolean;
   isTotalLoading: boolean;
+  allCaught: boolean;
   setCaughtPokemon: (pokemon: CaughtPokemon[] | ((prev: CaughtPokemon[]) => CaughtPokemon[])) => void;
   setInputValue: (value: string) => void;
   setConfettiProps: (props: { sprite: string; position: { x: number; y: number } } | null) => void;
@@ -76,6 +77,8 @@ export function useGameState(): GameState {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isTotalLoading, setIsTotalLoading] = useState(false);
+
+  const allCaught = caughtPokemon.length === totalPokemon && totalPokemon > 0;
 
   const resetProgress = () => {
     setCaughtPokemon([]);
@@ -249,6 +252,7 @@ export function useGameState(): GameState {
     error,
     isLoading,
     isTotalLoading,
+    allCaught,
     setCaughtPokemon,
     setInputValue,
     setConfettiProps,

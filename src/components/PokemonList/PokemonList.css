@@ -14,7 +14,27 @@
 }
 
 .caught-list.is-success .title {
-  color: #289a0e
+  color: #289a0e;
+}
+
+@keyframes successPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.caught-list.is-success .pokemon-card {
+  animation: successPulse 2s infinite;
+}
+
+.caught-list.is-success .pokemon-card:hover {
+  animation: none;
 }
 
 .pokemon-list {

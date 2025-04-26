@@ -7,16 +7,16 @@ interface PokemonListProps {
   revealedPokemon: Pokemon[];
   filteredPokemon: PokemonData[];
   isMuted: boolean;
-  totalPokemon: number;
+  allCaught: boolean;
 }
 
-export function PokemonList({ caughtPokemon, revealedPokemon, filteredPokemon: pokemonData, isMuted, totalPokemon }: PokemonListProps) {
+export function PokemonList({ caughtPokemon, revealedPokemon, filteredPokemon: pokemonData, isMuted, allCaught }: PokemonListProps) {
   const shouldShow = caughtPokemon.length > 0 || revealedPokemon.length > 0;
   
   if (!shouldShow) return null;
   
   return (
-    <div className={`caught-list nes-container with-title ${caughtPokemon.length === totalPokemon ? 'is-success' : ''}`}>
+    <div className={`caught-list nes-container with-title ${allCaught ? 'is-success' : ''}`}>
       <h3 className="title">Pokemon Collection:</h3>
       <div className="pokemon-list">
         {caughtPokemon.map((pokemon) => (

@@ -25,14 +25,16 @@ export function SearchForm({ gameState, onSubmit, inputRef }: SearchFormProps) {
                 ? "Loading Pokémon data..."
                 : gameState.revealedPokemon.length > 0
                 ? "Nice job!"
+                : gameState.allCaught
+                ? "You caught them all!"
                 : "Enter a Pokémon name"
             }
-            disabled={gameState.isLoading || gameState.revealedPokemon.length > 0 || gameState.isFetchingData}
+            disabled={gameState.isLoading || gameState.revealedPokemon.length > 0 || gameState.isFetchingData || gameState.allCaught}
           />
           <button 
             type="submit" 
             className="nes-btn is-primary search-button"
-            disabled={gameState.isLoading || gameState.revealedPokemon.length > 0 || gameState.isFetchingData || !gameState.inputValue.trim()}
+            disabled={gameState.isLoading || gameState.revealedPokemon.length > 0 || gameState.isFetchingData || !gameState.inputValue.trim() || gameState.allCaught}
             aria-label="Search"
           >
             <img src={rightArrowImage} alt="Search" className="arrow-icon" />
