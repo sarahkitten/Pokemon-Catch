@@ -6,9 +6,10 @@ import { GameControls } from './components/GameControls/GameControls'
 import { PokemonList } from './components/PokemonList/PokemonList'
 import { FilterMenu } from './components/FilterMenu/FilterMenu'
 import { TimeTrialButton } from './components/TimeTrialButton/TimeTrialButton'
+import { TimeTrialOptions } from './components/TimeTrialOptions/TimeTrialOptions'
 import { ConfirmDialog } from './components/Dialog/ConfirmDialog'
 import { POKEMON_DATA } from './data/pokemonData'
-import type { CaughtPokemon, Pokemon } from './types'
+import type { CaughtPokemon, Pokemon, TimeTrialDifficulty, PokemonCountCategory } from './types'
 import { UI_CONSTANTS } from './constants'
 import { useGameState } from './hooks/useGameState'
 import { findClosestPokemon, fetchFormSprite, playPokemonCry, calculateConfettiPosition } from './utils/pokemonUtils'
@@ -25,6 +26,7 @@ function App() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
+  const [isTimeTrialOptionsOpen, setIsTimeTrialOptionsOpen] = useState(false);
   const [dialogConfig, setDialogConfig] = useState<DialogConfig>({
     isOpen: false,
     message: '',
@@ -268,6 +270,26 @@ function App() {
     );
   };
 
+  const handleStartTimeTrial = () => {
+    setIsTimeTrialOptionsOpen(true);
+  };
+
+  const handleCloseTimeTrialOptions = () => {
+    setIsTimeTrialOptionsOpen(false);
+  };
+
+  const handleStartTimeTrialGame = (settings: {
+    difficulty: TimeTrialDifficulty;
+    pokemonCountCategory: PokemonCountCategory;
+    isEasyMode: boolean;
+  }) => {
+    // This is a placeholder for the actual time trial start functionality
+    // We'll implement this in the next task
+    console.log('Starting time trial with settings:', settings);
+    setIsTimeTrialOptionsOpen(false);
+    // TODO: Implement actual time trial start logic in the next task
+  };
+
   return (
     <div className="app">
       <div className={`main-content ${isSidebarCollapsed ? 'expanded' : ''}`}>
@@ -304,10 +326,16 @@ function App() {
       {/* Add Time Trial Button next to Filter Menu */}
       {isSidebarCollapsed && (
         <TimeTrialButton 
-          onStartTimeTrial={() => alert('Time Trial feature coming soon!')} 
+          onStartTimeTrial={handleStartTimeTrial} 
           className="next-to-filter"
         />
       )}
+      {/* Time Trial Options Dialog */}
+      <TimeTrialOptions
+        isOpen={isTimeTrialOptionsOpen}
+        onClose={handleCloseTimeTrialOptions}
+        onStart={handleStartTimeTrialGame}
+      />
       {/* Regular confetti for catching a Pokemon */}
       {gameState.confettiProps && (
         <PokemonConfetti

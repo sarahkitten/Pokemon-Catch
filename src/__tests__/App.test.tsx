@@ -1,3 +1,7 @@
+import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import App from '../App';
+
 describe('App', () => {
 
   describe('Initial Render', () => {
@@ -165,6 +169,64 @@ describe('App', () => {
 
     test('shows victory message when all Pokemon are caught', () => {
 
+    });
+  });
+
+  describe('Time Trial Mode', () => {
+    test('shows time trial button when sidebar is collapsed', () => {
+      render(<App />);
+      
+      // The sidebar is collapsed by default in the App component
+      const timeTrialButton = screen.getByRole('button', { name: /time trial/i });
+      expect(timeTrialButton).toBeInTheDocument();
+    });
+    
+    test('opens time trial options dialog when time trial button is clicked', () => {
+      render(<App />);
+      
+      // Click the time trial button
+      const timeTrialButton = screen.getByRole('button', { name: /time trial/i });
+      fireEvent.click(timeTrialButton);
+      
+      // Check if the options dialog is open
+      const dialogTitle = screen.getByText('Time Trial Options');
+      expect(dialogTitle).toBeInTheDocument();
+    });
+    
+    test('closes time trial options dialog when cancel button is clicked', () => {
+      render(<App />);
+      
+      // Open the dialog
+      const timeTrialButton = screen.getByRole('button', { name: /time trial/i });
+      fireEvent.click(timeTrialButton);
+      
+      // Dialog should be open
+      expect(screen.getByText('Time Trial Options')).toBeInTheDocument();
+      
+      // Click cancel
+      const cancelButton = screen.getByRole('button', { name: 'Cancel' });
+      fireEvent.click(cancelButton);
+      
+      // Dialog should be closed
+      expect(screen.queryByText('Time Trial Options')).not.toBeInTheDocument();
+    });
+    
+    test('closes time trial options dialog when start button is clicked', () => {
+      render(<App />);
+      
+      // Open the dialog
+      const timeTrialButton = screen.getByRole('button', { name: /time trial/i });
+      fireEvent.click(timeTrialButton);
+      
+      // Dialog should be open
+      expect(screen.getByText('Time Trial Options')).toBeInTheDocument();
+      
+      // Click start
+      const startButton = screen.getByRole('button', { name: 'Start' });
+      fireEvent.click(startButton);
+      
+      // Dialog should be closed
+      expect(screen.queryByText('Time Trial Options')).not.toBeInTheDocument();
     });
   });
 });

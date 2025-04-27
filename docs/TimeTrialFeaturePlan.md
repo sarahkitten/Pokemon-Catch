@@ -419,24 +419,45 @@ To begin implementing the Time Trial mode, we should focus first on laying the f
      - Implemented responsive design for different screen sizes
      - Styled to match the app's NES-style aesthetic
 
+7. ~~**Integrate TimeTrialButton and TimeTrialOptions with App.tsx**~~ ✅ COMPLETED (April 26, 2025)
+   - ~~Update App.tsx to import and use the TimeTrialButton and TimeTrialOptions components~~
+   - ~~Add state in App.tsx to control the visibility of the options dialog~~
+   - ~~Connect the TimeTrialButton click handler to show the options dialog~~
+   - ~~Implement the onClose handler for the TimeTrialOptions component to hide the dialog~~
+   - ~~Set up a placeholder onStart handler in preparation for the next task~~
+   - ~~Add unit tests for the integration~~
+   - Successfully implemented the integration:
+     - Imported TimeTrialOptions component into App.tsx
+     - Added state variable `isTimeTrialOptionsOpen` to control dialog visibility
+     - Connected TimeTrialButton's `onStartTimeTrial` to show the dialog
+     - Implemented `handleCloseTimeTrialOptions` to hide the dialog
+     - Created a placeholder `handleStartTimeTrialGame` function
+     - Added comprehensive tests for TimeTrialButton and the App integration
+     - Verified all core functionality works as expected
+
 ### Next Small Task
-Integrate the TimeTrialButton and TimeTrialOptions components with App.tsx to enable showing the options dialog when the Time Trial button is clicked. This task involves:
+Create the TimeTrialCountdown component and integrate it with App.tsx. The TimeTrialCountdown component should display a visual countdown from 3 to 1 before the time trial starts. This task involves:
 
-1. Update App.tsx to import and use the TimeTrialButton and TimeTrialOptions components
-2. Add state in App.tsx to control the visibility of the options dialog
-3. Connect the TimeTrialButton click handler to show the options dialog
-4. Implement the onClose handler for the TimeTrialOptions component to hide the dialog
-5. Set up a placeholder onStart handler in preparation for the next task
+1. Create the TimeTrialCountdown component with:
+   - Visual countdown animation from 3 to 1
+   - "GO!" message at the end of the countdown
+   - Props for controlling visibility and a callback for when the countdown completes
+   - Appropriate styling to match the app's aesthetic
 
-Focus on the UI integration only in this task. We'll connect the TimeTrialOptions component to the TimeTrialState hook in the next task.
+2. Update App.tsx to:
+   - Add state to track when the countdown is visible
+   - Show the countdown when the time trial starts (after the options dialog is confirmed)
+   - Start the actual time trial gameplay after the countdown completes
+
+Focus on creating a visually appealing countdown that prepares the user for the time trial.
 
 ### Expected Timeline
-- TimeTrialButton and TimeTrialOptions Integration: 1 day
+- TimeTrialCountdown Component: 1-2 days
 
 ### Definition of Done
-- The Time Trial button appears in the app's UI
-- Clicking the Time Trial button opens the options dialog
-- The options dialog can be closed by clicking the Cancel button
-- The dialog's Start button is set up with a placeholder function
-- All UI elements are responsive and styled correctly
+- The TimeTrialCountdown component is implemented and styled
+- The countdown animation works properly, counting from 3 to 1 and then showing "GO!"
+- The component fires a callback when the countdown completes
+- The countdown is integrated with App.tsx and appears after the user confirms the Time Trial options
+- Appropriate tests are added for the component and its integration
 - No errors or warnings in the console
