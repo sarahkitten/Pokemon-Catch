@@ -27,8 +27,7 @@ export function TimeTrialOptions({ isOpen, onClose, onStart }: TimeTrialOptionsP
   const selectedDifficultySettings = getDifficultySettings(difficulty);
   
   const description = `Start with ${selectedDifficultySettings.initialTime} seconds. 
-  Earn +${selectedDifficultySettings.timePerCatch} seconds for each Pokemon caught. 
-  ${isEasyMode ? 'Easy Mode enabled: all matching Pokémon will be shown.' : ''}`;
+  Earn +${selectedDifficultySettings.timePerCatch} seconds for each Pokemon caught.`;
 
   // Handler for starting the time trial
   const handleStart = () => {
@@ -93,13 +92,11 @@ export function TimeTrialOptions({ isOpen, onClose, onStart }: TimeTrialOptionsP
                 checked={isEasyMode}
                 onChange={(e) => setIsEasyMode(e.target.checked)}
               />
-              <span>Easy Mode</span>
+              <span>Easy Mode (accept close spellings)</span>
             </label>
           </div>
           <p className="time-trial-options-description">
-            {isEasyMode 
-              ? "Show all matching Pokémon instead of having to guess" 
-              : "Try to guess which Pokémon match the current filters"}
+            Try to catch all the Pokémon that match the description!
           </p>
         </div>
         
