@@ -8,11 +8,13 @@ import { FilterMenu } from './components/FilterMenu/FilterMenu'
 import { TimeTrialButton } from './components/TimeTrialButton/TimeTrialButton'
 import { TimeTrialOptions } from './components/TimeTrialOptions/TimeTrialOptions'
 import { TimeTrialCountdown } from './components/TimeTrialCountdown/TimeTrialCountdown'
+import { TimeTrialTimer } from './components/TimeTrialTimer/TimeTrialTimer'
 import { ConfirmDialog } from './components/Dialog/ConfirmDialog'
 import { POKEMON_DATA } from './data/pokemonData'
 import type { CaughtPokemon, Pokemon, TimeTrialDifficulty, PokemonCountCategory } from './types'
 import { UI_CONSTANTS } from './constants'
 import { useGameState } from './hooks/useGameState'
+import { useTimeTrialState } from './hooks/useTimeTrialState'
 import { findClosestPokemon, fetchFormSprite, playPokemonCry, calculateConfettiPosition } from './utils/pokemonUtils'
 import titleImageFull from './assets/PokemonCatcherTitleFull.png'
 
@@ -24,11 +26,14 @@ interface DialogConfig {
 
 function App() {
   const gameState = useGameState();
+  const timeTrialState = useTimeTrialState();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
   const [isTimeTrialOptionsOpen, setIsTimeTrialOptionsOpen] = useState(false);
   const [isTimeTrialCountdownVisible, setIsTimeTrialCountdownVisible] = useState(false);
+  const [isTimeTrialMode, setIsTimeTrialMode] = useState(false);
+  const [lastTimeAdded, setLastTimeAdded] = useState<number | undefined>(undefined);
   const [timeTrialSettings, setTimeTrialSettings] = useState<{
     difficulty: TimeTrialDifficulty;
     pokemonCountCategory: PokemonCountCategory;
@@ -115,6 +120,46 @@ function App() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Determine if we're in time trial mode or regular mode
+    if (isTimeTrialMode) {
+      handleTimeTrialSubmit(e);
+    } else {
+      handleRegularSubmit(e);
+    }
+  };
+
+  const handleTimeTrialSubmit = (_e: React.FormEvent) => {
+    const inputValue = timeTrialState.inputValue.trim();
+    
+    if (!inputValue) return;
+    
+    // Validate the input against the filtered pokemon
+    const result = timeTrialState.validateInput(inputValue);
+    
+    if (result.valid && result.pokemon) {
+      // Get the time trial settings to determine time added
+      const settings = timeTrialState.getTimeTrialSettings(timeTrialState.difficulty);
+      
+      // Save the time added for animation
+      setLastTimeAdded(settings.timeAddedPerCatch);
+      
+      // Catch the pokemon (this will add time internally)
+      timeTrialState.catchPokemon(result.pokemon);
+      
+      // Check if timer has ended (all pokemon caught or time up)
+      if (!timeTrialState.isActive) {
+        // TODO: Show results screen (will be implemented in a future task)
+        console.log('Time trial ended!', {
+          caughtCount: timeTrialState.caughtPokemon.length,
+          totalTime: timeTrialState.startTime ? Math.floor((Date.now() - timeTrialState.startTime) / 1000) : 0,
+          difficulty: timeTrialState.difficulty
+        });
+      }
+    }
+  };
+
+  const handleRegularSubmit = async (_e: React.FormEvent) => {
     const pokemonName = gameState.inputValue.trim().toLowerCase().replace(/\s+/g, '-');
 
     gameState.setIsLoading(true);
@@ -303,10 +348,39 @@ function App() {
     setIsTimeTrialCountdownVisible(false);
     
     if (timeTrialSettings) {
-      // This will be replaced in the next task with actual time trial start logic
-      console.log('Time trial countdown complete! Starting game with settings:', timeTrialSettings);
-      // TODO: Start the actual time trial with the stored settings
+      // Start the time trial with the selected settings
+      timeTrialState.startTimeTrial(
+        timeTrialSettings.difficulty, 
+        timeTrialSettings.pokemonCountCategory, 
+        timeTrialSettings.isEasyMode
+      );
+      
+      // Generate a random challenge based on the selected Pokemon count category
+      timeTrialState.generateRandomChallenge(timeTrialSettings.pokemonCountCategory);
+      
+      // Switch to time trial mode
+      setIsTimeTrialMode(true);
+      
+      // Focus the input field to start typing
+      setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
     }
+  };
+
+  const handleExitTimeTrial = () => {
+    // Confirm with the user before exiting
+    showConfirmDialog(
+      `Are you sure you want to exit the Time Trial? Your progress will be lost.`,
+      () => {
+        // Reset time trial state
+        timeTrialState.resetTimeTrial();
+        // Switch back to regular mode
+        setIsTimeTrialMode(false);
+        // Reset the last time added state
+        setLastTimeAdded(undefined);
+        // Close the dialog
+        closeDialog();
+      }
+    );
   };
 
   return (
@@ -318,7 +392,9 @@ function App() {
         <div className="pokemon-section">
           <h2 className="title" dangerouslySetInnerHTML={{ __html: getFilteredTitle() }}></h2>
           <SearchForm 
-            gameState={gameState} 
+            gameState={gameState}
+            timeTrialState={timeTrialState}
+            isTimeTrialMode={isTimeTrialMode} 
             onSubmit={handleSubmit}
             inputRef={inputRef}
           />
@@ -333,6 +409,10 @@ function App() {
             filteredPokemon={gameState.filteredPokemon}
             isMuted={gameState.isMuted}
             allCaught={gameState.allCaught}
+            isTimeTrialMode={isTimeTrialMode}
+            timeTrialCaughtPokemon={timeTrialState.caughtPokemon}
+            timeTrialFilteredPokemon={timeTrialState.filteredPokemon}
+            totalTimeTrialPokemon={timeTrialState.totalPokemon}
           />
         </div>
       </div>
@@ -360,6 +440,16 @@ function App() {
         isVisible={isTimeTrialCountdownVisible}
         onComplete={handleTimeTrialCountdownComplete}
       />
+      {/* Time Trial Timer */}
+      {isTimeTrialMode && timeTrialState.isActive && (
+        <TimeTrialTimer
+          timeRemaining={timeTrialState.timeRemaining}
+          timeAdded={lastTimeAdded}
+          isActive={timeTrialState.isActive}
+          isPaused={timeTrialState.isPaused}
+          onExit={handleExitTimeTrial}
+        />
+      )}
       {/* Regular confetti for catching a Pokemon */}
       {gameState.confettiProps && (
         <PokemonConfetti
