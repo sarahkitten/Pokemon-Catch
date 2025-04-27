@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import App from '../App';
 
@@ -227,6 +227,89 @@ describe('App', () => {
       
       // Dialog should be closed
       expect(screen.queryByText('Time Trial Options')).not.toBeInTheDocument();
+    });
+
+    // Mock timers for testing countdown
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+    
+    afterEach(() => {
+      jest.clearAllTimers();
+      jest.useRealTimers();
+    });
+    
+    test('shows countdown when time trial game starts', () => {
+      render(<App />);
+      
+      // Open the dialog
+      const timeTrialButton = screen.getByRole('button', { name: /time trial/i });
+      fireEvent.click(timeTrialButton);
+      
+      // Click start to begin the countdown
+      const startButton = screen.getByRole('button', { name: 'Start' });
+      fireEvent.click(startButton);
+      
+      // Countdown should be visible
+      expect(screen.getByText('3')).toBeInTheDocument();
+    });
+    
+    test('countdown advances from 3 to GO!', () => {
+      render(<App />);
+      
+      // Open the dialog and start the trial
+      const timeTrialButton = screen.getByRole('button', { name: /time trial/i });
+      fireEvent.click(timeTrialButton);
+      const startButton = screen.getByRole('button', { name: 'Start' });
+      fireEvent.click(startButton);
+      
+      // Initial countdown number
+      expect(screen.getByText('3')).toBeInTheDocument();
+      
+      // Advance timer by 1 second
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+      expect(screen.getByText('2')).toBeInTheDocument();
+      
+      // Advance timer by 1 more second
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+      expect(screen.getByText('1')).toBeInTheDocument();
+      
+      // Advance timer by 1 more second to reach GO!
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+      expect(screen.getByText('GO!')).toBeInTheDocument();
+    });
+    
+    test('countdown completes and disappears after showing GO!', () => {
+      render(<App />);
+      
+      // Open the dialog and start the trial
+      const timeTrialButton = screen.getByRole('button', { name: /time trial/i });
+      fireEvent.click(timeTrialButton);
+      const startButton = screen.getByRole('button', { name: 'Start' });
+      fireEvent.click(startButton);
+      
+      // Advance through whole countdown (3, 2, 1, GO!)
+      act(() => {
+        jest.advanceTimersByTime(3000);
+      });
+      expect(screen.getByText('GO!')).toBeInTheDocument();
+      
+      // After showing GO! for 1 second, countdown should disappear
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+      
+      // Countdown should no longer be visible
+      expect(screen.queryByText('3')).not.toBeInTheDocument();
+      expect(screen.queryByText('2')).not.toBeInTheDocument();
+      expect(screen.queryByText('1')).not.toBeInTheDocument();
+      expect(screen.queryByText('GO!')).not.toBeInTheDocument();
     });
   });
 });

@@ -1,6 +1,6 @@
 ## Prime directive: Important instructions for all changes
 
-Read this file and the feature plan before completing any task.
+Read this file and the feature plan, then complete the next small task as described in the feature plan.
 
 Only complete one SMALL task at a time.  Do not move on until all of these rules have been followed and the user has prompted you to continue.
 

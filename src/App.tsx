@@ -7,6 +7,7 @@ import { PokemonList } from './components/PokemonList/PokemonList'
 import { FilterMenu } from './components/FilterMenu/FilterMenu'
 import { TimeTrialButton } from './components/TimeTrialButton/TimeTrialButton'
 import { TimeTrialOptions } from './components/TimeTrialOptions/TimeTrialOptions'
+import { TimeTrialCountdown } from './components/TimeTrialCountdown/TimeTrialCountdown'
 import { ConfirmDialog } from './components/Dialog/ConfirmDialog'
 import { POKEMON_DATA } from './data/pokemonData'
 import type { CaughtPokemon, Pokemon, TimeTrialDifficulty, PokemonCountCategory } from './types'
@@ -27,6 +28,12 @@ function App() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
   const [isTimeTrialOptionsOpen, setIsTimeTrialOptionsOpen] = useState(false);
+  const [isTimeTrialCountdownVisible, setIsTimeTrialCountdownVisible] = useState(false);
+  const [timeTrialSettings, setTimeTrialSettings] = useState<{
+    difficulty: TimeTrialDifficulty;
+    pokemonCountCategory: PokemonCountCategory;
+    isEasyMode: boolean;
+  } | null>(null);
   const [dialogConfig, setDialogConfig] = useState<DialogConfig>({
     isOpen: false,
     message: '',
@@ -283,11 +290,23 @@ function App() {
     pokemonCountCategory: PokemonCountCategory;
     isEasyMode: boolean;
   }) => {
-    // This is a placeholder for the actual time trial start functionality
-    // We'll implement this in the next task
-    console.log('Starting time trial with settings:', settings);
+    // Save the time trial settings
+    setTimeTrialSettings(settings);
+    // Close the options dialog
     setIsTimeTrialOptionsOpen(false);
-    // TODO: Implement actual time trial start logic in the next task
+    // Show the countdown
+    setIsTimeTrialCountdownVisible(true);
+  };
+
+  const handleTimeTrialCountdownComplete = () => {
+    // Hide the countdown
+    setIsTimeTrialCountdownVisible(false);
+    
+    if (timeTrialSettings) {
+      // This will be replaced in the next task with actual time trial start logic
+      console.log('Time trial countdown complete! Starting game with settings:', timeTrialSettings);
+      // TODO: Start the actual time trial with the stored settings
+    }
   };
 
   return (
@@ -335,6 +354,11 @@ function App() {
         isOpen={isTimeTrialOptionsOpen}
         onClose={handleCloseTimeTrialOptions}
         onStart={handleStartTimeTrialGame}
+      />
+      {/* Time Trial Countdown */}
+      <TimeTrialCountdown 
+        isVisible={isTimeTrialCountdownVisible}
+        onComplete={handleTimeTrialCountdownComplete}
       />
       {/* Regular confetti for catching a Pokemon */}
       {gameState.confettiProps && (
