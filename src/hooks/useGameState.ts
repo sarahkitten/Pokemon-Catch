@@ -4,6 +4,7 @@ import type { Generation } from '../constants';
 import { GENERATIONS, POKEMON_TYPES, UI_CONSTANTS } from '../constants';
 import { POKEMON_DATA } from '../data/pokemonData';
 import { getRandomValue, findRandomValidCombination, isValidCombination } from '../utils/pokemonUtils';
+import { createPokemonFilters, areAllPokemonCaught } from '../utils/pokemonStateUtils';
 
 export interface GameState {
   caughtPokemon: CaughtPokemon[];
@@ -78,7 +79,7 @@ export function useGameState(): GameState {
   const [isLoading, setIsLoading] = useState(false);
   const [isTotalLoading, setIsTotalLoading] = useState(false);
 
-  const allCaught = caughtPokemon.length === totalPokemon && totalPokemon > 0;
+  const allCaught = areAllPokemonCaught(caughtPokemon.length, totalPokemon);
 
   const resetProgress = () => {
     setCaughtPokemon([]);
@@ -93,16 +94,8 @@ export function useGameState(): GameState {
     setNoResults(false);
     
     try {
-      // Filter Pokemon based on generation, type, and starting letter using local data
-      const filteredPokemon = POKEMON_DATA.filter(pokemon => {
-        const inGeneration = generation.name === "All Generations" || 
-          (pokemon.id >= generation.startId && pokemon.id <= generation.endId);
-        const matchesType = type === "All Types" || 
-          pokemon.types.some(t => t.toLowerCase() === type.toLowerCase());
-        const matchesLetter = letter === "All" || 
-          pokemon.name.toLowerCase().startsWith(letter.toLowerCase());
-        return inGeneration && matchesType && matchesLetter;
-      });
+      // Use the extracted utility function to filter Pokemon
+      const filteredPokemon = createPokemonFilters(POKEMON_DATA, generation, type, letter);
       
       setTotalPokemon(filteredPokemon.length);
       setFilteredPokemon(filteredPokemon);

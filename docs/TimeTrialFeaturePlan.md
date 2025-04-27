@@ -355,11 +355,18 @@ To begin implementing the Time Trial mode, we should focus first on laying the f
 
 ### Task: Set Up Core State Management
 
-1. **Create Shared Pokemon State Utilities**
-   - Create a new file: `/src/utils/pokemonStateUtils.ts`
-   - Extract shared functionality from `useGameState`
-   - Implement filter creation and validation functions
-   - Add unit tests for the shared utilities
+1. ~~**Create Shared Pokemon State Utilities**~~ ✅ COMPLETED (April 26, 2025)
+   - ~~Create a new file: `/src/utils/pokemonStateUtils.ts`~~
+   - ~~Extract shared functionality from `useGameState`~~
+   - ~~Implement filter creation and validation functions~~
+   - ~~Add unit tests for the shared utilities~~
+   - Successfully extracted and unit tested key utility functions:
+     - `createPokemonFilters`: Filters Pokemon based on generation, type, and starting letter
+     - `validatePokemonInput`: Validates user input against filtered Pokemon list
+     - `isPokemonAlreadyCaught`: Checks if a Pokemon has already been caught
+     - `getPokemonSprite`: Generates sprite URLs for Pokemon
+     - `areAllPokemonCaught`: Determines if all Pokemon in the current filter set are caught
+     - `estimateFilterDifficulty`: Estimates filter difficulty based on number of matching Pokemon
 
 2. ~~**Implement Time Trial Constants**~~ ✅ COMPLETED (April 26, 2025)
    - ~~Update `/src/constants.ts` to include Time Trial related constants~~
@@ -398,4 +405,4 @@ This initial task establishes the necessary foundation upon which all other Time
 - The architecture supports the planned features for subsequent tasks
 
 ### Next Small Task
-Create the shared Pokemon state utilities by implementing the `/src/utils/pokemonStateUtils.ts` file, which will extract and centralize the shared functionality from `useGameState` for reuse in the Time Trial mode.
+Create the Time Trial Hook by implementing the `/src/hooks/useTimeTrialState.ts` file, which will provide the core state management for the Time Trial mode and leverage the shared utilities.
