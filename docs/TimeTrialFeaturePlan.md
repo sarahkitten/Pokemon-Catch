@@ -392,23 +392,37 @@ To begin implementing the Time Trial mode, we should focus first on laying the f
      - Sharing functionality with URL encoding/decoding
      - Basic test coverage for core functionality
 
-5. **Create Time Trial Button Component**
-   - Create basic button component to launch Time Trial mode
-   - Add simple styling to match the existing UI
-   - Position next to the Filters button
-   - This component will initially just toggle a state in App.tsx
-
-### Expected Timeline
-- Shared utilities and constants: ~~1 day~~ COMPLETED
-- Time Trial types: ~~0.5 day~~ COMPLETED
-- Time Trial state hook: ~~2-3 days~~ COMPLETED (April 26, 2025)
-- Initial Time Trial button: 0.5 day
-
-### Definition of Done
-- All new files have appropriate unit tests with good coverage
-- The Time Trial state hook can be initialized in the app
-- The button appears in the UI and can toggle a mode flag
-- The architecture supports the planned features for subsequent tasks
+5. ~~**Create Time Trial Button Component**~~ ✅ COMPLETED (April 26, 2025)
+   - ~~Create basic button component to launch Time Trial mode~~
+   - ~~Add simple styling to match the existing UI~~
+   - ~~Position next to the Filters button~~
+   - Successfully implemented the Time Trial Button:
+     - Created TimeTrialButton component with responsive styling
+     - Positioned at the top-right corner, matching the Filter button's vertical position
+     - Made responsive for mobile devices with font size adjustments
+     - Added placeholder onClick handler for future integration
+     - Styled to match the app's NES-style aesthetic
 
 ### Next Small Task
-Create the Time Trial Button Component by implementing the `/src/components/TimeTrialButton/TimeTrialButton.tsx` and `/src/components/TimeTrialButton/TimeTrialButton.css` files, which will provide a UI element to toggle the Time Trial mode. The button should be styled to match the existing UI and positioned next to the Filters button.
+Create the Time Trial Options component by implementing the `/src/components/TimeTrialOptions/TimeTrialOptions.tsx` and `/src/components/TimeTrialOptions/TimeTrialOptions.css` files. This component will be a modal dialog that appears when the Time Trial button is clicked, allowing the user to configure their time trial settings.
+
+The TimeTrialOptions component should include:
+1. A modal dialog with Time Trial configuration options
+2. Settings for total Pokemon count (1-5, 6-20, 21-50, 50+, All)
+3. Difficulty selector (Easy, Medium, Hard)
+4. Easy mode toggle (same as in existing game)
+5. Start button to begin the time trial
+6. Close button to dismiss the dialog
+
+Focus on the UI implementation first, with placeholder functions for the actions. We'll connect it to the TimeTrialState hook in a subsequent task.
+
+### Expected Timeline
+- Time Trial Options Component: 1-2 days
+
+### Definition of Done
+- The TimeTrialOptions component is implemented with all required UI elements
+- The component opens when the Time Trial button is clicked
+- The dialog can be closed
+- The component is styled to match the existing UI
+- The component is responsive for different screen sizes
+- The UI elements are in place even if not fully connected to state management yet

@@ -43,7 +43,7 @@
   align-items: center;
   gap: 0.5em;
   font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
-  font-size: 0.8rem;
+  font-size: clamp(0.5em, 1.3vw, 0.7em);
   padding: 0.5rem 0.75rem !important;
   line-height: 1.2;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
@@ -59,7 +59,7 @@
   align-items: center;
   gap: 0.5em;
   font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
-  font-size: 0.8rem;
+  font-size: clamp(0.5em, 1.3vw, 0.7em);
   padding: 0.5rem 0.75rem !important;
   line-height: 1.2;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
@@ -181,5 +181,14 @@
 @media (max-width: 768px) {
   .menu {
     width: 100%;
+  }
+  
+  .menu-toggle-button {
+    padding: 0.4rem 0.6rem !important;
+  }
+  
+  .icon-image {
+    width: 18px;
+    height: 18px;
   }
 }

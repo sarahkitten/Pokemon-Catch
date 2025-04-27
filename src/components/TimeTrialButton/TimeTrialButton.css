@@ -1,0 +1,54 @@
+.time-trial-button-container {
+  display: flex;
+  justify-content: center;
+}
+
+.time-trial-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
+  font-size: clamp(0.5em, 1.3vw, 0.7em);
+  padding: 0.5rem 0.75rem !important;
+  line-height: 1.2;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.time-trial-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.time-trial-button img.icon-image {
+  width: 20px;
+  height: 20px;
+  margin-right: 2px;
+}
+
+/* Position it next to Filter button when used in App */
+.time-trial-button-container.next-to-filter {
+  position: fixed;
+  right: 20px;
+  top: 20px; /* Match the Filter button's top position */
+  z-index: 100;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .time-trial-button-container.next-to-filter {
+    /* Keep it at the top, but align to the right */
+    top: 20px;
+    right: 10px;
+  }
+  
+  .time-trial-button {
+    padding: 0.4rem 0.6rem !important;
+  }
+  
+  .time-trial-button img.icon-image {
+    width: 18px;
+    height: 18px;
+  }
+}

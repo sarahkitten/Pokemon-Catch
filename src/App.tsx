@@ -5,6 +5,7 @@ import { SearchForm } from './components/SearchForm/SearchForm'
 import { GameControls } from './components/GameControls/GameControls'
 import { PokemonList } from './components/PokemonList/PokemonList'
 import { FilterMenu } from './components/FilterMenu/FilterMenu'
+import { TimeTrialButton } from './components/TimeTrialButton/TimeTrialButton'
 import { ConfirmDialog } from './components/Dialog/ConfirmDialog'
 import { POKEMON_DATA } from './data/pokemonData'
 import type { CaughtPokemon, Pokemon } from './types'
@@ -300,6 +301,13 @@ function App() {
         isSmallScreen={isSmallScreen}
         onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
+      {/* Add Time Trial Button next to Filter Menu */}
+      {isSidebarCollapsed && (
+        <TimeTrialButton 
+          onStartTimeTrial={() => alert('Time Trial feature coming soon!')} 
+          className="next-to-filter"
+        />
+      )}
       {/* Regular confetti for catching a Pokemon */}
       {gameState.confettiProps && (
         <PokemonConfetti
