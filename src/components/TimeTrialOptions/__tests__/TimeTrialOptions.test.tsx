@@ -58,7 +58,7 @@ describe('TimeTrialOptions', () => {
     // Check for sections
     expect(screen.getByText('Difficulty')).toBeInTheDocument();
     expect(screen.getByText('Pokemon Count')).toBeInTheDocument();
-    expect(screen.getByText('Easy Mode')).toBeInTheDocument();
+    expect(screen.getByText('Easy Mode (accept close spellings)')).toBeInTheDocument();
     
     // Check for buttons
     expect(screen.getByRole('button', { name: 'Start' })).toBeInTheDocument();
@@ -165,15 +165,15 @@ describe('TimeTrialOptions', () => {
     // Initial state: Easy Mode is off
     const easyModeCheckbox = screen.getByRole('checkbox');
     expect(easyModeCheckbox).not.toBeChecked();
-    expect(screen.getByText('Try to guess which Pokémon match the current filters')).toBeInTheDocument();
+    expect(screen.getByText('Try to catch all the Pokémon that match the description!')).toBeInTheDocument();
     
     // Toggle Easy Mode on
     fireEvent.click(easyModeCheckbox);
     
     // Easy Mode should now be on
     expect(easyModeCheckbox).toBeChecked();
-    expect(screen.getByText('Show all matching Pokémon instead of having to guess')).toBeInTheDocument();
-    expect(screen.getByText(/Easy Mode enabled: all matching Pokémon will be shown./i)).toBeInTheDocument();
+    // The component just keeps showing the same description text
+    expect(screen.getByText('Try to catch all the Pokémon that match the description!')).toBeInTheDocument();
   });
   
   test('calls onClose when Cancel button is clicked', () => {
