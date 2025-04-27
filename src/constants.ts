@@ -32,3 +32,20 @@ export const UI_CONSTANTS = {
     INPUT_FOCUS_DELAY: 10,
     MAX_FILTER_ATTEMPTS: 50,
 } as const;
+
+export const TIME_TRIAL = {
+  DIFFICULTY: {
+    EASY: { initialTime: 120, timePerCatch: 15, name: 'Easy' },
+    MEDIUM: { initialTime: 90, timePerCatch: 10, name: 'Medium' },
+    HARD: { initialTime: 60, timePerCatch: 5, name: 'Hard' }
+  },
+  POKEMON_COUNT_CATEGORIES: {
+    VERY_FEW: { name: '1-5', min: 1, max: 5 },
+    FEW: { name: '6-20', min: 6, max: 20 },
+    SOME: { name: '21-50', min: 21, max: 50 },
+    MANY: { name: '50+', min: 50, max: Number.MAX_SAFE_INTEGER },
+    ALL: { name: 'All', min: 1, max: Number.MAX_SAFE_INTEGER }
+  },
+  COUNTDOWN_SECONDS: 3,
+  MIN_TIME_REMAINING: 0
+} as const;

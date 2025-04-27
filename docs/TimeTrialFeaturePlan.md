@@ -361,57 +361,13 @@ To begin implementing the Time Trial mode, we should focus first on laying the f
    - Implement filter creation and validation functions
    - Add unit tests for the shared utilities
 
-2. **Implement Time Trial Constants**
-   - Update `/src/constants.ts` to include Time Trial related constants:
-   ```typescript
-   export const TIME_TRIAL = {
-     DIFFICULTY: {
-       EASY: { initialTime: 120, timePerCatch: 15, name: 'Easy' },
-       MEDIUM: { initialTime: 90, timePerCatch: 10, name: 'Medium' },
-       HARD: { initialTime: 60, timePerCatch: 5, name: 'Hard' }
-     },
-     POKEMON_COUNT_CATEGORIES: {
-       VERY_FEW: { name: '1-5', min: 1, max: 5 },
-       FEW: { name: '6-20', min: 6, max: 20 },
-       SOME: { name: '21-50', min: 21, max: 50 },
-       MANY: { name: '50+', min: 50, max: Number.MAX_SAFE_INTEGER },
-       ALL: { name: 'All', min: 1, max: Number.MAX_SAFE_INTEGER }
-     },
-     COUNTDOWN_SECONDS: 3,
-     MIN_TIME_REMAINING: 0
-   } as const;
-   ```
+2. ~~**Implement Time Trial Constants**~~ ✅ COMPLETED (April 26, 2025)
+   - ~~Update `/src/constants.ts` to include Time Trial related constants~~
+   - Added `TIME_TRIAL` object with difficulty settings, Pokemon count categories, and utility constants
 
-3. **Add Time Trial Types**
-   - Update `/src/types.ts` to include Time Trial related types:
-   ```typescript
-   export type TimeTrialDifficulty = 'easy' | 'medium' | 'hard';
-   
-   export type PokemonCountCategory = '1-5' | '6-20' | '21-50' | '50+' | 'all';
-   
-   export interface TimeTrialState {
-     isActive: boolean;
-     isPaused: boolean;
-     difficulty: TimeTrialDifficulty;
-     timeRemaining: number;
-     pokemonCountCategory: PokemonCountCategory;
-     caughtPokemon: CaughtPokemon[];
-     inputValue: string;
-     isEasyMode: boolean;
-     error: string;
-     startTime: number | null;
-     endTime: number | null;
-     filters: {
-       generation: Generation;
-       type: string;
-       letter: string;
-     };
-     filteredPokemon: PokemonData[];
-     totalPokemon: number;
-     isLoading: boolean;
-     shareCode: string | null;
-   }
-   ```
+3. ~~**Add Time Trial Types**~~ ✅ COMPLETED (April 26, 2025)
+   - ~~Update `/src/types.ts` to include Time Trial related types~~
+   - Added `TimeTrialDifficulty`, `PokemonCountCategory`, `TimeTrialState`, `TimeTrialSettings`, and `TimeTrialShareParams` types
 
 4. **Create Time Trial Hook**
    - Create `/src/hooks/useTimeTrialState.ts`
@@ -430,8 +386,9 @@ To begin implementing the Time Trial mode, we should focus first on laying the f
 This initial task establishes the necessary foundation upon which all other Time Trial features will be built. By focusing on the state management architecture first, we ensure that subsequent UI components will have a solid base to interact with.
 
 ### Expected Timeline
-- Shared utilities and constants: 1 day
-- Time Trial types and state hook: 2-3 days
+- Shared utilities and constants: ~~1 day~~ COMPLETED
+- Time Trial types: ~~0.5 day~~ COMPLETED
+- Time Trial state hook: 2-3 days
 - Initial Time Trial button: 0.5 day
 
 ### Definition of Done
@@ -439,3 +396,6 @@ This initial task establishes the necessary foundation upon which all other Time
 - The Time Trial state hook can be initialized in the app
 - The button appears in the UI and can toggle a mode flag
 - The architecture supports the planned features for subsequent tasks
+
+### Next Small Task
+Create the shared Pokemon state utilities by implementing the `/src/utils/pokemonStateUtils.ts` file, which will extract and centralize the shared functionality from `useGameState` for reuse in the Time Trial mode.
