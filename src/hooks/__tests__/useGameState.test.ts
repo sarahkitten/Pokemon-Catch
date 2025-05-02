@@ -750,6 +750,10 @@ describe('useGameState', () => {
     });
 
     it('handles corrupted localStorage data gracefully', () => {
+      // Temporarily silence console.error
+      const originalConsoleError = console.error;
+      console.error = jest.fn();
+
       localStorage.setItem('pokemonCatcherState', 'invalid json{');
 
       const { result } = renderHook(() => useGameState());
@@ -761,6 +765,9 @@ describe('useGameState', () => {
       expect(result.current.selectedLetter).toBe("All");
       expect(result.current.isMuted).toBe(false);
       expect(result.current.isEasyMode).toBe(false);
+
+      // Restore console.error
+      console.error = originalConsoleError;
     });
 
     it('persists state changes to localStorage', async () => {
