@@ -113,38 +113,6 @@ export function useGameState(): GameState {
 
   const allCaught = areAllPokemonCaught(caughtPokemon.length, totalPokemon);
 
-  useEffect(() => {
-    const stateToSave: StoredState = {
-      caughtPokemon,
-      selectedGenerationIndex,
-      selectedType,
-      selectedLetter,
-      isMuted,
-      isEasyMode
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
-  }, [caughtPokemon, selectedGenerationIndex, selectedType, selectedLetter, isMuted, isEasyMode]);
-
-  // Restore total count when loading saved state
-  useEffect(() => {
-    if (initialState.selectedGenerationIndex !== 0 || 
-        initialState.selectedType !== POKEMON_TYPES[0] || 
-        initialState.selectedLetter !== "All") {
-      updateTotalCount(
-        GENERATIONS[initialState.selectedGenerationIndex],
-        initialState.selectedType,
-        initialState.selectedLetter
-      );
-    }
-  }, []); // Run once on mount
-
-  const resetProgress = () => {
-    setCaughtPokemon([]);
-    setInputValue('');
-    setError('');
-    setRevealedPokemon([]);
-  };
-
   const updateTotalCount = useCallback(async (generation: Generation, type: string, letter: string = selectedLetter) => {
     setIsTotalLoading(true);
     setIsFetchingData(true);
@@ -166,6 +134,42 @@ export function useGameState(): GameState {
       setIsFetchingData(false);
     }
   }, [selectedLetter]);
+
+  useEffect(() => {
+    const stateToSave: StoredState = {
+      caughtPokemon,
+      selectedGenerationIndex,
+      selectedType,
+      selectedLetter,
+      isMuted,
+      isEasyMode
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+  }, [caughtPokemon, selectedGenerationIndex, selectedType, selectedLetter, isMuted, isEasyMode]);
+
+  // Restore total count when loading saved state
+  useEffect(() => {
+    const savedState = loadInitialState();
+    const hasNonDefaultFilters = 
+      savedState.selectedGenerationIndex !== 0 || 
+      savedState.selectedType !== POKEMON_TYPES[0] || 
+      savedState.selectedLetter !== "All";
+    
+    if (hasNonDefaultFilters) {
+      updateTotalCount(
+        GENERATIONS[savedState.selectedGenerationIndex],
+        savedState.selectedType,
+        savedState.selectedLetter
+      );
+    }
+  }, [updateTotalCount]); // Only depends on updateTotalCount
+
+  const resetProgress = () => {
+    setCaughtPokemon([]);
+    setInputValue('');
+    setError('');
+    setRevealedPokemon([]);
+  };
 
   const changeGeneration = async (newIndex: number) => {
     const newGen = GENERATIONS[newIndex];
