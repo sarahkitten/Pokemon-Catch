@@ -1,10 +1,21 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { Pokemon, CaughtPokemon, PokemonData } from '../types';
 import type { Generation } from '../constants';
 import { GENERATIONS, POKEMON_TYPES, UI_CONSTANTS } from '../constants';
 import { POKEMON_DATA } from '../data/pokemonData';
 import { getRandomValue, findRandomValidCombination, isValidCombination } from '../utils/pokemonUtils';
 import { createPokemonFilters, areAllPokemonCaught } from '../utils/pokemonStateUtils';
+
+const STORAGE_KEY = 'pokemonCatcherState';
+
+interface StoredState {
+  caughtPokemon: CaughtPokemon[];
+  selectedGenerationIndex: number;
+  selectedType: string;
+  selectedLetter: string;
+  isMuted: boolean;
+  isEasyMode: boolean;
+}
 
 export interface GameState {
   caughtPokemon: CaughtPokemon[];
@@ -60,26 +71,72 @@ export interface GameState {
 }
 
 export function useGameState(): GameState {
-  const [caughtPokemon, setCaughtPokemon] = useState<CaughtPokemon[]>([]);
+  const loadInitialState = (): StoredState => {
+    const savedState = localStorage.getItem(STORAGE_KEY);
+    if (savedState) {
+      try {
+        return JSON.parse(savedState);
+      } catch (e) {
+        console.error('Failed to parse saved state:', e);
+      }
+    }
+    return {
+      caughtPokemon: [],
+      selectedGenerationIndex: 0,
+      selectedType: POKEMON_TYPES[0],
+      selectedLetter: "All",
+      isMuted: false,
+      isEasyMode: false
+    };
+  };
+
+  const initialState = loadInitialState();
+
+  const [caughtPokemon, setCaughtPokemon] = useState<CaughtPokemon[]>(initialState.caughtPokemon);
   const [inputValue, setInputValue] = useState('');
   const [confettiProps, setConfettiProps] = useState<{ sprite: string; position: { x: number; y: number } } | null>(null);
-  const [selectedGenerationIndex, setSelectedGenerationIndex] = useState<number>(0);
+  const [selectedGenerationIndex, setSelectedGenerationIndex] = useState<number>(initialState.selectedGenerationIndex);
   const selectedGeneration = GENERATIONS[selectedGenerationIndex];
-  const [selectedType, setSelectedType] = useState<string>(POKEMON_TYPES[0]);
-  const [selectedLetter, setSelectedLetter] = useState<string>("All");
+  const [selectedType, setSelectedType] = useState<string>(initialState.selectedType);
+  const [selectedLetter, setSelectedLetter] = useState<string>(initialState.selectedLetter);
   const [totalPokemon, setTotalPokemon] = useState<number>(GENERATIONS[0].total);
   const [isGivingUp, setIsGivingUp] = useState(false);
   const [revealedPokemon, setRevealedPokemon] = useState<Pokemon[]>([]);
   const [filteredPokemon, setFilteredPokemon] = useState<PokemonData[]>(POKEMON_DATA);
   const [isFetchingData, setIsFetchingData] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isEasyMode, setIsEasyMode] = useState(false);
+  const [isMuted, setIsMuted] = useState(initialState.isMuted);
+  const [isEasyMode, setIsEasyMode] = useState(initialState.isEasyMode);
   const [noResults, setNoResults] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isTotalLoading, setIsTotalLoading] = useState(false);
 
   const allCaught = areAllPokemonCaught(caughtPokemon.length, totalPokemon);
+
+  useEffect(() => {
+    const stateToSave: StoredState = {
+      caughtPokemon,
+      selectedGenerationIndex,
+      selectedType,
+      selectedLetter,
+      isMuted,
+      isEasyMode
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+  }, [caughtPokemon, selectedGenerationIndex, selectedType, selectedLetter, isMuted, isEasyMode]);
+
+  // Restore total count when loading saved state
+  useEffect(() => {
+    if (initialState.selectedGenerationIndex !== 0 || 
+        initialState.selectedType !== POKEMON_TYPES[0] || 
+        initialState.selectedLetter !== "All") {
+      updateTotalCount(
+        GENERATIONS[initialState.selectedGenerationIndex],
+        initialState.selectedType,
+        initialState.selectedLetter
+      );
+    }
+  }, []); // Run once on mount
 
   const resetProgress = () => {
     setCaughtPokemon([]);
@@ -94,7 +151,6 @@ export function useGameState(): GameState {
     setNoResults(false);
     
     try {
-      // Use the extracted utility function to filter Pokemon
       const filteredPokemon = createPokemonFilters(POKEMON_DATA, generation, type, letter);
       
       setTotalPokemon(filteredPokemon.length);
