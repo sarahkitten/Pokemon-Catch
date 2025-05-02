@@ -34,7 +34,7 @@ const GENERATIONS = [
   { name: "Gen 6 (Kalos)", startId: 650, endId: 721 },
   { name: "Gen 7 (Alola)", startId: 722, endId: 809 },
   { name: "Gen 8 (Galar)", startId: 810, endId: 905 },
-  { name: "Gen 9 (Paldea)", startId: 906, endId: 1008 },
+  { name: "Gen 9 (Paldea)", startId: 906, endId: 1025 },
 ];
 
 // List of Pokemon that should keep their dashes in their base name
@@ -77,6 +77,7 @@ const DASHED_NAMES = new Set([
   'iron-valiant',
   'iron-leaves',
   'iron-crown',
+  'iron-boulder',
 ]);
 
 async function fetchPokemonSpeciesData(name: string): Promise<{ forms: { name: string; isDefault: boolean }[] } | null> {
@@ -155,7 +156,7 @@ async function generatePokemonData() {
     await new Promise(resolve => setTimeout(resolve, 200));
   }
 
-  // Sort by ID
+  // Sort by ID (though they should already be in order)
   pokemonData.sort((a, b) => a.id - b.id);
 
   // Generate the TypeScript file content

@@ -41,6 +41,15 @@ export function validatePokemonInput(
 ): PokemonData | undefined {
   const normalizedInput = input.toLowerCase().trim();
   
+  // Special case for "nidoran" - match female or male variant based on filters
+  if (normalizedInput === 'nidoran') {
+    const nidoranFemale = filteredPokemon.find(pokemon => pokemon.name.toLowerCase() === 'nidoran-f');
+    const nidoranMale = filteredPokemon.find(pokemon => pokemon.name.toLowerCase() === 'nidoran-m');
+    
+    // Return whichever variant is available in the filtered list
+    return nidoranFemale || nidoranMale;
+  }
+
   // Exact match check for any Pokemon
   const exactMatch = filteredPokemon.find(pokemon => 
     pokemon.name.toLowerCase() === normalizedInput ||

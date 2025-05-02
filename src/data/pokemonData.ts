@@ -7066,4 +7066,123 @@ export const POKEMON_DATA: PokemonData[] = [
     generation: 9,
     forms: [{ name: "miraidon", isDefault: true }, { name: "miraidon-low-power-mode", isDefault: false }, { name: "miraidon-drive-mode", isDefault: false }, { name: "miraidon-aquatic-mode", isDefault: false }, { name: "miraidon-glide-mode", isDefault: false }]
   },
+  {
+    id: 1009,
+    name: "walking-wake",
+    types: ["water", "dragon"],
+    generation: 9,
+    forms: [{ name: "walking-wake", isDefault: true }]
+  },
+  {
+    id: 1010,
+    name: "iron-leaves",
+    types: ["grass", "psychic"],
+    generation: 9,
+    forms: [{ name: "iron-leaves", isDefault: true }]
+  },
+  {
+    id: 1011,
+    name: "dipplin",
+    types: ["grass", "dragon"],
+    generation: 9,
+    forms: [{ name: "dipplin", isDefault: true }]
+  },
+  {
+    id: 1012,
+    name: "poltchageist",
+    types: ["grass", "ghost"],
+    generation: 9,
+    forms: [{ name: "poltchageist", isDefault: true }]
+  },
+  {
+    id: 1013,
+    name: "sinistcha",
+    types: ["grass", "ghost"],
+    generation: 9,
+    forms: [{ name: "sinistcha", isDefault: true }]
+  },
+  {
+    id: 1014,
+    name: "okidogi",
+    types: ["poison", "fighting"],
+    generation: 9,
+    forms: [{ name: "okidogi", isDefault: true }]
+  },
+  {
+    id: 1015,
+    name: "munkidori",
+    types: ["poison", "psychic"],
+    generation: 9,
+    forms: [{ name: "munkidori", isDefault: true }]
+  },
+  {
+    id: 1016,
+    name: "fezandipiti",
+    types: ["poison", "fairy"],
+    generation: 9,
+    forms: [{ name: "fezandipiti", isDefault: true }]
+  },
+  {
+    id: 1017,
+    name: "ogerpon",
+    types: ["grass"],
+    generation: 9,
+    forms: [{ name: "ogerpon", isDefault: true }, { name: "ogerpon-wellspring-mask", isDefault: false }, { name: "ogerpon-hearthflame-mask", isDefault: false }, { name: "ogerpon-cornerstone-mask", isDefault: false }]
+  },
+  {
+    id: 1018,
+    name: "archaludon",
+    types: ["steel", "dragon"],
+    generation: 9,
+    forms: [{ name: "archaludon", isDefault: true }]
+  },
+  {
+    id: 1019,
+    name: "hydrapple",
+    types: ["grass", "dragon"],
+    generation: 9,
+    forms: [{ name: "hydrapple", isDefault: true }]
+  },
+  {
+    id: 1020,
+    name: "gouging-fire",
+    types: ["fire", "dragon"],
+    generation: 9,
+    forms: [{ name: "gouging-fire", isDefault: true }]
+  },
+  {
+    id: 1021,
+    name: "raging-bolt",
+    types: ["electric", "dragon"],
+    generation: 9,
+    forms: [{ name: "raging-bolt", isDefault: true }]
+  },
+  {
+    id: 1022,
+    name: "iron-boulder",
+    types: ["rock", "psychic"],
+    generation: 9,
+    forms: [{ name: "iron-boulder", isDefault: true }]
+  },
+  {
+    id: 1023,
+    name: "iron-crown",
+    types: ["steel", "psychic"],
+    generation: 9,
+    forms: [{ name: "iron-crown", isDefault: true }]
+  },
+  {
+    id: 1024,
+    name: "terapagos",
+    types: ["normal"],
+    generation: 9,
+    forms: [{ name: "terapagos", isDefault: true }, { name: "terapagos-terastal", isDefault: false }, { name: "terapagos-stellar", isDefault: false }]
+  },
+  {
+    id: 1025,
+    name: "pecharunt",
+    types: ["poison", "ghost"],
+    generation: 9,
+    forms: [{ name: "pecharunt", isDefault: true }]
+  },
 ];
