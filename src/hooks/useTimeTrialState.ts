@@ -2,22 +2,58 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import type { 
   TimeTrialDifficulty, 
   PokemonCountCategory, 
-  TimeTrialState, 
   CaughtPokemon, 
   PokemonData,
   TimeTrialSettings
 } from '../types';
-import { GENERATIONS, POKEMON_TYPES, TIME_TRIAL } from '../constants';
+import { GENERATIONS, POKEMON_TYPES, TIME_TRIAL, type Generation } from '../constants';
 import { POKEMON_DATA } from '../data/pokemonData';
+import filterCombinationsData from '../data/filterCombinations.json';
 import { 
   createPokemonFilters, 
   validatePokemonInput, 
   isPokemonAlreadyCaught, 
   getPokemonSprite,
 } from '../utils/pokemonStateUtils';
-import { findRandomValidCombination } from '../utils/pokemonUtils';
 
-export interface UseTimeTrialStateReturn extends TimeTrialState {
+interface FilterCombination {
+  generation: string;
+  type: string;
+  letter: string;
+  count: number;
+}
+
+interface FilterCombinationsData {
+  totalPokemon: FilterCombination;
+  '1-5': FilterCombination[];
+  '6-20': FilterCombination[];
+  '21-50': FilterCombination[];
+  '50+': FilterCombination[];
+}
+
+const typedFilterCombinations = filterCombinationsData as FilterCombinationsData;
+
+export interface UseTimeTrialStateReturn {
+  isActive: boolean;
+  isPaused: boolean;
+  difficulty: TimeTrialDifficulty;
+  timeRemaining: number;
+  pokemonCountCategory: PokemonCountCategory;
+  caughtPokemon: CaughtPokemon[];
+  inputValue: string;
+  isEasyMode: boolean;
+  error: string;
+  startTime: number | null;
+  endTime: number | null;
+  filters: {
+    generation: Generation;
+    type: string;
+    letter: string;
+  };
+  filteredPokemon: PokemonData[];
+  totalPokemon: number;
+  shareCode: string | null;
+
   // Action methods
   startTimeTrial: (difficulty: TimeTrialDifficulty, category: PokemonCountCategory, easyMode: boolean) => void;
   pauseTimeTrial: () => void;
@@ -27,7 +63,7 @@ export interface UseTimeTrialStateReturn extends TimeTrialState {
   validateInput: (input: string) => { valid: boolean; pokemon?: PokemonData };
   catchPokemon: (pokemon: PokemonData) => void;
   setInputValue: (value: string) => void;
-  generateRandomChallenge: (category: PokemonCountCategory) => Promise<boolean>;
+  generateRandomChallenge: (category: PokemonCountCategory) => boolean;
   getTimeTrialSettings: (difficulty: TimeTrialDifficulty) => TimeTrialSettings;
   shareTrial: () => string;
   loadSharedTrial: (code: string) => boolean;
@@ -54,7 +90,6 @@ export function useTimeTrialState(): UseTimeTrialStateReturn {
   const [error, setError] = useState<string>('');
   const [filteredPokemon, setFilteredPokemon] = useState<PokemonData[]>([]);
   const [totalPokemon, setTotalPokemon] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   
   // Filter state
   const [filters, setFilters] = useState({
@@ -247,81 +282,59 @@ export function useTimeTrialState(): UseTimeTrialStateReturn {
   }, [difficulty, isActive, caughtPokemon.length, totalPokemon, getTimeTrialSettings, endTimeTrial]);
   
   // Generate a random challenge based on the selected Pokemon count category
-  const generateRandomChallenge = useCallback(async (category: PokemonCountCategory): Promise<boolean> => {
-    setIsLoading(true);
-    
-    // Define target Pokemon count range based on selected category
-    let targetMin = 0;
-    let targetMax = 0;
-    
-    switch (category) {
-      case '1-5':
-        targetMin = TIME_TRIAL.POKEMON_COUNT_CATEGORIES.VERY_FEW.min;
-        targetMax = TIME_TRIAL.POKEMON_COUNT_CATEGORIES.VERY_FEW.max;
-        break;
-      case '6-20':
-        targetMin = TIME_TRIAL.POKEMON_COUNT_CATEGORIES.FEW.min;
-        targetMax = TIME_TRIAL.POKEMON_COUNT_CATEGORIES.FEW.max;
-        break;
-      case '21-50':
-        targetMin = TIME_TRIAL.POKEMON_COUNT_CATEGORIES.SOME.min;
-        targetMax = TIME_TRIAL.POKEMON_COUNT_CATEGORIES.SOME.max;
-        break;
-      case '50+':
-        targetMin = TIME_TRIAL.POKEMON_COUNT_CATEGORIES.MANY.min;
-        targetMax = TIME_TRIAL.POKEMON_COUNT_CATEGORIES.MANY.max;
-        break;
-      case 'all':
-      default:
-        targetMin = TIME_TRIAL.POKEMON_COUNT_CATEGORIES.ALL.min;
-        targetMax = TIME_TRIAL.POKEMON_COUNT_CATEGORIES.ALL.max;
-        break;
-    }
-    
-    // Find a valid random combination with the target number of Pokemon
-    const maxAttempts = 100; // Maximum filter attempts
-    let attempts = 0;
-    let found = false;
-    
-    while (attempts < maxAttempts && !found) {
-      attempts++;
-      
-      // Get a random combination
-      const combination = findRandomValidCombination(
-        POKEMON_DATA,
-        GENERATIONS,
-        POKEMON_TYPES,
-        maxAttempts
-      );
-      
-      if (!combination) continue;
-      
-      const { generationIndex, type, letter } = combination;
-      const generation = GENERATIONS[generationIndex];
-      
-      // Filter Pokemon based on the combination
-      const filtered = createPokemonFilters(POKEMON_DATA, generation, type, letter);
-      
-      // Check if the count is within the target range
-      if (filtered.length >= targetMin && filtered.length <= targetMax) {
-        // We found a valid combination
-        setFilters({
-          generation,
-          type,
-          letter
-        });
-        
-        setFilteredPokemon(filtered);
-        setTotalPokemon(filtered.length);
-        setIsLoading(false);
-        
-        found = true;
-        break;
+  const generateRandomChallenge = useCallback((category: PokemonCountCategory): boolean => {
+    if (category === 'all') {
+      // Use the totalPokemon combination for the 'all' category
+      const combination = typedFilterCombinations.totalPokemon;
+      const generation = GENERATIONS.find(g => g.name === combination.generation);
+      if (!generation) {
+        return false;
       }
+
+      const newFilters = {
+        generation,
+        type: combination.type,
+        letter: combination.letter
+      };
+      console.log('Selected filters:', newFilters);
+      setFilters(newFilters);
+
+      const filtered = createPokemonFilters(POKEMON_DATA, generation, combination.type, combination.letter);
+      setFilteredPokemon(filtered);
+      setTotalPokemon(filtered.length);
+      return true;
     }
-    
-    setIsLoading(false);
-    return found;
+
+    // Get combinations for other categories
+    const combinations = typedFilterCombinations[category as '1-5' | '6-20' | '21-50' | '50+'];
+    if (!combinations || !Array.isArray(combinations) || combinations.length === 0) {
+      return false;
+    }
+
+    // Pick a random combination
+    const randomIndex = Math.floor(Math.random() * combinations.length);
+    const combination = combinations[randomIndex];
+
+    // Find the matching generation from our constants
+    const generation = GENERATIONS.find(g => g.name === combination.generation);
+    if (!generation) {
+      return false;
+    }
+
+    // Set the filters
+    const newFilters = {
+      generation,
+      type: combination.type,
+      letter: combination.letter
+    };
+    console.log('Selected filters:', newFilters);
+    setFilters(newFilters);
+
+    // Filter Pokemon based on the combination
+    const filtered = createPokemonFilters(POKEMON_DATA, generation, combination.type, combination.letter);
+    setFilteredPokemon(filtered);
+    setTotalPokemon(filtered.length);
+    return true;
   }, []);
   
   // Generate a shareable code for the current trial
@@ -354,7 +367,7 @@ export function useTimeTrialState(): UseTimeTrialStateReturn {
       const shareParams = JSON.parse(atob(code));
       
       // Validate required fields
-      if (!shareParams.d || !shareParams.c || shareParams.g === undefined || 
+      if (!shareParams.d || !shareParams.c || !shareParams.g === undefined || 
           !shareParams.t || !shareParams.l) {
         return false;
       }
@@ -414,7 +427,6 @@ export function useTimeTrialState(): UseTimeTrialStateReturn {
     filters,
     filteredPokemon,
     totalPokemon,
-    isLoading,
     shareCode,
     
     // Methods

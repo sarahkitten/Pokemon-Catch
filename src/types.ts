@@ -48,7 +48,6 @@ export interface TimeTrialState {
   };
   filteredPokemon: PokemonData[];
   totalPokemon: number;
-  isLoading: boolean;
   shareCode: string | null;
 }
 
