@@ -1,5 +1,5 @@
 import type { Pokemon, CaughtPokemon, PokemonData } from '../../types';
-import { handlePokemonClick } from '../../utils/pokemonUtils';
+import { PokemonCard } from './PokemonCard';
 import './PokemonList.css';
 
 interface PokemonListProps {
@@ -60,39 +60,24 @@ export function PokemonList({
     <div className={`caught-list nes-container with-title ${getContainerClass()}`}>
       <h3 className="title">{getTitle()}</h3>
       <div className="pokemon-list">
-        {activeCaughtPokemon.map((pokemon) => (
-          <div
-            key={pokemon.name}
-            className={`pokemon-card nes-container is-rounded ${isTimeTrialMode ? 'time-trial' : ''}`}
-            onClick={() => handlePokemonClick(pokemon, activePokemonData, isMuted)}
-          >
-            <img src={pokemon.sprite} alt={pokemon.name} className="pokemon-sprite nes-pointer" />
-            <span className="nes-text">{pokemon.name}</span>
-            <div className="pokemon-types">
-              {pokemon.types.map(type => (
-                <span key={type} className={`type-tag ${type}`}>
-                  {type}
-                </span>
-              ))}
-            </div>
-          </div>
-        ))}
         {activeRevealedPokemon.map((pokemon) => (
-          <div
+          <PokemonCard
             key={pokemon.name}
-            className="pokemon-card nes-container is-rounded uncaught"
-            onClick={() => handlePokemonClick(pokemon, activePokemonData, isMuted)}
-          >
-            <img src={pokemon.sprite} alt={pokemon.name} className="pokemon-sprite nes-pointer" />
-            <span className="nes-text">{pokemon.name}</span>
-            <div className="pokemon-types">
-              {pokemon.types.map(type => (
-                <span key={type} className={`type-tag ${type}`}>
-                  {type}
-                </span>
-              ))}
-            </div>
-          </div>
+            pokemon={pokemon}
+            pokemonData={activePokemonData}
+            isMuted={isMuted}
+            isRevealed={true}
+            isTimeTrialMode={isTimeTrialMode}
+          />
+        ))}
+        {activeCaughtPokemon.map((pokemon) => (
+          <PokemonCard
+            key={pokemon.name}
+            pokemon={pokemon}
+            pokemonData={activePokemonData}
+            isMuted={isMuted}
+            isTimeTrialMode={isTimeTrialMode}
+          />
         ))}
       </div>
     </div>

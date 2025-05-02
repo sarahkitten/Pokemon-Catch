@@ -11,7 +11,7 @@ import { TimeTrialCountdown } from './components/TimeTrialCountdown/TimeTrialCou
 import { TimeTrialTimer } from './components/TimeTrialTimer/TimeTrialTimer'
 import { ConfirmDialog } from './components/Dialog/ConfirmDialog'
 import { POKEMON_DATA } from './data/pokemonData'
-import type { CaughtPokemon, Pokemon, TimeTrialDifficulty, PokemonCountCategory } from './types'
+import type { Pokemon, TimeTrialDifficulty, PokemonCountCategory } from './types'
 import { UI_CONSTANTS } from './constants'
 import { useGameState } from './hooks/useGameState'
 import { useTimeTrialState } from './hooks/useTimeTrialState'
@@ -108,6 +108,12 @@ function App() {
 
   const handleStartOver = () => {
     if (gameState.caughtPokemon.length === 0 && gameState.revealedPokemon.length === 0) return;
+    
+    // Skip confirmation if game is already completed (all caught or gave up)
+    if (gameState.allCaught || gameState.revealedPokemon.length > 0) {
+      gameState.resetProgress();
+      return;
+    }
 
     showConfirmDialog(
       `Are you sure you want to start over?${gameState.caughtPokemon.length > 0 ? ` This will release all ${gameState.caughtPokemon.length} Pokémon.` : ''}`,
@@ -166,10 +172,31 @@ function App() {
     gameState.setError('');
 
     try {
-      let pokemon = gameState.filteredPokemon.find(p =>
-        p.name.toLowerCase() === pokemonName.toLowerCase() ||
-        p.forms.some(f => f.name.toLowerCase() === pokemonName.toLowerCase())
-      );
+      // Special case for "nidoran" to match both variants
+      const isNidoran = pokemonName === 'nidoran';
+      let pokemon;
+      let secondPokemon;
+
+      if (isNidoran) {
+        const nidoranF = gameState.filteredPokemon.find(p => p.name === 'nidoran-f');
+        const nidoranM = gameState.filteredPokemon.find(p => p.name === 'nidoran-m');
+        
+        // If both variants are available and neither is caught, catch both
+        if (nidoranF && nidoranM &&
+            !gameState.caughtPokemon.some(p => p.name === 'nidoran-f') &&
+            !gameState.caughtPokemon.some(p => p.name === 'nidoran-m')) {
+          pokemon = nidoranF;
+          secondPokemon = nidoranM;
+        } else {
+          // Otherwise fall back to catching whichever variant is available
+          pokemon = nidoranF || nidoranM;
+        }
+      } else {
+        pokemon = gameState.filteredPokemon.find(p =>
+          p.name.toLowerCase() === pokemonName.toLowerCase() ||
+          p.forms.some(f => f.name.toLowerCase() === pokemonName.toLowerCase())
+        );
+      }
 
       if (!pokemon && gameState.isEasyMode) {
         pokemon = findClosestPokemon(pokemonName, gameState.filteredPokemon);
@@ -181,7 +208,8 @@ function App() {
       if (!pokemon) {
         const pokemonExists = POKEMON_DATA.find(p =>
           p.name.toLowerCase() === pokemonName.toLowerCase() ||
-          p.forms.some(f => f.name.toLowerCase() === pokemonName.toLowerCase())
+          p.forms.some(f => f.name.toLowerCase() === pokemonName.toLowerCase()) ||
+          (isNidoran && (p.name === 'nidoran-f' || p.name === 'nidoran-m'))
         );
 
         if (pokemonExists) {
@@ -210,6 +238,7 @@ function App() {
         return;
       }
 
+      // Check for any existing caught forms
       const existingPokemon = gameState.caughtPokemon.find(p => {
         const pokemonInData = gameState.filteredPokemon.find(pd =>
           pd.forms.some(f => f.name.toLowerCase() === p.name.toLowerCase())
@@ -229,43 +258,70 @@ function App() {
         return;
       }
 
-      let form;
-      if (pokemonName.includes('-')) {
-        form = pokemon.forms.find(f => f.name.toLowerCase() === pokemonName.toLowerCase());
-      }
+      const catchPokemon = async (pokemonToCatch: typeof pokemon) => {
+        const form = pokemonName.includes('-') 
+          ? pokemonToCatch.forms.find(f => f.name.toLowerCase() === pokemonName.toLowerCase())
+          : pokemonToCatch.forms.find(f => f.isDefault);
 
-      if (!form) {
-        form = pokemon.forms.find(f => f.isDefault);
-      }
+        if (!form) {
+          gameState.setError('Could not find a valid form for this Pokemon!');
+          setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
+          return null;
+        }
 
-      if (!form) {
-        gameState.setError('Could not find a valid form for this Pokemon!');
-        setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
-        return;
-      }
+        const sprite = await fetchFormSprite(form.name);
+        await playPokemonCry(pokemonToCatch.id, gameState.isMuted);
 
-      const sprite = await fetchFormSprite(form.name);
-      await playPokemonCry(pokemon.id, gameState.isMuted);
-
-      const newCaughtPokemon: CaughtPokemon = {
-        name: form.name,
-        sprite: sprite || '',
-        types: pokemon.types
+        return {
+          name: form.name,
+          sprite: sprite || '',
+          types: pokemonToCatch.types
+        };
       };
 
-      gameState.setCaughtPokemon(prev => [newCaughtPokemon, ...prev]);
+      const firstCaught = await catchPokemon(pokemon);
+      if (!firstCaught) return;
+
+      let secondCaught = null;
+      if (secondPokemon) {
+        secondCaught = await catchPokemon(secondPokemon);
+      }
+
+      // Add caught Pokemon to state
+      gameState.setCaughtPokemon(prev => {
+        const newCaught = [firstCaught];
+        if (secondCaught) {
+          newCaught.push(secondCaught);
+          gameState.setError('Nice! You caught both Nidoran♀ and Nidoran♂!');
+        }
+        return [...newCaught, ...prev];
+      });
+      
       gameState.setInputValue('');
 
       if (inputRef.current) {
         const position = calculateConfettiPosition(inputRef.current);
         gameState.setConfettiProps({
-          sprite: newCaughtPokemon.sprite,
+          sprite: firstCaught.sprite,
           position
         });
 
+        // If both were caught, show second confetti after a delay
+        if (secondCaught) {
+          setTimeout(() => {
+            if (inputRef.current) {
+              const position = calculateConfettiPosition(inputRef.current);
+              gameState.setConfettiProps({
+                sprite: secondCaught.sprite,
+                position
+              });
+            }
+          }, UI_CONSTANTS.CONFETTI_ANIMATION_DURATION / 2);
+        }
+
         setTimeout(() => {
           gameState.setConfettiProps(null);
-        }, UI_CONSTANTS.CONFETTI_ANIMATION_DURATION);
+        }, UI_CONSTANTS.CONFETTI_ANIMATION_DURATION + (secondCaught ? UI_CONSTANTS.CONFETTI_ANIMATION_DURATION / 2 : 0));
 
         setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
       }

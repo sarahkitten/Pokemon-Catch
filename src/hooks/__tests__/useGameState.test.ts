@@ -3,6 +3,27 @@ import { useGameState } from '../useGameState';
 import { GENERATIONS, POKEMON_TYPES } from '../../constants';
 
 describe('useGameState', () => {
+  const localStorageMock = {
+    store: {} as Record<string, string>,
+    getItem: function(key: string) {
+      return this.store[key] || null;
+    },
+    setItem: function(key: string, value: string) {
+      this.store[key] = value;
+    },
+    clear: function() {
+      this.store = {};
+    }
+  };
+
+  beforeEach(() => {
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true
+    });
+    localStorageMock.clear();
+  });
+
   it('initializes with default values', () => {
     const { result } = renderHook(() => useGameState());
 
@@ -688,5 +709,129 @@ describe('useGameState', () => {
     expect(filteredLetterOptions).toContain('E'); // For Electrode
     expect(filteredLetterOptions).toContain('V'); // For Voltorb
     expect(filteredLetterOptions).not.toContain('X'); // No Gen 1 Electric Pokemon starts with X
+  });
+
+  describe('localStorage persistence', () => {
+    it('initializes with default values when no saved state exists', () => {
+      const { result } = renderHook(() => useGameState());
+      
+      expect(result.current.caughtPokemon).toEqual([]);
+      expect(result.current.selectedGenerationIndex).toBe(0);
+      expect(result.current.selectedType).toBe(POKEMON_TYPES[0]);
+      expect(result.current.selectedLetter).toBe("All");
+      expect(result.current.isMuted).toBe(false);
+      expect(result.current.isEasyMode).toBe(false);
+    });
+
+    it('restores state from localStorage on initialization', () => {
+      const savedState = {
+        caughtPokemon: [{
+          name: 'Pikachu',
+          sprite: '/sprites/pikachu.png',
+          types: ['Electric']
+        }],
+        selectedGenerationIndex: 1,
+        selectedType: 'Electric',
+        selectedLetter: 'P',
+        isMuted: true,
+        isEasyMode: true
+      };
+
+      localStorage.setItem('pokemonCatcherState', JSON.stringify(savedState));
+
+      const { result } = renderHook(() => useGameState());
+      
+      expect(result.current.caughtPokemon).toEqual(savedState.caughtPokemon);
+      expect(result.current.selectedGenerationIndex).toBe(savedState.selectedGenerationIndex);
+      expect(result.current.selectedType).toBe(savedState.selectedType);
+      expect(result.current.selectedLetter).toBe(savedState.selectedLetter);
+      expect(result.current.isMuted).toBe(savedState.isMuted);
+      expect(result.current.isEasyMode).toBe(savedState.isEasyMode);
+    });
+
+    it('handles corrupted localStorage data gracefully', () => {
+      // Temporarily silence console.error
+      const originalConsoleError = console.error;
+      console.error = jest.fn();
+
+      localStorage.setItem('pokemonCatcherState', 'invalid json{');
+
+      const { result } = renderHook(() => useGameState());
+      
+      // Should fall back to defaults
+      expect(result.current.caughtPokemon).toEqual([]);
+      expect(result.current.selectedGenerationIndex).toBe(0);
+      expect(result.current.selectedType).toBe(POKEMON_TYPES[0]);
+      expect(result.current.selectedLetter).toBe("All");
+      expect(result.current.isMuted).toBe(false);
+      expect(result.current.isEasyMode).toBe(false);
+
+      // Restore console.error
+      console.error = originalConsoleError;
+    });
+
+    it('persists state changes to localStorage', async () => {
+      const { result } = renderHook(() => useGameState());
+
+      // Make some state changes
+      await act(async () => {
+        await result.current.changeGeneration(1);
+        await result.current.changeType('Electric');
+        result.current.setIsMuted(true);
+        result.current.setCaughtPokemon([{
+          name: 'Pikachu',
+          sprite: '/sprites/pikachu.png',
+          types: ['Electric']
+        }]);
+      });
+
+      // Get saved state from localStorage
+      const savedState = JSON.parse(localStorage.getItem('pokemonCatcherState') || '{}');
+      
+      expect(savedState.selectedGenerationIndex).toBe(1);
+      expect(savedState.selectedType).toBe('Electric');
+      expect(savedState.isMuted).toBe(true);
+      expect(savedState.caughtPokemon).toEqual([{
+        name: 'Pikachu',
+        sprite: '/sprites/pikachu.png',
+        types: ['Electric']
+      }]);
+    });
+
+    it('updates total count when restoring saved filters', async () => {
+      // Save state with non-default filters
+      const savedState = {
+        caughtPokemon: [],
+        selectedGenerationIndex: 1,
+        selectedType: 'Electric',
+        selectedLetter: 'P',
+        isMuted: false,
+        isEasyMode: false
+      };
+
+      localStorage.setItem('pokemonCatcherState', JSON.stringify(savedState));
+
+      const { result } = renderHook(() => useGameState());
+
+      // Wait for any async updates
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 0));
+      });
+      
+      // Verify filters were restored and total count was updated
+      expect(result.current.selectedGenerationIndex).toBe(1);
+      expect(result.current.selectedType).toBe('Electric');
+      expect(result.current.selectedLetter).toBe('P');
+      expect(result.current.totalPokemon).toBeGreaterThan(0);
+      expect(result.current.totalPokemon).toBeLessThan(GENERATIONS[1].total);
+      
+      // Verify filtered Pokemon match the restored filters
+      expect(result.current.filteredPokemon.every(pokemon => 
+        pokemon.name.toLowerCase().startsWith('p') &&
+        pokemon.id >= GENERATIONS[1].startId && 
+        pokemon.id <= GENERATIONS[1].endId &&
+        pokemon.types.some(type => type.toLowerCase() === 'electric')
+      )).toBe(true);
+    });
   });
 });

@@ -107,8 +107,8 @@ describe('PokemonList', () => {
     expect(screen.getByText('bulbasaur')).toBeInTheDocument();
     
     const pokemonCards = screen.getAllByRole('img').map(img => img.closest('.pokemon-card'));
-    expect(pokemonCards[0]).not.toHaveClass('uncaught');
-    expect(pokemonCards[1]).toHaveClass('uncaught');
+    expect(pokemonCards[0]).toHaveClass('uncaught'); // Changed: first card (revealed) should have uncaught class
+    expect(pokemonCards[1]).not.toHaveClass('uncaught'); // Changed: second card (caught) should not have uncaught class
   });
 
   it('adds "success" class when all Pokemon are caught', () => {

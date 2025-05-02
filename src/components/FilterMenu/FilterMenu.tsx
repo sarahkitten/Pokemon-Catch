@@ -51,6 +51,13 @@ export function FilterMenu({
     changeFunction: (value: T) => Promise<void>
   ) => {
     const value = filterType === 'generation' ? parseInt(event.target.value) : event.target.value;
+    
+    // Skip confirmation if game is completed (all caught or gave up)
+    if (gameState.allCaught || gameState.revealedPokemon.length > 0) {
+      await changeFunction(value as T);
+      return;
+    }
+
     if (gameState.caughtPokemon.length > 0) {
       const filterName = {
         'generation': 'generations',
@@ -77,6 +84,13 @@ export function FilterMenu({
     resetFunction: () => Promise<void>
   ) => {
     if (currentValue === defaultValue) return;
+
+    // Skip confirmation if game is completed (all caught or gave up)
+    if (gameState.allCaught || gameState.revealedPokemon.length > 0) {
+      await resetFunction();
+      return;
+    }
+    
     if (gameState.caughtPokemon.length > 0) {
       const filterName = {
         'generation': 'generation',
@@ -98,6 +112,12 @@ export function FilterMenu({
   };
 
   const handleRandomizeAllFilters = async () => {
+    // Skip confirmation if game is completed (all caught or gave up)
+    if (gameState.allCaught || gameState.revealedPokemon.length > 0) {
+      await gameState.randomizeAllFilters();
+      return;
+    }
+
     if (gameState.caughtPokemon.length > 0) {
       showConfirmDialog(
         'Randomizing all filters will reset your current progress. Are you sure?',
