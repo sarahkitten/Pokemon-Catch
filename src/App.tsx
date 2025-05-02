@@ -93,6 +93,12 @@ function App() {
 
   const handleStartOver = () => {
     if (gameState.caughtPokemon.length === 0 && gameState.revealedPokemon.length === 0) return;
+    
+    // Skip confirmation if game is already completed (all caught or gave up)
+    if (gameState.allCaught || gameState.revealedPokemon.length > 0) {
+      gameState.resetProgress();
+      return;
+    }
 
     showConfirmDialog(
       `Are you sure you want to start over?${gameState.caughtPokemon.length > 0 ? ` This will release all ${gameState.caughtPokemon.length} Pokémon.` : ''}`,
