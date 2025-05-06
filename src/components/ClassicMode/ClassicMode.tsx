@@ -7,11 +7,9 @@ import { PokemonList } from '../PokemonList/PokemonList'
 import { FilterMenu } from '../FilterMenu/FilterMenu'
 import { ConfirmDialog } from '../Dialog/ConfirmDialog'
 import PokemonConfetti from '../../PokemonConfetti'
-import { POKEMON_DATA } from '../../data/pokemonData'
-import type { Pokemon } from '../../types'
-import { UI_CONSTANTS } from '../../constants'
 import { useGameState } from '../../hooks/useGameState'
-import { findClosestPokemon, fetchFormSprite, playPokemonCry, calculateConfettiPosition } from '../../utils/pokemonUtils'
+import { getFilteredTitle } from '../../utils/pokemonUtils'
+import { submitPokemonGuess, revealRemainingPokemon } from '../../utils/pokemonStateUtils'
 import titleImageFull from '../../assets/PokemonCatcherTitleFull.png'
 import { useState } from 'react'
 
@@ -47,32 +45,6 @@ export const ClassicMode = ({ onBackToModeSelection }: ClassicModeProps) => {
       }
     }
   }, [gameState.allCaught]);
-
-  const getFilteredTitle = () => {
-    let title = 'How many';
-    
-    // Add generation filter
-    if (gameState.selectedGeneration.name !== "All Generations") {
-      const genMatch = gameState.selectedGeneration.name.match(/Gen (\d+)/);
-      const genNum = genMatch ? genMatch[0] : '';
-      title += ` <span class="gen-filter">${genNum}</span>`;
-    }
-
-    // Add type filter
-    if (gameState.selectedType !== "All Types") {
-      title += ` <span class="type-filter">${gameState.selectedType}</span><span class="type-filter">-type</span>`;
-    }
-
-    // Add letter filter
-    if (gameState.selectedLetter !== "All") {
-      title += ` Pokémon starting with <span class="letter-filter">'</span><span class="letter-filter">${gameState.selectedLetter}</span><span class="letter-filter">'</span>`;
-    } else {
-      title += ' Pokémon';
-    }
-
-    title += ' can you catch?';
-    return title;
-  };
 
   const showConfirmDialog = (message: string, onConfirm: () => void) => {
     setDialogConfig({
@@ -117,172 +89,7 @@ export const ClassicMode = ({ onBackToModeSelection }: ClassicModeProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const pokemonName = gameState.inputValue.trim().toLowerCase().replace(/\s+/g, '-');
-
-    gameState.setIsLoading(true);
-    gameState.setError('');
-
-    try {
-      // Special case for "nidoran" to match both variants
-      const isNidoran = pokemonName === 'nidoran';
-      let pokemon;
-      let secondPokemon;
-
-      if (isNidoran) {
-        const nidoranF = gameState.filteredPokemon.find(p => p.name === 'nidoran-f');
-        const nidoranM = gameState.filteredPokemon.find(p => p.name === 'nidoran-m');
-        
-        // If both variants are available and neither is caught, catch both
-        if (nidoranF && nidoranM &&
-            !gameState.caughtPokemon.some(p => p.name === 'nidoran-f') &&
-            !gameState.caughtPokemon.some(p => p.name === 'nidoran-m')) {
-          pokemon = nidoranF;
-          secondPokemon = nidoranM;
-        } else {
-          // Otherwise fall back to catching whichever variant is available
-          pokemon = nidoranF || nidoranM;
-        }
-      } else {
-        pokemon = gameState.filteredPokemon.find(p =>
-          p.name.toLowerCase() === pokemonName.toLowerCase() ||
-          p.forms.some(f => f.name.toLowerCase() === pokemonName.toLowerCase())
-        );
-      }
-
-      if (!pokemon && gameState.isEasyMode) {
-        pokemon = findClosestPokemon(pokemonName, gameState.filteredPokemon);
-        if (pokemon) {
-          gameState.setError(`Accepted "${gameState.inputValue}" as "${pokemon.name}" (Easy Mode)`);
-        }
-      }
-
-      if (!pokemon) {
-        const pokemonExists = POKEMON_DATA.find(p =>
-          p.name.toLowerCase() === pokemonName.toLowerCase() ||
-          p.forms.some(f => f.name.toLowerCase() === pokemonName.toLowerCase()) ||
-          (isNidoran && (p.name === 'nidoran-f' || p.name === 'nidoran-m'))
-        );
-
-        if (pokemonExists) {
-          const inGeneration = gameState.selectedGeneration.name === "All Generations" ||
-            (pokemonExists.id >= gameState.selectedGeneration.startId && pokemonExists.id <= gameState.selectedGeneration.endId);
-
-          const matchesType = gameState.selectedType === "All Types" ||
-            pokemonExists.types.some(t => t.toLowerCase() === gameState.selectedType.toLowerCase());
-
-          const matchesLetter = gameState.selectedLetter === "All" ||
-            pokemonExists.name.toLowerCase().startsWith(gameState.selectedLetter.toLowerCase());
-
-          if (!matchesLetter) {
-            gameState.setError(`That Pokémon doesn't start with the letter ${gameState.selectedLetter}!`);
-          } else if (!inGeneration) {
-            gameState.setError(`That Pokémon is not in ${gameState.selectedGeneration.name}!`);
-          } else if (!matchesType) {
-            gameState.setError(`That Pokémon is not a ${gameState.selectedType} type!`);
-          } else {
-            gameState.setError('That\'s not a valid Pokémon name!');
-          }
-        } else {
-          gameState.setError('That\'s not a valid Pokémon name!');
-        }
-        setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
-        return;
-      }
-
-      // Check for any existing caught forms
-      const existingPokemon = gameState.caughtPokemon.find(p => {
-        const pokemonInData = gameState.filteredPokemon.find(pd =>
-          pd.forms.some(f => f.name.toLowerCase() === p.name.toLowerCase())
-        );
-        return pokemonInData?.name === pokemon.name;
-      });
-
-      if (existingPokemon) {
-        const isSameForm = gameState.caughtPokemon.some(p => p.name.toLowerCase() === pokemonName.toLowerCase());
-
-        if (isSameForm) {
-          gameState.setError(`You already caught ${pokemonName.charAt(0).toUpperCase() + pokemonName.slice(1)}!`);
-        } else {
-          gameState.setError(`You already caught a different form of ${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}!`);
-        }
-        setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
-        return;
-      }
-
-      const catchPokemon = async (pokemonToCatch: typeof pokemon) => {
-        const form = pokemonName.includes('-') 
-          ? pokemonToCatch.forms.find(f => f.name.toLowerCase() === pokemonName.toLowerCase())
-          : pokemonToCatch.forms.find(f => f.isDefault);
-
-        if (!form) {
-          gameState.setError('Could not find a valid form for this Pokemon!');
-          setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
-          return null;
-        }
-
-        const sprite = await fetchFormSprite(form.name);
-        await playPokemonCry(pokemonToCatch.id, gameState.isMuted);
-
-        return {
-          name: form.name,
-          sprite: sprite || '',
-          types: pokemonToCatch.types
-        };
-      };
-
-      const firstCaught = await catchPokemon(pokemon);
-      if (!firstCaught) return;
-
-      let secondCaught = null;
-      if (secondPokemon) {
-        secondCaught = await catchPokemon(secondPokemon);
-      }
-
-      // Add caught Pokemon to state
-      gameState.setCaughtPokemon(prev => {
-        const newCaught = [firstCaught];
-        if (secondCaught) {
-          newCaught.push(secondCaught);
-          gameState.setError('Nice! You caught both Nidoran♀ and Nidoran♂!');
-        }
-        return [...newCaught, ...prev];
-      });
-      
-      gameState.setInputValue('');
-
-      if (inputRef.current) {
-        const position = calculateConfettiPosition(inputRef.current);
-        gameState.setConfettiProps({
-          sprite: firstCaught.sprite,
-          position
-        });
-
-        // If both were caught, show second confetti after a delay
-        if (secondCaught) {
-          setTimeout(() => {
-            if (inputRef.current) {
-              const position = calculateConfettiPosition(inputRef.current);
-              gameState.setConfettiProps({
-                sprite: secondCaught.sprite,
-                position
-              });
-            }
-          }, UI_CONSTANTS.CONFETTI_ANIMATION_DURATION / 2);
-        }
-
-        setTimeout(() => {
-          gameState.setConfettiProps(null);
-        }, UI_CONSTANTS.CONFETTI_ANIMATION_DURATION + (secondCaught ? UI_CONSTANTS.CONFETTI_ANIMATION_DURATION / 2 : 0));
-
-        setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
-      }
-    } catch (error: unknown) {
-      console.error('Error in handleSubmit:', error);
-      gameState.setError('That\'s not a valid Pokemon name!');
-      setTimeout(() => inputRef.current?.focus(), UI_CONSTANTS.INPUT_FOCUS_DELAY);
-    } finally {
-      gameState.setIsLoading(false);
-    }
+    await submitPokemonGuess(gameState, inputRef);
   };
 
   const handleGiveUp = async () => {
@@ -293,38 +100,7 @@ export const ClassicMode = ({ onBackToModeSelection }: ClassicModeProps) => {
     showConfirmDialog(
       `Are you sure you want to give up? This will reveal all remaining Pokémon!`,
       async () => {
-        gameState.setIsGivingUp(true);
-        gameState.setError('');
-        gameState.setInputValue('');
-        const revealed: Pokemon[] = [];
-
-        try {
-          const revealedPokemonData = gameState.filteredPokemon.filter(pokemon =>
-            !gameState.caughtPokemon.some(caught =>
-              caught.name === pokemon.name ||
-              pokemon.forms.some(f => f.name === caught.name)
-            )
-          );
-
-          for (const pokemon of revealedPokemonData) {
-            const defaultForm = pokemon.forms.find(f => f.isDefault);
-            const formNameToUse = defaultForm ? defaultForm.name : pokemon.name;
-
-            const sprite = await fetchFormSprite(formNameToUse);
-            revealed.push({
-              id: pokemon.id,
-              name: pokemon.name,
-              sprite: sprite || '',
-              types: pokemon.types
-            });
-          }
-          gameState.setRevealedPokemon(revealed);
-        } catch (err) {
-          console.error('Error fetching remaining Pokémon sprites:', err);
-        } finally {
-          gameState.setIsGivingUp(false);
-          closeDialog();
-        }
+        await revealRemainingPokemon(gameState, closeDialog);
       }
     );
   };
@@ -336,7 +112,7 @@ export const ClassicMode = ({ onBackToModeSelection }: ClassicModeProps) => {
           <img src={titleImageFull} alt="Pokemon Catcher Title" className="title-image" />
         </div>
         <div className="pokemon-section">
-          <h2 className="title" dangerouslySetInnerHTML={{ __html: getFilteredTitle() }}></h2>
+          <h2 className="title" dangerouslySetInnerHTML={{ __html: getFilteredTitle(gameState) }}></h2>
           <SearchForm 
             gameState={gameState} 
             onSubmit={handleSubmit}
