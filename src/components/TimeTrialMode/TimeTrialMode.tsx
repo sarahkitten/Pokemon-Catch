@@ -4,12 +4,14 @@ import { GameControls } from '../GameControls/GameControls'
 import { PokemonList } from '../PokemonList/PokemonList'
 import { FilterMenu } from '../FilterMenu/FilterMenu'
 import { ConfirmDialog } from '../Dialog/ConfirmDialog'
+import { TimeTrialOptions } from '../TimeTrialOptions/TimeTrialOptions'
 import PokemonConfetti from '../../PokemonConfetti'
 import { useGameState } from '../../hooks/useGameState'
 import { getFilteredTitle } from '../../utils/pokemonUtils'
 import { submitPokemonGuess, revealRemainingPokemon } from '../../utils/pokemonStateUtils'
 import titleImageFull from '../../assets/PokemonCatcherTitleFull.png'
 import { useState } from 'react'
+import type { PokemonCountCategory, TimeTrialDifficulty } from '../../types'
 import './TimeTrialMode.css'
 
 interface DialogConfig {
@@ -27,6 +29,7 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
   const inputRef = useRef<HTMLInputElement>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
+  const [isOptionsOpen, setIsOptionsOpen] = useState(true); // Start with options open
   const [dialogConfig, setDialogConfig] = useState<DialogConfig>({
     isOpen: false,
     message: '',
@@ -104,6 +107,26 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     );
   };
 
+  const handleCloseOptions = () => {
+    setIsOptionsOpen(false);
+  };
+
+  const handleStartTimeTrial = (settings: {
+    difficulty: TimeTrialDifficulty;
+    pokemonCountCategory: PokemonCountCategory;
+    isEasyMode: boolean;
+  }) => {
+    // Apply the time trial settings 
+    console.log('Time trial settings applied:', settings);
+    // In a real implementation, you would update game state with these settings
+    // For example:
+    // - Set the timer based on difficulty
+    // - Filter Pokemon based on the count category
+    // - Enable/disable spell checking based on isEasyMode
+    
+    setIsOptionsOpen(false);
+  };
+
   return (
     <div className="time-trial-mode">
       <div className={`main-content ${isSidebarCollapsed ? 'expanded' : ''}`}>
@@ -137,6 +160,12 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
         isSidebarCollapsed={isSidebarCollapsed}
         isSmallScreen={isSmallScreen}
         onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+      />
+      {/* Time Trial Options Dialog */}
+      <TimeTrialOptions 
+        isOpen={isOptionsOpen}
+        onClose={handleCloseOptions}
+        onStart={handleStartTimeTrial}
       />
       {/* Regular confetti for catching a Pokemon */}
       {gameState.confettiProps && (

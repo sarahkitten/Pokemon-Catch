@@ -1,0 +1,94 @@
+/* Time Trial Options styling */
+.time-trial-options-dialog {
+    width: 480px;
+    max-width: 95%;
+  }
+  
+  .time-trial-options-title {
+    font-size: 1.2rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .time-trial-options-section {
+    margin-bottom: 1.5rem;
+  }
+  
+  .time-trial-options-section-title {
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  .time-trial-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  
+  .time-trial-option-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 3rem;
+    width: 100%;
+    font-size: 0.75rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    line-height: 1.2;
+    white-space: normal;
+  }
+  
+  .time-trial-options-toggle {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+  
+  .time-trial-options-toggle label {
+    font-size: 0.8rem;
+    margin-left: 0.5rem;
+  }
+  
+  .time-trial-options-description {
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+  }
+  
+  .time-trial-options-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .time-trial-options-title {
+      font-size: 1rem;
+    }
+    
+    .time-trial-options-section-title {
+      font-size: 0.8rem;
+    }
+    
+    .time-trial-options-grid {
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+    
+    .time-trial-option-button {
+      font-size: 0.7rem;
+      min-height: 2.5rem;
+    }
+    
+    .time-trial-options-toggle label {
+      font-size: 0.7rem;
+    }
+    
+    .time-trial-options-description {
+      font-size: 0.7rem;
+    }
+  }
