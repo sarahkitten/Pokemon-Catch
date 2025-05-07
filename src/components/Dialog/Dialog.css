@@ -34,7 +34,13 @@
 
 .dialog-menu {
   padding: 1rem 0;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.dialog-menu button {
+  min-width: 100px;
 }
 
 @media (max-width: 768px) {

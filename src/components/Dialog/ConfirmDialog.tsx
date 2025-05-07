@@ -36,7 +36,6 @@ export function ConfirmDialog({
           <button 
             className="nes-btn is-error"
             onClick={onCancel}
-            style={{ marginLeft: '1rem' }}
           >
             {cancelText}
           </button>
