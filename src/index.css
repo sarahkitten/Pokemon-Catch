@@ -30,6 +30,39 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  
+  /* Custom cursor for the entire app */
+  cursor: url('./assets/cursors/cursor.png'), auto;
+}
+
+/* Custom cursor for clickable elements */
+button, 
+.nes-btn, 
+a, 
+.clickable, 
+.pokemon-card, 
+.title-container.clickable,
+input[type="checkbox"] + span,
+label, 
+select,
+.nes-select select,
+.menu-toggle-button {
+  cursor: url('./assets/cursors/cursor-click.png') 14 0, pointer !important;
+}
+
+/* Keep cursor consistent when hovering over these elements */
+button:hover, 
+.nes-btn:hover, 
+a:hover, 
+.clickable:hover, 
+.pokemon-card:hover,
+.title-container.clickable:hover,
+input[type="checkbox"]:hover + span,
+label:hover, 
+select:hover,
+.nes-select select:hover,
+.menu-toggle-button:hover {
+  cursor: url('./assets/cursors/cursor-click.png') 14 0, pointer !important;
 }
 
 a {
@@ -58,7 +91,6 @@ h1 {
 /* Reset default button styles since we're using nes-btn */
 button {
   font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
-  cursor: pointer;
 }
 
 /* NES.css overrides for better integration */
