@@ -1,0 +1,37 @@
+.time-trial-mode {
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .time-trial-mode .main-content {
+    flex: 1;
+    padding: 20px;
+    transition: margin 0.3s ease;
+    max-width: 1200px;
+  }
+  
+  .time-trial-mode .main-content.expanded {
+    margin-right: 0;
+  }
+  
+  @media (min-width: 768px) {
+    .time-trial-mode .main-content.expanded {
+      margin-right: 0;
+    }
+  }
+  
+  .time-trial-mode .title-container.clickable {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  
+  .time-trial-mode .title-container.clickable:hover {
+    transform: scale(1.02);
+  }
+  
+  .time-trial-mode .title-container.clickable:active {
+    transform: scale(0.98);
+  }

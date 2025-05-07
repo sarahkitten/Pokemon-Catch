@@ -183,6 +183,22 @@ h2 {
   background-color: #2980b9;
 }
 
+/* Time Trial mode label styles */
+.mode-label {
+  font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
+  font-size: 16px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  margin-left: 10px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.time-trial-label {
+  background-color: #3498db;
+  color: white;
+  box-shadow: 2px 2px 0 #2980b9;
+}
+
 /* NES.css specific overrides */
 .nes-container {
   margin-bottom: 1rem;
