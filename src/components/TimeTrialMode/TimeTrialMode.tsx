@@ -8,7 +8,7 @@ import { TimeTrialCountdown } from '../TimeTrialCountdown/TimeTrialCountdown'
 import { TimeTrialResults } from './TimeTrialResults'
 import PokemonConfetti from '../../PokemonConfetti'
 import { useGameState } from '../../hooks/useGameState'
-import { useTimeTrialTimer, formatTime, getCatchBonusTime } from '../../hooks/useTimeTrialTimer'
+import { useTimeTrialTimer, formatTime, getCatchBonusTime, getInitialTimeForDifficulty } from '../../hooks/useTimeTrialTimer'
 import { getFilteredTitle } from '../../utils/pokemonUtils'
 import { submitPokemonGuess, revealRemainingPokemon } from '../../utils/pokemonStateUtils'
 import filterCombinations from '../../data/filterCombinations.json'
@@ -56,17 +56,11 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     isRunning, 
     startTimer, 
     pauseTimer, 
+    resetTimer,
     addTime 
   } = useTimeTrialTimer(
     timeTrialSettings?.difficulty || 'medium'
   );
-
-  // Detect when time runs out and end the game
-  useEffect(() => {
-    if (timeTrialActive && timeRemaining === 0 && !gameEnded) {
-      handleTimeUp();
-    }
-  }, [timeRemaining, timeTrialActive]);
 
   // Handle time up - end the game
   const handleTimeUp = useCallback(() => {
@@ -74,27 +68,45 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     pauseTimer();
     setShowResults(true);
   }, [pauseTimer]);
+
+  // Detect when time runs out and end the game
+  useEffect(() => {
+    if (timeTrialActive && timeRemaining === 0 && !gameEnded) {
+      handleTimeUp();
+    }
+  }, [timeRemaining, timeTrialActive, gameEnded, handleTimeUp]);
   
   // Handle try again button in results
   const handleTryAgain = useCallback(() => {
     // Reset game state with the same settings
     gameState.resetProgress();
+    
+    // Reset the timer to the correct initial time for the current difficulty
+    if (timeTrialSettings) {
+      const initialTime = getInitialTimeForDifficulty(timeTrialSettings.difficulty);
+      resetTimer(initialTime);
+    }
+    
     setGameEnded(false);
     setShowResults(false);
     
     // Start a new countdown
     setShowCountdown(true);
-  }, [gameState]);
+  }, [gameState, resetTimer, timeTrialSettings]);
   
   // Handle change settings button in results
   const handleChangeSettings = useCallback(() => {
     // Reset game and show options
     gameState.resetProgress();
+    
+    // Reset the timer
+    resetTimer();
+    
     setGameEnded(false);
     setShowResults(false);
     setTimeTrialActive(false);
     setIsOptionsOpen(true);
-  }, [gameState]);
+  }, [gameState, resetTimer]);
 
   // Track caught Pokemon and add bonus time when a new one is caught
   const previousCaughtCount = useRef(0);
@@ -156,13 +168,14 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
   }, [
     gameState.caughtPokemon, 
     gameState.allCaught, 
+    gameState.totalPokemon,
     timeTrialActive, 
     timeTrialSettings, 
     isRunning, 
     addTime,
     elapsedTime,
     gameEnded,
-    pauseTimer
+    pauseTimer,
   ]);
 
   // Update background effect to use allCaught
@@ -253,8 +266,10 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     // Save the settings
     setTimeTrialSettings(settings);
     
-    console.log('Time trial settings applied:', settings);
-    
+    // Reset the timer with the new difficulty's initial time using our utility function
+    const initialTime = getInitialTimeForDifficulty(settings.difficulty);
+    resetTimer(initialTime);
+        
     // Apply a random filter combination based on the Pokémon count category immediately
     const { pokemonCountCategory, isEasyMode } = settings;
     
@@ -270,9 +285,7 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
       // Select a random combination
       const randomIndex = Math.floor(Math.random() * validCombinations.length);
       const selectedCombination = validCombinations[randomIndex];
-      
-      console.log('Selected filter combination:', selectedCombination);
-      
+            
       // Reset game state before applying new filters
       gameState.resetProgress();
       

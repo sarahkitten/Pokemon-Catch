@@ -37,7 +37,7 @@ export const TIME_TRIAL = {
   DIFFICULTY: {
     EASY: { initialTime: 120, timePerCatch: 15, name: 'Easy' },
     MEDIUM: { initialTime: 90, timePerCatch: 10, name: 'Medium' },
-    HARD: { initialTime: 60, timePerCatch: 5, name: 'Hard' }
+    HARD: { initialTime: 5, timePerCatch: 5, name: 'Hard' }
   },
   POKEMON_COUNT_CATEGORIES: {
     VERY_FEW: { name: '1-5', min: 1, max: 5 },

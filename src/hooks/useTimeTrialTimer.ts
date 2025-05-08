@@ -37,7 +37,16 @@ const CATCH_BONUS_TIME_MAP: Record<TimeTrialDifficulty, number> = {
   'hard': TIME_TRIAL.DIFFICULTY.HARD.timePerCatch,
 };
 
+/**
+ * Utility function to get initial time for a difficulty
+ * Simplifies getting the timer value in multiple places
+ */
+export const getInitialTimeForDifficulty = (difficulty: TimeTrialDifficulty): number => {
+  return DIFFICULTY_TIME_MAP[difficulty];
+};
+
 export const useTimeTrialTimer = (difficulty: TimeTrialDifficulty = 'medium', options: TimerOptions = {}): TimeTrialTimerState => {
+  
   // Get initial time based on difficulty or from options
   const getInitialTime = useCallback(() => {
     return options.initialTime !== undefined ? options.initialTime : DIFFICULTY_TIME_MAP[difficulty];
@@ -93,10 +102,11 @@ export const useTimeTrialTimer = (difficulty: TimeTrialDifficulty = 'medium', op
   // Reset timer method
   const resetTimer = useCallback((newTime?: number) => {
     setIsRunning(false);
-    setTimeRemaining(newTime !== undefined ? newTime : getInitialTime());
+    const initialTime = getInitialTime();
+    setTimeRemaining(newTime !== undefined ? newTime : initialTime);
     setElapsedTime(0);
     setTimerStarted(false);
-  }, [getInitialTime]);
+  }, [getInitialTime, difficulty]);
 
   // Add time method (for bonuses when catching a Pokemon)
   const addTime = useCallback((seconds: number) => {

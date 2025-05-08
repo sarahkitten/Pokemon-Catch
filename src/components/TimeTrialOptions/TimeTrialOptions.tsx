@@ -26,7 +26,7 @@ export function TimeTrialOptions({ isOpen, onClose, onStart }: TimeTrialOptionsP
   // Calculate the description based on the selected options
   const selectedDifficultySettings = getDifficultySettings(difficulty);
   
-  const description = `Start with ${selectedDifficultySettings.initialTime} seconds. 
+  const description = `Difficulty ${difficulty} - Start with ${selectedDifficultySettings.initialTime} seconds. 
   Earn +${selectedDifficultySettings.timePerCatch} seconds for each Pokemon caught.`;
 
   // Handler for starting the time trial
