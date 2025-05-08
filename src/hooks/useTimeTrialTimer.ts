@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { TimeTrialDifficulty } from '../types';
+import { TIME_TRIAL } from '../constants';
 
 interface TimerOptions {
   initialTime?: number; // time in seconds
@@ -22,18 +23,18 @@ interface TimeTrialTimerState {
  * Maps difficulty level to initial time in seconds
  */
 const DIFFICULTY_TIME_MAP: Record<TimeTrialDifficulty, number> = {
-  'easy': 180, // 3 minutes
-  'medium': 120, // 2 minutes
-  'hard': 60, // 1 minute
+  'easy': TIME_TRIAL.DIFFICULTY.EASY.initialTime,
+  'medium': TIME_TRIAL.DIFFICULTY.MEDIUM.initialTime,
+  'hard': TIME_TRIAL.DIFFICULTY.HARD.initialTime,
 };
 
 /**
  * Maps difficulty level to time bonus (in seconds) for catching a Pokémon
  */
 const CATCH_BONUS_TIME_MAP: Record<TimeTrialDifficulty, number> = {
-  'easy': 10,
-  'medium': 7,
-  'hard': 5,
+  'easy': TIME_TRIAL.DIFFICULTY.EASY.timePerCatch,
+  'medium': TIME_TRIAL.DIFFICULTY.MEDIUM.timePerCatch,
+  'hard': TIME_TRIAL.DIFFICULTY.HARD.timePerCatch,
 };
 
 export const useTimeTrialTimer = (difficulty: TimeTrialDifficulty = 'medium', options: TimerOptions = {}): TimeTrialTimerState => {

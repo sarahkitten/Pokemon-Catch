@@ -5,6 +5,7 @@ import { PokemonList } from '../PokemonList/PokemonList'
 import { ConfirmDialog } from '../Dialog/ConfirmDialog'
 import { TimeTrialOptions } from '../TimeTrialOptions/TimeTrialOptions'
 import { TimeTrialCountdown } from '../TimeTrialCountdown/TimeTrialCountdown'
+import { TimeTrialResults } from './TimeTrialResults'
 import PokemonConfetti from '../../PokemonConfetti'
 import { useGameState } from '../../hooks/useGameState'
 import { useTimeTrialTimer, formatTime, getCatchBonusTime } from '../../hooks/useTimeTrialTimer'
@@ -45,6 +46,7 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     onConfirm: () => {}
   });
   const [gameEnded, setGameEnded] = useState(false);
+  const [showResults, setShowResults] = useState(false);
   const [bonusTimeNotifications, setBonusTimeNotifications] = useState<{id: number; amount: number; x: number; y: number}[]>([]);
   
   // Initialize timer with the selected difficulty (defaults to medium if none selected)
@@ -70,16 +72,29 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
   const handleTimeUp = useCallback(() => {
     setGameEnded(true);
     pauseTimer();
+    setShowResults(true);
+  }, [pauseTimer]);
+  
+  // Handle try again button in results
+  const handleTryAgain = useCallback(() => {
+    // Reset game state with the same settings
+    gameState.resetProgress();
+    setGameEnded(false);
+    setShowResults(false);
     
-    // You can add game ending logic here, like showing a results screen
-    showConfirmDialog(
-      `Time's up! You caught ${gameState.caughtPokemon.length} out of ${gameState.totalPokemon} Pokémon!`,
-      () => {
-        // Reset game or show results
-        closeDialog();
-      }
-    );
-  }, [gameState.caughtPokemon.length, gameState.totalPokemon, pauseTimer]);
+    // Start a new countdown
+    setShowCountdown(true);
+  }, [gameState]);
+  
+  // Handle change settings button in results
+  const handleChangeSettings = useCallback(() => {
+    // Reset game and show options
+    gameState.resetProgress();
+    setGameEnded(false);
+    setShowResults(false);
+    setTimeTrialActive(false);
+    setIsOptionsOpen(true);
+  }, [gameState]);
 
   // Track caught Pokemon and add bonus time when a new one is caught
   const previousCaughtCount = useRef(0);
@@ -381,6 +396,16 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
         message={dialogConfig.message}
         onConfirm={dialogConfig.onConfirm}
         onCancel={closeDialog}
+      />
+      {/* Time Trial Results */}
+      <TimeTrialResults
+        isVisible={showResults}
+        caughtCount={gameState.caughtPokemon.length}
+        totalPokemon={gameState.totalPokemon}
+        elapsedTime={elapsedTime}
+        settings={timeTrialSettings}
+        onTryAgain={handleTryAgain}
+        onChangeSettings={handleChangeSettings}
       />
     </div>
   );
