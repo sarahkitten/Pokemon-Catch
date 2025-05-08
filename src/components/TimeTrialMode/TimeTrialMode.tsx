@@ -1,8 +1,7 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { SearchForm } from '../SearchForm/SearchForm'
 import { GameControls } from '../GameControls/GameControls'
 import { PokemonList } from '../PokemonList/PokemonList'
-import { FilterMenu } from '../FilterMenu/FilterMenu'
 import { ConfirmDialog } from '../Dialog/ConfirmDialog'
 import { TimeTrialOptions } from '../TimeTrialOptions/TimeTrialOptions'
 import { TimeTrialCountdown } from '../TimeTrialCountdown/TimeTrialCountdown'
@@ -10,8 +9,9 @@ import PokemonConfetti from '../../PokemonConfetti'
 import { useGameState } from '../../hooks/useGameState'
 import { getFilteredTitle } from '../../utils/pokemonUtils'
 import { submitPokemonGuess, revealRemainingPokemon } from '../../utils/pokemonStateUtils'
+import filterCombinations from '../../data/filterCombinations.json'
+import { GENERATIONS } from '../../constants'
 import titleImageFull from '../../assets/PokemonCatcherTitleFull.png'
-import { useState } from 'react'
 import type { PokemonCountCategory, TimeTrialDifficulty } from '../../types'
 import './TimeTrialMode.css'
 
@@ -28,12 +28,12 @@ interface TimeTrialModeProps {
 export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => {
   const gameState = useGameState();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
-  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
+  const [isSidebarCollapsed] = useState(true);
+  const [_isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
   const [isOptionsOpen, setIsOptionsOpen] = useState(true); // Start with options open
   const [showCountdown, setShowCountdown] = useState(false);
   const [_timeTrialActive, setTimeTrialActive] = useState(false);
-  const [timeTrialSettings, setTimeTrialSettings] = useState<{
+  const [_timeTrialSettings, setTimeTrialSettings] = useState<{
     difficulty: TimeTrialDifficulty;
     pokemonCountCategory: PokemonCountCategory;
     isEasyMode: boolean;
@@ -119,13 +119,58 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     setIsOptionsOpen(false);
   };
 
-  const handleStartTimeTrial = (settings: {
+  const handleStartTimeTrial = async (settings: {
     difficulty: TimeTrialDifficulty;
     pokemonCountCategory: PokemonCountCategory;
     isEasyMode: boolean;
   }) => {
-    // Save the settings for when the countdown completes
+    // Save the settings
     setTimeTrialSettings(settings);
+    
+    console.log('Time trial settings applied:', settings);
+    
+    // Apply a random filter combination based on the Pokémon count category immediately
+    const { pokemonCountCategory, isEasyMode } = settings;
+    
+    // Get the combinations for the selected category
+    const validCombinations = filterCombinations[pokemonCountCategory as keyof typeof filterCombinations] as Array<{
+      generation: string;
+      type: string;
+      letter: string;
+      count: number;
+    }>;
+    
+    if (validCombinations && validCombinations.length > 0) {
+      // Select a random combination
+      const randomIndex = Math.floor(Math.random() * validCombinations.length);
+      const selectedCombination = validCombinations[randomIndex];
+      
+      console.log('Selected filter combination:', selectedCombination);
+      
+      // Reset game state before applying new filters
+      gameState.resetProgress();
+      
+      // Find the generation index that matches the selected generation name
+      const generationIndex = GENERATIONS.findIndex(gen => 
+        gen.name === selectedCombination.generation
+      );
+      
+      // Apply the filters to the game state
+      if (generationIndex !== -1) {
+        await gameState.changeGeneration(generationIndex);
+        await gameState.changeType(selectedCombination.type);
+        await gameState.changeLetter(selectedCombination.letter);
+      } else {
+        // If we can't find the generation, fall back to using all settings
+        await gameState.resetAllFilters();
+      }
+    } else {
+      // Fallback if no valid combinations exist
+      await gameState.resetAllFilters();
+    }
+    
+    // Set easy mode based on the settings
+    gameState.setIsEasyMode(isEasyMode);
     
     // Close the options dialog
     setIsOptionsOpen(false);
@@ -134,26 +179,16 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     setShowCountdown(true);
   };
   
-  const handleCountdownComplete = () => {
+  const handleCountdownComplete = async () => {
     // Hide the countdown
     setShowCountdown(false);
     
-    // Start the actual time trial with the saved settings
-    if (timeTrialSettings) {
-      console.log('Time trial settings applied:', timeTrialSettings);
-      // Apply the time trial settings to your game state
-      // For example:
-      // - Set the timer based on difficulty
-      // - Filter Pokemon based on the count category
-      // - Enable/disable spell checking based on isEasyMode
-      
-      // Activate the time trial mode
-      setTimeTrialActive(true);
-      
-      // Focus the input field to immediately allow typing
-      if (inputRef.current) {
-        inputRef.current.focus();
-      }
+    // Start the actual time trial
+    setTimeTrialActive(true);
+    
+    // Focus the input field to immediately allow typing
+    if (inputRef.current) {
+      inputRef.current.focus();
     }
   };
 
@@ -185,12 +220,6 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
           />
         </div>
       </div>
-      <FilterMenu 
-        gameState={gameState}
-        isSidebarCollapsed={isSidebarCollapsed}
-        isSmallScreen={isSmallScreen}
-        onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-      />
       {/* Time Trial Options Dialog */}
       <TimeTrialOptions 
         isOpen={isOptionsOpen}
@@ -201,6 +230,7 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
       <TimeTrialCountdown 
         isVisible={showCountdown}
         onComplete={handleCountdownComplete} 
+        gameState={gameState}
       />
       {/* Regular confetti for catching a Pokemon */}
       {gameState.confettiProps && (
