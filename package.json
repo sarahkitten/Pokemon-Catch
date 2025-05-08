@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "homepage": "https://sarahkitten.github.io/pokemon-app",
+  "homepage": "https://sarahkitten.github.io/Pokemon-Catch",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
