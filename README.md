@@ -2,7 +2,7 @@
 
 A fun and interactive web application where you can catch Pokémon by guessing their names! Test your Pokémon knowledge and try to catch them all.
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen)](https://sarahkitten.github.io/pokemon-app)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen)](https://sarahkitten.github.io/Pokemon-Catch)
 
 ## Features
 
@@ -54,12 +54,12 @@ A fun and interactive web application where you can catch Pokémon by guessing t
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/sarahkitten/pokemon-app.git
+git clone https://github.com/sarahkitten/Pokemon-Catch.git
 ```
 
 2. Install dependencies:
 ```bash
-cd pokemon-app
+cd Pokemon-Catch
 npm install
 ```
 
