@@ -113,7 +113,19 @@ This script will:
 - Create/update the sprite index file for the application
 - Show download progress for each sprite
 
-Note: Both scripts include rate limiters to avoid overwhelming the PokeAPI. The full generation process may take a few minutes to complete.
+3. Calculate filter combinations:
+```bash
+npx ts-node scripts/calculateFilterCombinations.ts
+```
+
+This script will:
+- Analyze all possible filter combinations (generation, type, and first letter)
+- Calculate how many Pokémon match each filter combination 
+- Group combinations by count ranges (1-5, 6-20, 21-50, 50+)
+- Generate a `filterCombinations.json` file in `src/data`
+- Display statistics about the number of combinations in each range
+
+Note: Both the data generation and sprite download scripts include rate limiters to avoid overwhelming the PokeAPI. The full generation process may take a few minutes to complete.
 
 ### Testing
 
