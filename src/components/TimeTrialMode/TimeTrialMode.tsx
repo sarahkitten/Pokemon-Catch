@@ -5,6 +5,7 @@ import { PokemonList } from '../PokemonList/PokemonList'
 import { FilterMenu } from '../FilterMenu/FilterMenu'
 import { ConfirmDialog } from '../Dialog/ConfirmDialog'
 import { TimeTrialOptions } from '../TimeTrialOptions/TimeTrialOptions'
+import { TimeTrialCountdown } from '../TimeTrialCountdown/TimeTrialCountdown'
 import PokemonConfetti from '../../PokemonConfetti'
 import { useGameState } from '../../hooks/useGameState'
 import { getFilteredTitle } from '../../utils/pokemonUtils'
@@ -30,6 +31,13 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
   const [isOptionsOpen, setIsOptionsOpen] = useState(true); // Start with options open
+  const [showCountdown, setShowCountdown] = useState(false);
+  const [_timeTrialActive, setTimeTrialActive] = useState(false);
+  const [timeTrialSettings, setTimeTrialSettings] = useState<{
+    difficulty: TimeTrialDifficulty;
+    pokemonCountCategory: PokemonCountCategory;
+    isEasyMode: boolean;
+  } | null>(null);
   const [dialogConfig, setDialogConfig] = useState<DialogConfig>({
     isOpen: false,
     message: '',
@@ -116,15 +124,37 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     pokemonCountCategory: PokemonCountCategory;
     isEasyMode: boolean;
   }) => {
-    // Apply the time trial settings 
-    console.log('Time trial settings applied:', settings);
-    // In a real implementation, you would update game state with these settings
-    // For example:
-    // - Set the timer based on difficulty
-    // - Filter Pokemon based on the count category
-    // - Enable/disable spell checking based on isEasyMode
+    // Save the settings for when the countdown completes
+    setTimeTrialSettings(settings);
     
+    // Close the options dialog
     setIsOptionsOpen(false);
+    
+    // Show the countdown
+    setShowCountdown(true);
+  };
+  
+  const handleCountdownComplete = () => {
+    // Hide the countdown
+    setShowCountdown(false);
+    
+    // Start the actual time trial with the saved settings
+    if (timeTrialSettings) {
+      console.log('Time trial settings applied:', timeTrialSettings);
+      // Apply the time trial settings to your game state
+      // For example:
+      // - Set the timer based on difficulty
+      // - Filter Pokemon based on the count category
+      // - Enable/disable spell checking based on isEasyMode
+      
+      // Activate the time trial mode
+      setTimeTrialActive(true);
+      
+      // Focus the input field to immediately allow typing
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }
   };
 
   return (
@@ -166,6 +196,11 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
         isOpen={isOptionsOpen}
         onClose={handleCloseOptions}
         onStart={handleStartTimeTrial}
+      />
+      {/* Time Trial Countdown */}
+      <TimeTrialCountdown 
+        isVisible={showCountdown}
+        onComplete={handleCountdownComplete} 
       />
       {/* Regular confetti for catching a Pokemon */}
       {gameState.confettiProps && (
