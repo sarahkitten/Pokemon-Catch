@@ -35,3 +35,63 @@
   .time-trial-mode .title-container.clickable:active {
     transform: scale(0.98);
   }
+  
+  .time-trial-timer {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
+    font-family: 'Pokemon GB', monospace;
+    font-size: 28px;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 8px;
+    color: #fff;
+    border: 2px solid #ffcc00;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .time-trial-timer.danger {
+    animation: pulse-danger 1s infinite;
+    color: #ff3366;
+    border-color: #ff3366;
+  }
+  
+  @keyframes pulse-danger {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+  }
+  
+  .time-trial-bonus {
+    position: fixed;
+    color: #15b356; /* Darker green color */
+    font-weight: bold;
+    z-index: 1000;
+    animation: float-up 1.5s forwards;
+    pointer-events: none;
+    font-size: 24px; /* Larger text size */
+    text-shadow: 0px 0px 3px rgba(0, 0, 0, 0.7); /* Text shadow for better readability */
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    padding: 5px 10px;
+    border-radius: 4px;
+    border: 1px solid #15b356;
+  }
+  
+  @keyframes float-up {
+    0% { 
+      opacity: 0;
+      transform: translateY(0);
+    }
+    20% { 
+      opacity: 1;
+    }
+    80% { 
+      opacity: 1;
+    }
+    100% { 
+      opacity: 0;
+      transform: translateY(-100px);
+    }
+  }

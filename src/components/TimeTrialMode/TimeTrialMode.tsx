@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useCallback } from 'react'
 import { SearchForm } from '../SearchForm/SearchForm'
 import { GameControls } from '../GameControls/GameControls'
 import { PokemonList } from '../PokemonList/PokemonList'
@@ -7,6 +7,7 @@ import { TimeTrialOptions } from '../TimeTrialOptions/TimeTrialOptions'
 import { TimeTrialCountdown } from '../TimeTrialCountdown/TimeTrialCountdown'
 import PokemonConfetti from '../../PokemonConfetti'
 import { useGameState } from '../../hooks/useGameState'
+import { useTimeTrialTimer, formatTime, getCatchBonusTime } from '../../hooks/useTimeTrialTimer'
 import { getFilteredTitle } from '../../utils/pokemonUtils'
 import { submitPokemonGuess, revealRemainingPokemon } from '../../utils/pokemonStateUtils'
 import filterCombinations from '../../data/filterCombinations.json'
@@ -32,8 +33,8 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
   const [_isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
   const [isOptionsOpen, setIsOptionsOpen] = useState(true); // Start with options open
   const [showCountdown, setShowCountdown] = useState(false);
-  const [_timeTrialActive, setTimeTrialActive] = useState(false);
-  const [_timeTrialSettings, setTimeTrialSettings] = useState<{
+  const [timeTrialActive, setTimeTrialActive] = useState(false);
+  const [timeTrialSettings, setTimeTrialSettings] = useState<{
     difficulty: TimeTrialDifficulty;
     pokemonCountCategory: PokemonCountCategory;
     isEasyMode: boolean;
@@ -43,6 +44,111 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     message: '',
     onConfirm: () => {}
   });
+  const [gameEnded, setGameEnded] = useState(false);
+  const [bonusTimeNotifications, setBonusTimeNotifications] = useState<{id: number; amount: number; x: number; y: number}[]>([]);
+  
+  // Initialize timer with the selected difficulty (defaults to medium if none selected)
+  const { 
+    timeRemaining, 
+    elapsedTime,
+    isRunning, 
+    startTimer, 
+    pauseTimer, 
+    addTime 
+  } = useTimeTrialTimer(
+    timeTrialSettings?.difficulty || 'medium'
+  );
+
+  // Detect when time runs out and end the game
+  useEffect(() => {
+    if (timeTrialActive && timeRemaining === 0 && !gameEnded) {
+      handleTimeUp();
+    }
+  }, [timeRemaining, timeTrialActive]);
+
+  // Handle time up - end the game
+  const handleTimeUp = useCallback(() => {
+    setGameEnded(true);
+    pauseTimer();
+    
+    // You can add game ending logic here, like showing a results screen
+    showConfirmDialog(
+      `Time's up! You caught ${gameState.caughtPokemon.length} out of ${gameState.totalPokemon} Pokémon!`,
+      () => {
+        // Reset game or show results
+        closeDialog();
+      }
+    );
+  }, [gameState.caughtPokemon.length, gameState.totalPokemon, pauseTimer]);
+
+  // Track caught Pokemon and add bonus time when a new one is caught
+  const previousCaughtCount = useRef(0);
+  useEffect(() => {
+    if (!timeTrialActive || !timeTrialSettings) return;
+    
+    const currentCount = gameState.caughtPokemon.length;
+    
+    // Check if a new Pokemon was caught
+    if (currentCount > previousCaughtCount.current && isRunning) {
+      // Add bonus time based on difficulty
+      const bonusTime = getCatchBonusTime(timeTrialSettings.difficulty);
+      addTime(bonusTime);
+      
+      // Show bonus time notification
+      const lastCaughtPokemon = gameState.caughtPokemon[currentCount - 1];
+      if (lastCaughtPokemon) {
+        // Create a notification near the input field
+        const inputElement = inputRef.current;
+        if (inputElement) {
+          const rect = inputElement.getBoundingClientRect();
+          
+          // Add a notification at a random position near the input
+          const xOffset = Math.random() * 100 - 50; // Random offset
+          setBonusTimeNotifications(prev => [
+            ...prev,
+            {
+              id: Date.now(),
+              amount: bonusTime,
+              x: rect.right + xOffset,
+              y: rect.top - 20
+            }
+          ]);
+          
+          // Remove the notification after animation completes
+          setTimeout(() => {
+            setBonusTimeNotifications(prev => 
+              prev.filter(notification => notification.id !== Date.now())
+            );
+          }, 1500);
+        }
+      }
+    }
+    
+    // Update reference for next comparison
+    previousCaughtCount.current = currentCount;
+    
+    // End game automatically if all Pokémon are caught
+    if (gameState.allCaught && !gameEnded) {
+      pauseTimer();
+      setGameEnded(true);
+      
+      // Show success message
+      showConfirmDialog(
+        `Congratulations! You caught all ${gameState.totalPokemon} Pokémon in ${formatTime(elapsedTime)}!`,
+        closeDialog
+      );
+    }
+  }, [
+    gameState.caughtPokemon, 
+    gameState.allCaught, 
+    timeTrialActive, 
+    timeTrialSettings, 
+    isRunning, 
+    addTime,
+    elapsedTime,
+    gameEnded,
+    pauseTimer
+  ]);
 
   // Update background effect to use allCaught
   useEffect(() => {
@@ -110,6 +216,11 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     showConfirmDialog(
       `Are you sure you want to give up? This will reveal all remaining Pokémon!`,
       async () => {
+        // Pause the timer and mark the game as ended when giving up
+        if (timeTrialActive) {
+          pauseTimer();
+          setGameEnded(true);
+        }
         await revealRemainingPokemon(gameState, closeDialog);
       }
     );
@@ -185,6 +296,7 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     
     // Start the actual time trial
     setTimeTrialActive(true);
+    startTimer();
     
     // Focus the input field to immediately allow typing
     if (inputRef.current) {
@@ -199,6 +311,14 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
           <img src={titleImageFull} alt="Pokemon Catcher Title" className="title-image" />
           <div className="mode-label time-trial-label">Time Trial</div>
         </div>
+        
+        {/* Timer display - only show when time trial is active */}
+        {timeTrialActive && !gameEnded && (
+          <div className={`time-trial-timer ${timeRemaining <= 10 ? 'danger' : ''}`}>
+            {formatTime(timeRemaining)}
+          </div>
+        )}
+        
         <div className="pokemon-section">
           <h2 className="title" dangerouslySetInnerHTML={{ __html: getFilteredTitle(gameState) }}></h2>
           <SearchForm 
@@ -246,6 +366,16 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
           isContinuous={true}
         />
       )}
+      {/* Bonus time notifications */}
+      {bonusTimeNotifications.map(notification => (
+        <div 
+          key={notification.id} 
+          className="time-trial-bonus" 
+          style={{ left: notification.x, top: notification.y }}
+        >
+          +{notification.amount}s
+        </div>
+      ))}
       <ConfirmDialog 
         isOpen={dialogConfig.isOpen}
         message={dialogConfig.message}
