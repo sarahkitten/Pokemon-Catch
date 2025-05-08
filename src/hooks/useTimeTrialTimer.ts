@@ -106,7 +106,7 @@ export const useTimeTrialTimer = (difficulty: TimeTrialDifficulty = 'medium', op
     setTimeRemaining(newTime !== undefined ? newTime : initialTime);
     setElapsedTime(0);
     setTimerStarted(false);
-  }, [getInitialTime, difficulty]);
+  }, [getInitialTime]);
 
   // Add time method (for bonuses when catching a Pokemon)
   const addTime = useCallback((seconds: number) => {
