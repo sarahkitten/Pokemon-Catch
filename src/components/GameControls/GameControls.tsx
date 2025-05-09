@@ -7,11 +7,12 @@ interface GameControlsProps {
   gameState: GameState;
   onStartOver: () => void;
   onGiveUp: () => Promise<void>;
+  isTimeTrialMode?: boolean;
 }
 
-export function GameControls({ gameState, onStartOver, onGiveUp }: GameControlsProps) {
+export function GameControls({ gameState, onStartOver, onGiveUp, isTimeTrialMode = false }: GameControlsProps) {
   const showControls = gameState.caughtPokemon.length > 0 || gameState.revealedPokemon.length > 0;
-  const showGiveUp = gameState.revealedPokemon.length === 0 && gameState.caughtPokemon.length < gameState.totalPokemon;
+  const showGiveUp = !isTimeTrialMode && gameState.revealedPokemon.length === 0 && gameState.caughtPokemon.length < gameState.totalPokemon;
 
   return (
     <div className="controls">
@@ -55,17 +56,19 @@ export function GameControls({ gameState, onStartOver, onGiveUp }: GameControlsP
           />
         </button>
       </div>
-      <div className="easy-mode-toggle nes-checkbox-container">
-        <label>
-          <input
-            type="checkbox"
-            className="nes-checkbox"
-            checked={gameState.isEasyMode}
-            onChange={(e) => gameState.setIsEasyMode(e.target.checked)}
-          />
-          <span>Easy Mode (Accept close spellings)</span>
-        </label>
-      </div>
+      {!isTimeTrialMode && (
+        <div className="easy-mode-toggle nes-checkbox-container">
+          <label>
+            <input
+              type="checkbox"
+              className="nes-checkbox"
+              checked={gameState.isEasyMode}
+              onChange={(e) => gameState.setIsEasyMode(e.target.checked)}
+            />
+            <span>Easy Mode (Accept close spellings)</span>
+          </label>
+        </div>
+      )}
     </div>
   );
 }

@@ -383,6 +383,7 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
             gameState={gameState}
             onStartOver={handleStartOver}
             onGiveUp={handleGiveUp}
+            isTimeTrialMode={true}
           />
           <PokemonList
             caughtPokemon={gameState.caughtPokemon}
