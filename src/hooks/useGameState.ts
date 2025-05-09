@@ -133,7 +133,7 @@ export function useGameState(): GameState {
       setIsTotalLoading(false);
       setIsFetchingData(false);
     }
-  }, [selectedLetter]);
+  }, []);
 
   useEffect(() => {
     const stateToSave: StoredState = {
