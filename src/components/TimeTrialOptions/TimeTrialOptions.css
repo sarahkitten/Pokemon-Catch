@@ -1,7 +1,10 @@
 /* Time Trial Options styling */
 .time-trial-options-dialog {
     width: 480px;
-    max-width: 95%;
+    max-width: 90%;
+    margin: 0;
+    max-height: calc(100vh - 30px);
+    overflow-y: auto;
   }
   
   .time-trial-options-title {
@@ -49,6 +52,17 @@
   .time-trial-options-toggle label {
     font-size: 0.8rem;
     margin-left: 0.5rem;
+    display: flex;
+    align-items: flex-start;
+  }
+  
+  .time-trial-options-toggle input[type="checkbox"] {
+    flex-shrink: 0;
+  }
+  
+  .time-trial-options-toggle span {
+    padding-left: 0.5rem;
+    line-height: 1.2;
   }
   
   .time-trial-options-description {
@@ -89,8 +103,20 @@
   
   /* Responsive adjustments */
   @media (max-width: 768px) {
+    .time-trial-options-dialog {
+      max-width: 95%;
+      padding: 1rem !important;
+      margin: 10px auto;
+      max-height: calc(100vh - 30px);
+    }
+    
     .time-trial-options-title {
       font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .time-trial-options-section {
+      margin-bottom: 1rem;
     }
     
     .time-trial-options-section-title {
@@ -98,19 +124,57 @@
     }
     
     .time-trial-options-grid {
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      gap: 0.5rem;
     }
     
     .time-trial-option-button {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       min-height: 2.5rem;
+      padding: 0.25rem;
     }
     
     .time-trial-options-toggle label {
       font-size: 0.7rem;
     }
     
+    .time-trial-options-toggle span {
+      max-width: calc(100% - 20px);
+    }
+    
     .time-trial-options-description {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
+    }
+    
+    .time-trial-options-actions {
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    
+    .time-trial-options-actions button {
+      width: 100%;
+    }
+    
+    .time-trial-options-dev-settings input[type="number"] {
+      max-width: 100%;
+    }
+  }
+  
+  /* Extra small devices */
+  @media (max-width: 380px) {
+    .time-trial-options-dialog {
+      max-width: calc(100% - 16px);
+      padding: 0.75rem !important;
+      margin: 8px;
+      max-height: calc(100vh - 30px);
+    }
+    
+    .time-trial-options-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .time-trial-options-toggle label {
+      align-items: flex-start;
     }
   }
