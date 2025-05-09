@@ -17,9 +17,33 @@
     margin-right: 0;
   }
   
+  .time-trial-mode .title-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .time-trial-mode .title-image {
+    max-width: 90%;
+    height: auto;
+  }
+  
+  .time-trial-mode .mode-label {
+    margin-top: 10px;
+    margin-left: 0;
+  }
+  
   @media (min-width: 768px) {
     .time-trial-mode .main-content.expanded {
       margin-right: 0;
+    }
+    
+    .time-trial-mode .title-container {
+      flex-direction: row;
+    }
+    
+    .time-trial-mode .mode-label {
+      margin-top: 0;
+      margin-left: 10px;
     }
   }
   
