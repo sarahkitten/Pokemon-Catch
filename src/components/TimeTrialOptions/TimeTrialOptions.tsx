@@ -11,6 +11,9 @@ interface TimeTrialOptionsProps {
     difficulty: TimeTrialDifficulty;
     pokemonCountCategory: PokemonCountCategory;
     isEasyMode: boolean;
+    isDevMode?: boolean;
+    customInitialTime?: number;
+    customTimePerCatch?: number;
   }) => void;
 }
 
@@ -19,6 +22,9 @@ export function TimeTrialOptions({ isOpen, onClose, onStart }: TimeTrialOptionsP
   const [difficulty, setDifficulty] = useState<TimeTrialDifficulty>('medium');
   const [pokemonCountCategory, setPokemonCountCategory] = useState<PokemonCountCategory>('6-20');
   const [isEasyMode, setIsEasyMode] = useState(false);
+  const [isDevMode, setIsDevMode] = useState(false);
+  const [customInitialTime, setCustomInitialTime] = useState<number>(90);
+  const [customTimePerCatch, setCustomTimePerCatch] = useState<number>(10);
 
   // If the dialog is not open, don't render anything
   if (!isOpen) return null;
@@ -26,15 +32,22 @@ export function TimeTrialOptions({ isOpen, onClose, onStart }: TimeTrialOptionsP
   // Calculate the description based on the selected options
   const selectedDifficultySettings = getDifficultySettings(difficulty);
   
-  const description = `Difficulty ${difficulty} - Start with ${selectedDifficultySettings.initialTime} seconds. 
-  Earn +${selectedDifficultySettings.timePerCatch} seconds for each Pokemon caught.`;
+  // Use either custom values (if dev mode is on) or preset values
+  const initialTime = isDevMode ? customInitialTime : selectedDifficultySettings.initialTime;
+  const timePerCatch = isDevMode ? customTimePerCatch : selectedDifficultySettings.timePerCatch;
+  
+  const description = `${isDevMode ? 'Dev Mode' : `Difficulty ${difficulty}`} - Start with ${initialTime} seconds. 
+  Earn +${timePerCatch} seconds for each Pokemon caught.`;
 
   // Handler for starting the time trial
   const handleStart = () => {
     onStart({
       difficulty,
       pokemonCountCategory,
-      isEasyMode
+      isEasyMode,
+      isDevMode,
+      customInitialTime: isDevMode ? customInitialTime : undefined,
+      customTimePerCatch: isDevMode ? customTimePerCatch : undefined
     });
   };
 
@@ -98,6 +111,43 @@ export function TimeTrialOptions({ isOpen, onClose, onStart }: TimeTrialOptionsP
           <p className="time-trial-options-description">
             Try to catch all the Pokémon that match the description!
           </p>
+        </div>
+        
+        {/* Dev Mode Toggle */}
+        <div className="time-trial-options-section">
+          <div className="time-trial-options-toggle">
+            <label>
+              <input
+                type="checkbox"
+                className="nes-checkbox"
+                checked={isDevMode}
+                onChange={(e) => setIsDevMode(e.target.checked)}
+              />
+              <span>Dev Mode (customize settings)</span>
+            </label>
+          </div>
+          {isDevMode && (
+            <div className="time-trial-options-dev-settings">
+              <label>
+                Initial Time:
+                <input
+                  type="number"
+                  className="nes-input"
+                  value={customInitialTime}
+                  onChange={(e) => setCustomInitialTime(Number(e.target.value))}
+                />
+              </label>
+              <label>
+                Time Per Catch:
+                <input
+                  type="number"
+                  className="nes-input"
+                  value={customTimePerCatch}
+                  onChange={(e) => setCustomTimePerCatch(Number(e.target.value))}
+                />
+              </label>
+            </div>
+          )}
         </div>
         
         {/* Description */}

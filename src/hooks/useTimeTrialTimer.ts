@@ -5,6 +5,7 @@ import { TIME_TRIAL } from '../constants';
 interface TimerOptions {
   initialTime?: number; // time in seconds
   autoStart?: boolean;
+  timePerCatch?: number; // time added per catch for dev mode
 }
 
 interface TimeTrialTimerState {
@@ -16,7 +17,7 @@ interface TimeTrialTimerState {
   pauseTimer: () => void;
   resumeTimer: () => void;
   resetTimer: (newTime?: number) => void;
-  addTime: (seconds: number) => void;
+  addTime: (seconds?: number) => void;
 }
 
 /**
@@ -51,6 +52,11 @@ export const useTimeTrialTimer = (difficulty: TimeTrialDifficulty = 'medium', op
   const getInitialTime = useCallback(() => {
     return options.initialTime !== undefined ? options.initialTime : DIFFICULTY_TIME_MAP[difficulty];
   }, [difficulty, options.initialTime]);
+
+  // Get time per catch from options or from the difficulty map
+  const getTimePerCatch = useCallback(() => {
+    return options.timePerCatch !== undefined ? options.timePerCatch : CATCH_BONUS_TIME_MAP[difficulty];
+  }, [difficulty, options.timePerCatch]);
 
   const [timeRemaining, setTimeRemaining] = useState<number>(getInitialTime());
   const [elapsedTime, setElapsedTime] = useState<number>(0);
@@ -109,9 +115,10 @@ export const useTimeTrialTimer = (difficulty: TimeTrialDifficulty = 'medium', op
   }, [getInitialTime]);
 
   // Add time method (for bonuses when catching a Pokemon)
-  const addTime = useCallback((seconds: number) => {
-    setTimeRemaining(prev => prev + seconds);
-  }, []);
+  const addTime = useCallback((seconds?: number) => {
+    const timeToAdd = seconds !== undefined ? seconds : getTimePerCatch();
+    setTimeRemaining(prev => prev + timeToAdd);
+  }, [getTimePerCatch]);
 
   // Auto-start timer if option is set
   useEffect(() => {

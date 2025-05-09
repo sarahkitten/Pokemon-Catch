@@ -39,6 +39,9 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     difficulty: TimeTrialDifficulty;
     pokemonCountCategory: PokemonCountCategory;
     isEasyMode: boolean;
+    isDevMode?: boolean;
+    customInitialTime?: number;
+    customTimePerCatch?: number;
   } | null>(null);
   const [dialogConfig, setDialogConfig] = useState<DialogConfig>({
     isOpen: false,
@@ -49,7 +52,7 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
   const [showResults, setShowResults] = useState(false);
   const [bonusTimeNotifications, setBonusTimeNotifications] = useState<{id: number; amount: number; x: number; y: number}[]>([]);
   
-  // Initialize timer with the selected difficulty (defaults to medium if none selected)
+  // Initialize timer with the selected difficulty and custom settings if in dev mode
   const { 
     timeRemaining, 
     elapsedTime,
@@ -59,7 +62,11 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     resetTimer,
     addTime 
   } = useTimeTrialTimer(
-    timeTrialSettings?.difficulty || 'medium'
+    timeTrialSettings?.difficulty || 'medium',
+    {
+      initialTime: timeTrialSettings?.isDevMode ? timeTrialSettings.customInitialTime : undefined,
+      timePerCatch: timeTrialSettings?.isDevMode ? timeTrialSettings.customTimePerCatch : undefined
+    }
   );
 
   // Handle time up - end the game
@@ -81,9 +88,14 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     // Reset game state with the same settings
     gameState.resetProgress();
     
-    // Reset the timer to the correct initial time for the current difficulty
+    // Reset the timer to the correct initial time based on settings
     if (timeTrialSettings) {
-      const initialTime = getInitialTimeForDifficulty(timeTrialSettings.difficulty);
+      let initialTime;
+      if (timeTrialSettings.isDevMode && timeTrialSettings.customInitialTime) {
+        initialTime = timeTrialSettings.customInitialTime;
+      } else {
+        initialTime = getInitialTimeForDifficulty(timeTrialSettings.difficulty);
+      }
       resetTimer(initialTime);
     }
     
@@ -117,8 +129,13 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     
     // Check if a new Pokemon was caught
     if (currentCount > previousCaughtCount.current && isRunning) {
-      // Add bonus time based on difficulty
-      const bonusTime = getCatchBonusTime(timeTrialSettings.difficulty);
+      // Add bonus time based on settings
+      let bonusTime;
+      if (timeTrialSettings.isDevMode && timeTrialSettings.customTimePerCatch !== undefined) {
+        bonusTime = timeTrialSettings.customTimePerCatch;
+      } else {
+        bonusTime = getCatchBonusTime(timeTrialSettings.difficulty);
+      }
       addTime(bonusTime);
       
       // Show bonus time notification
@@ -262,12 +279,20 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     difficulty: TimeTrialDifficulty;
     pokemonCountCategory: PokemonCountCategory;
     isEasyMode: boolean;
+    isDevMode?: boolean;
+    customInitialTime?: number;
+    customTimePerCatch?: number;
   }) => {
     // Save the settings
     setTimeTrialSettings(settings);
     
-    // Reset the timer with the new difficulty's initial time using our utility function
-    const initialTime = getInitialTimeForDifficulty(settings.difficulty);
+    // Reset the timer with the appropriate initial time
+    let initialTime;
+    if (settings.isDevMode && settings.customInitialTime !== undefined) {
+      initialTime = settings.customInitialTime;
+    } else {
+      initialTime = getInitialTimeForDifficulty(settings.difficulty);
+    }
     resetTimer(initialTime);
         
     // Apply a random filter combination based on the Pokémon count category immediately
