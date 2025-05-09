@@ -15,9 +15,10 @@ interface TimeTrialOptionsProps {
     customInitialTime?: number;
     customTimePerCatch?: number;
   }) => void;
+  onHome?: () => void; // Added navigation prop
 }
 
-export function TimeTrialOptions({ isOpen, onClose, onStart }: TimeTrialOptionsProps) {
+export function TimeTrialOptions({ isOpen, onClose, onStart, onHome }: TimeTrialOptionsProps) {
   // State for the options
   const [difficulty, setDifficulty] = useState<TimeTrialDifficulty>('medium');
   const [pokemonCountCategory, setPokemonCountCategory] = useState<PokemonCountCategory>('6-20');
@@ -160,7 +161,7 @@ export function TimeTrialOptions({ isOpen, onClose, onStart }: TimeTrialOptionsP
           <button className="nes-btn is-primary" onClick={handleStart}>
             Start
           </button>
-          <button className="nes-btn is-error" onClick={onClose}>
+          <button className="nes-btn is-error" onClick={onHome || onClose}>
             Cancel
           </button>
         </div>

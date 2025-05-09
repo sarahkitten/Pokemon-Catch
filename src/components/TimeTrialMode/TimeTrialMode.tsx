@@ -399,6 +399,7 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
         isOpen={isOptionsOpen}
         onClose={handleCloseOptions}
         onStart={handleStartTimeTrial}
+        onHome={onBackToModeSelection}
       />
       {/* Time Trial Countdown */}
       <TimeTrialCountdown 
