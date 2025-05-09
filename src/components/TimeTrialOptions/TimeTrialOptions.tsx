@@ -36,7 +36,7 @@ export function TimeTrialOptions({ isOpen, onClose, onStart }: TimeTrialOptionsP
   const initialTime = isDevMode ? customInitialTime : selectedDifficultySettings.initialTime;
   const timePerCatch = isDevMode ? customTimePerCatch : selectedDifficultySettings.timePerCatch;
   
-  const description = `${isDevMode ? 'Dev Mode' : `Difficulty ${difficulty}`} - Start with ${initialTime} seconds. 
+  const description = `Start with ${initialTime} seconds. 
   Earn +${timePerCatch} seconds for each Pokemon caught.`;
 
   // Handler for starting the time trial

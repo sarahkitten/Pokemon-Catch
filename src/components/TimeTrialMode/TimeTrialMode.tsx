@@ -445,6 +445,7 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
         settings={timeTrialSettings}
         onTryAgain={handleTryAgain}
         onChangeSettings={handleChangeSettings}
+        onHome={onBackToModeSelection}
       />
     </div>
   );

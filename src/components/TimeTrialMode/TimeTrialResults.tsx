@@ -16,6 +16,7 @@ interface TimeTrialResultsProps {
   } | null;
   onTryAgain: () => void;
   onChangeSettings: () => void;
+  onHome: () => void;
 }
 
 export const TimeTrialResults = ({
@@ -25,7 +26,8 @@ export const TimeTrialResults = ({
   elapsedTime,
   settings,
   onTryAgain,
-  onChangeSettings
+  onChangeSettings,
+  onHome
 }: TimeTrialResultsProps) => {
   // Calculate percentage of Pokemon caught
   const percentCaught = totalPokemon > 0 ? Math.round((caughtCount / totalPokemon) * 100) : 0;
@@ -127,6 +129,9 @@ export const TimeTrialResults = ({
           </button>
           <button className="nes-btn is-primary" onClick={onChangeSettings}>
             Change Settings
+          </button>
+          <button className="nes-btn is-warning" onClick={onHome}>
+            Home
           </button>
         </div>
       </div>
