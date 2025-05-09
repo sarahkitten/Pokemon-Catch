@@ -146,14 +146,28 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
         if (inputElement) {
           const rect = inputElement.getBoundingClientRect();
           
-          // Add a notification at a random position near the input
-          const xOffset = Math.random() * 100 - 50; // Random offset
+          // Calculate a position that stays within the screen boundaries
+          // Use the center of the input field as the base position
+          const centerX = rect.left + rect.width / 2;
+          
+          // Add a random offset but constrain it to visible area
+          // Make sure to leave at least 20px from the edge of the screen
+          const maxOffset = Math.min(
+            window.innerWidth - centerX - 70, // Right boundary (70px for notification width)
+            centerX - 70 // Left boundary
+          );
+          
+          // Use a smaller offset range on mobile
+          const offsetRange = Math.min(maxOffset, window.innerWidth < 768 ? 30 : 100);
+          const xOffset = (Math.random() * offsetRange * 2) - offsetRange;
+          
+          // Create the notification with the constrained position
           setBonusTimeNotifications(prev => [
             ...prev,
             {
               id: Date.now(),
               amount: bonusTime,
-              x: rect.right + xOffset,
+              x: centerX + xOffset,
               y: rect.top - 20
             }
           ]);

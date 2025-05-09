@@ -95,27 +95,38 @@
     z-index: 1000;
     animation: float-up 1.5s forwards;
     pointer-events: none;
-    font-size: 24px; /* Larger text size */
     text-shadow: 0px 0px 3px rgba(0, 0, 0, 0.7); /* Text shadow for better readability */
     background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
     padding: 5px 10px;
     border-radius: 4px;
     border: 1px solid #15b356;
+    width: max-content;
+    transform-origin: center bottom;
+    
+    /* Mobile specific styles */
+    font-size: 18px;
+  }
+  
+  @media (min-width: 768px) {
+    .time-trial-bonus {
+      font-size: 24px; /* Larger text size on desktop */
+    }
   }
   
   @keyframes float-up {
     0% { 
       opacity: 0;
-      transform: translateY(0);
+      transform: translateY(0) scale(0.8);
     }
     20% { 
       opacity: 1;
+      transform: translateY(-10px) scale(1);
     }
     80% { 
       opacity: 1;
     }
     100% { 
       opacity: 0;
-      transform: translateY(-100px);
+      transform: translateY(-80px) scale(0.9);
     }
   }
