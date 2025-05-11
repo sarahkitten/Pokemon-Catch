@@ -4,6 +4,7 @@ import { POKEMON_DATA } from '../data/pokemonData';
 import type { GameState } from '../hooks/useGameState';
 
 export const createMockGameStateFunctions = () => ({
+  mockChangeFilters: jest.fn<(newGenIndex: number, newType: string, newLetter: string) => Promise<void>>().mockImplementation(async () => {}),
   mockChangeGeneration: jest.fn<(newIndex: number) => Promise<void>>().mockImplementation(async () => {}),
   mockChangeType: jest.fn<(newType: string) => Promise<void>>().mockImplementation(async () => {}),
   mockChangeLetter: jest.fn<(newLetter: string) => Promise<void>>().mockImplementation(async () => {}),
@@ -38,6 +39,7 @@ export const createMockGameState = (overrides: Partial<GameState> = {}): GameSta
     filteredPokemon: POKEMON_DATA,
     isFetchingData: false,
     isMuted: false,
+    allCaught: false,
     noResults: false,
     error: '',
     isLoading: false,
@@ -52,6 +54,7 @@ export const createMockGameState = (overrides: Partial<GameState> = {}): GameSta
     setFilteredPokemon: jest.fn(),
 
     // Action handlers with typed mocks
+    changeFilters: mockFunctions.mockChangeFilters,
     changeGeneration: mockFunctions.mockChangeGeneration,
     changeType: mockFunctions.mockChangeType,
     changeLetter: mockFunctions.mockChangeLetter,

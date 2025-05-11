@@ -335,9 +335,11 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
       
       // Apply the filters to the game state
       if (generationIndex !== -1) {
-        await gameState.changeGeneration(generationIndex);
-        await gameState.changeType(selectedCombination.type);
-        await gameState.changeLetter(selectedCombination.letter);
+        await gameState.changeFilters(
+          generationIndex,
+          selectedCombination.type,
+          selectedCombination.letter
+        );
       } else {
         // If we can't find the generation, fall back to using all settings
         await gameState.resetAllFilters();

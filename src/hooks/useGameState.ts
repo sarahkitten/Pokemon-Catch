@@ -55,7 +55,8 @@ export interface GameState {
   setIsLoading: (value: boolean) => void;
   setIsTotalLoading: (value: boolean) => void;
   resetProgress: () => void;
-  updateTotalCount: (generation: Generation, type: string, letter?: string) => Promise<void>;
+  updateTotalCount: (generation: Generation, type: string, letter: string) => Promise<void>;
+  changeFilters: (newGenIndex: number, newType: string, newLetter: string) => Promise<void>;
   changeGeneration: (newIndex: number) => Promise<void>;
   changeType: (newType: string) => Promise<void>;
   changeLetter: (newLetter: string) => Promise<void>;
@@ -170,6 +171,14 @@ export function useGameState(): GameState {
     setError('');
     setRevealedPokemon([]);
   };
+
+  const changeFilters = async (newGenIndex: number, newType: string, newLetter: string) => {
+    setSelectedGenerationIndex(newGenIndex);
+    setSelectedType(newType);
+    setSelectedLetter(newLetter);
+    resetProgress();
+    await updateTotalCount(GENERATIONS[newGenIndex], newType, newLetter);
+  }
 
   const changeGeneration = async (newIndex: number) => {
     const newGen = GENERATIONS[newIndex];
@@ -325,6 +334,7 @@ export function useGameState(): GameState {
     setIsTotalLoading,
     resetProgress,
     updateTotalCount,
+    changeFilters,
     changeGeneration,
     changeType,
     changeLetter,
