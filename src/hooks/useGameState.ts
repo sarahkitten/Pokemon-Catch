@@ -114,7 +114,7 @@ export function useGameState(): GameState {
 
   const allCaught = areAllPokemonCaught(caughtPokemon.length, totalPokemon);
 
-  const updateTotalCount = useCallback(async (generation: Generation, type: string, letter: string = selectedLetter) => {
+  const updateTotalCount = useCallback(async (generation: Generation, type: string, letter: string) => {
     setIsTotalLoading(true);
     setIsFetchingData(true);
     setNoResults(false);
