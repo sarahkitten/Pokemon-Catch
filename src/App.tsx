@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import ClassicMode from './components/ClassicMode/ClassicMode'
 import TimeTrialMode from './components/TimeTrialMode/TimeTrialMode'
+import { hasSharedChallenge } from './utils/timeTrialUtils'
 import titleImageFull from './assets/PokemonCatcherTitleFull.png'
 
 // Define available game modes
@@ -13,13 +14,40 @@ const MODE_STORAGE_KEY = 'pokemonCatcherGameMode'
 function App() {
   // Initialize state from localStorage if available, otherwise default to 'none'
   const [currentMode, setCurrentMode] = useState<GameMode>(() => {
+    // Check if there's a shared challenge in the URL
+    if (hasSharedChallenge()) {
+      return 'timetrial'
+    }
+    
     const savedMode = localStorage.getItem(MODE_STORAGE_KEY) as GameMode | null
     return savedMode || 'classic'
   })
 
-  // Save mode to localStorage whenever it changes
+  // Check for shared challenges on mount and URL changes
   useEffect(() => {
-    localStorage.setItem(MODE_STORAGE_KEY, currentMode)
+    const checkForSharedChallenge = () => {
+      if (hasSharedChallenge() && currentMode !== 'timetrial') {
+        setCurrentMode('timetrial')
+      }
+    }
+
+    // Check immediately
+    checkForSharedChallenge()
+
+    // Listen for URL changes (back/forward navigation)
+    window.addEventListener('popstate', checkForSharedChallenge)
+    
+    return () => {
+      window.removeEventListener('popstate', checkForSharedChallenge)
+    }
+  }, [currentMode])
+
+  // Save mode to localStorage whenever it changes (but not for shared challenges)
+  useEffect(() => {
+    // Don't save 'timetrial' mode to localStorage if it was triggered by a shared challenge
+    if (!hasSharedChallenge()) {
+      localStorage.setItem(MODE_STORAGE_KEY, currentMode)
+    }
   }, [currentMode])
 
   const handleBackToModeSelection = () => {

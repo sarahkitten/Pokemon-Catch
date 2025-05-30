@@ -4,6 +4,7 @@ import { GameControls } from '../GameControls/GameControls'
 import { PokemonList } from '../PokemonList/PokemonList'
 import { ConfirmDialog } from '../Dialog/ConfirmDialog'
 import { TimeTrialOptions } from '../TimeTrialOptions/TimeTrialOptions'
+import { SharedChallengeAccept } from '../SharedChallengeAccept/SharedChallengeAccept'
 import { TimeTrialCountdown } from '../TimeTrialCountdown/TimeTrialCountdown'
 import { TimeTrialResults } from './TimeTrialResults'
 import PokemonConfetti from '../../PokemonConfetti'
@@ -11,10 +12,11 @@ import { useGameState } from '../../hooks/useGameState'
 import { useTimeTrialTimer, formatTime, getCatchBonusTime, getInitialTimeForDifficulty } from '../../hooks/useTimeTrialTimer'
 import { getFilteredTitle } from '../../utils/pokemonUtils'
 import { submitPokemonGuess, revealRemainingPokemon } from '../../utils/pokemonStateUtils'
+import { decodeTimeTrialChallenge, hasSharedChallenge, clearChallengeFromUrl } from '../../utils/timeTrialUtils'
 import filterCombinations from '../../data/filterCombinations.json'
 import { GENERATIONS } from '../../constants'
 import titleImageFull from '../../assets/PokemonCatcherTitleFull.png'
-import type { PokemonCountCategory, TimeTrialDifficulty } from '../../types'
+import type { PokemonCountCategory, TimeTrialDifficulty, TimeTrialShareParams } from '../../types'
 import './TimeTrialMode.css'
 
 interface DialogConfig {
@@ -35,6 +37,7 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
   const [isOptionsOpen, setIsOptionsOpen] = useState(true); // Start with options open
   const [showCountdown, setShowCountdown] = useState(false);
   const [timeTrialActive, setTimeTrialActive] = useState(false);
+  const [sharedChallenge, setSharedChallenge] = useState<TimeTrialShareParams | null>(null);
   const [timeTrialSettings, setTimeTrialSettings] = useState<{
     difficulty: TimeTrialDifficulty;
     pokemonCountCategory: PokemonCountCategory;
@@ -244,6 +247,20 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     };
   }, []);
 
+  // Check for shared challenge in URL parameters when component mounts
+  useEffect(() => {
+    if (hasSharedChallenge()) {
+      const searchParams = new URLSearchParams(window.location.search);
+      const challengeData = decodeTimeTrialChallenge(searchParams);
+      
+      if (challengeData) {
+        setSharedChallenge(challengeData);
+        // Clear URL parameters after loading to keep URL clean
+        clearChallengeFromUrl();
+      }
+    }
+  }, []);
+
   const handleStartOver = () => {
     if (gameState.caughtPokemon.length === 0 && gameState.revealedPokemon.length === 0) return;
     
@@ -289,6 +306,27 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     setIsOptionsOpen(false);
   };
 
+  // Handle accepting a shared challenge
+  const handleAcceptChallenge = async (settings: {
+    difficulty: TimeTrialDifficulty;
+    pokemonCountCategory: PokemonCountCategory;
+    isEasyMode: boolean;
+  }) => {
+    if (!sharedChallenge) return;
+    
+    // Start the shared challenge with the decoded parameters
+    await handleStartTimeTrial({
+      ...settings,
+      isDevMode: false // Shared challenges don't support dev mode
+    });
+  };
+
+  // Handle declining a shared challenge
+  const handleDeclineChallenge = () => {
+    setSharedChallenge(null);
+    setIsOptionsOpen(true); // Show regular options instead
+  };
+
   const handleStartTimeTrial = async (settings: {
     difficulty: TimeTrialDifficulty;
     pokemonCountCategory: PokemonCountCategory;
@@ -309,48 +347,96 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     }
     resetTimer(initialTime);
         
-    // Apply a random filter combination based on the Pokémon count category immediately
-    const { pokemonCountCategory, isEasyMode } = settings;
-    
-    // Get the combinations for the selected category
-    const validCombinations = filterCombinations[pokemonCountCategory as keyof typeof filterCombinations] as Array<{
-      generation: string;
-      type: string;
-      letter: string;
-      count: number;
-    }>;
-    
-    if (validCombinations && validCombinations.length > 0) {
-      // Select a random combination
-      const randomIndex = Math.floor(Math.random() * validCombinations.length);
-      const selectedCombination = validCombinations[randomIndex];
-            
-      // Reset game state before applying new filters
+    // Check if this is a shared challenge with specific filters
+    if (sharedChallenge) {
+      // For shared challenges, use the exact filters from the URL
+      const { generationIndex, type, letter } = sharedChallenge;
+      
+      // Reset game state before applying filters
       gameState.resetProgress();
       
-      // Find the generation index that matches the selected generation name
-      const generationIndex = GENERATIONS.findIndex(gen => 
-        gen.name === selectedCombination.generation
-      );
+      // Apply the specific filters from the shared challenge
+      await gameState.changeFilters(generationIndex, type, letter);
       
-      // Apply the filters to the game state
-      if (generationIndex !== -1) {
-        await gameState.changeFilters(
-          generationIndex,
-          selectedCombination.type,
-          selectedCombination.letter
-        );
-      } else {
-        // If we can't find the generation, fall back to using all settings
-        await gameState.resetAllFilters();
-      }
+      // Store the shared challenge data for later sharing
+      setSharedChallenge(sharedChallenge);
     } else {
-      // Fallback if no valid combinations exist
-      await gameState.resetAllFilters();
+      // For regular challenges, apply random filter combination based on Pokemon count category
+      const { pokemonCountCategory } = settings;
+      
+      // Get the combinations for the selected category
+      const validCombinations = filterCombinations[pokemonCountCategory as keyof typeof filterCombinations] as Array<{
+        generation: string;
+        type: string;
+        letter: string;
+        count: number;
+      }>;
+      
+      if (validCombinations && validCombinations.length > 0) {
+        // Select a random combination
+        const randomIndex = Math.floor(Math.random() * validCombinations.length);
+        const selectedCombination = validCombinations[randomIndex];
+              
+        // Reset game state before applying new filters
+        gameState.resetProgress();
+        
+        // Find the generation index that matches the selected generation name
+        const generationIndex = GENERATIONS.findIndex(gen => 
+          gen.name === selectedCombination.generation
+        );
+        
+        // Apply the filters to the game state
+        if (generationIndex !== -1) {
+          await gameState.changeFilters(
+            generationIndex,
+            selectedCombination.type,
+            selectedCombination.letter
+          );
+          
+          // Create challenge parameters for sharing regular challenges
+          const challengeParams: TimeTrialShareParams = {
+            difficulty: settings.difficulty,
+            pokemonCountCategory: settings.pokemonCountCategory,
+            easyMode: settings.isEasyMode,
+            generationIndex: generationIndex,
+            type: selectedCombination.type,
+            letter: selectedCombination.letter
+          };
+          setSharedChallenge(challengeParams);
+        } else {
+          // If we can't find the generation, fall back to using all settings
+          await gameState.resetAllFilters();
+          
+          // Create challenge parameters with default values
+          const challengeParams: TimeTrialShareParams = {
+            difficulty: settings.difficulty,
+            pokemonCountCategory: settings.pokemonCountCategory,
+            easyMode: settings.isEasyMode,
+            generationIndex: 0,
+            type: 'All',
+            letter: 'All'
+          };
+          setSharedChallenge(challengeParams);
+        }
+      } else {
+        // Fallback if no valid combinations exist
+        await gameState.resetAllFilters();
+        
+        // Create challenge parameters with default values
+        const challengeParams: TimeTrialShareParams = {
+          difficulty: settings.difficulty,
+          pokemonCountCategory: settings.pokemonCountCategory,
+          easyMode: settings.isEasyMode,
+          generationIndex: 0,
+          type: 'All',
+          letter: 'All'
+        };
+        setSharedChallenge(challengeParams);
+      }
     }
     
     // Set easy mode based on the settings
-    gameState.setIsEasyMode(isEasyMode);
+    gameState.setIsEasyMode(settings.isEasyMode);
     
     // Close the options dialog
     setIsOptionsOpen(false);
@@ -410,13 +496,24 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
           />
         </div>
       </div>
-      {/* Time Trial Options Dialog */}
-      <TimeTrialOptions 
-        isOpen={isOptionsOpen}
-        onClose={handleCloseOptions}
-        onStart={handleStartTimeTrial}
-        onHome={onBackToModeSelection}
-      />
+      {/* Time Trial Options or Shared Challenge Accept Dialog */}
+      {sharedChallenge ? (
+        <SharedChallengeAccept
+          isOpen={isOptionsOpen}
+          onAccept={handleAcceptChallenge}
+          onDecline={handleDeclineChallenge}
+          difficulty={sharedChallenge.difficulty as TimeTrialDifficulty}
+          pokemonCountCategory={sharedChallenge.pokemonCountCategory as PokemonCountCategory}
+          isEasyMode={sharedChallenge.easyMode}
+        />
+      ) : (
+        <TimeTrialOptions 
+          isOpen={isOptionsOpen}
+          onClose={handleCloseOptions}
+          onStart={handleStartTimeTrial}
+          onHome={onBackToModeSelection}
+        />
+      )}
       {/* Time Trial Countdown */}
       <TimeTrialCountdown 
         isVisible={showCountdown}
@@ -460,6 +557,7 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
         totalPokemon={gameState.totalPokemon}
         elapsedTime={elapsedTime}
         settings={timeTrialSettings}
+        challengeParams={sharedChallenge}
         onTryAgain={handleTryAgain}
         onChangeSettings={handleChangeSettings}
         onHome={onBackToModeSelection}

@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { formatTime } from '../../hooks/useTimeTrialTimer';
-import type { TimeTrialDifficulty, PokemonCountCategory } from '../../types';
+import type { TimeTrialDifficulty, PokemonCountCategory, TimeTrialShareParams } from '../../types';
+import { encodeTimeTrialChallenge, copyToClipboard } from '../../utils/timeTrialUtils';
 import ultraballIcon from '../../assets/ultraball.svg';
 import './TimeTrialResults.css';
 
@@ -14,6 +15,7 @@ interface TimeTrialResultsProps {
     pokemonCountCategory: PokemonCountCategory;
     isEasyMode: boolean;
   } | null;
+  challengeParams?: TimeTrialShareParams | null; // For sharing the exact same challenge
   onTryAgain: () => void;
   onChangeSettings: () => void;
   onHome: () => void;
@@ -25,10 +27,13 @@ export const TimeTrialResults = ({
   totalPokemon,
   elapsedTime,
   settings,
+  challengeParams,
   onTryAgain,
   onChangeSettings,
   onHome
 }: TimeTrialResultsProps) => {
+  const [shareMessage, setShareMessage] = useState<string>('');
+  
   // Calculate percentage of Pokemon caught
   const percentCaught = totalPokemon > 0 ? Math.round((caughtCount / totalPokemon) * 100) : 0;
   const allCaught = caughtCount === totalPokemon;
@@ -58,6 +63,35 @@ export const TimeTrialResults = ({
     if (stars >= 2) return "Good effort! Keep practicing!";
     if (stars >= 1) return "Nice try! You can do better!";
     return "Keep trying! You'll improve!";
+  };
+
+  // Handler for sharing the challenge
+  const handleShare = async () => {
+    if (!challengeParams || !settings) {
+      setShareMessage('Cannot share - challenge data unavailable');
+      setTimeout(() => setShareMessage(''), 3000);
+      return;
+    }
+
+    const shareParams: TimeTrialShareParams = {
+      difficulty: settings.difficulty,
+      pokemonCountCategory: settings.pokemonCountCategory,
+      easyMode: settings.isEasyMode,
+      generationIndex: challengeParams.generationIndex,
+      type: challengeParams.type,
+      letter: challengeParams.letter
+    };
+
+    const shareUrl = encodeTimeTrialChallenge(shareParams);
+    const success = await copyToClipboard(shareUrl);
+    
+    if (success) {
+      setShareMessage('Challenge URL copied to clipboard!');
+    } else {
+      setShareMessage('Failed to copy URL');
+    }
+    
+    setTimeout(() => setShareMessage(''), 3000);
   };
   
   // Ensure modal is at top of view when opened
@@ -122,11 +156,23 @@ export const TimeTrialResults = ({
           </div>
         </div>
         
+        {/* Share Message */}
+        {shareMessage && (
+          <p className={`time-trial-results-share-message ${shareMessage.includes('copied') ? 'success' : 'error'}`}>
+            {shareMessage}
+          </p>
+        )}
+        
         {/* Action buttons */}
         <div className="time-trial-results-actions">
           <button className="nes-btn is-success" onClick={onTryAgain}>
             Try Again
           </button>
+          {challengeParams && (
+            <button className="nes-btn is-primary" onClick={handleShare}>
+              📋 Share Challenge
+            </button>
+          )}
           <button className="nes-btn is-primary" onClick={onChangeSettings}>
             Change Settings
           </button>

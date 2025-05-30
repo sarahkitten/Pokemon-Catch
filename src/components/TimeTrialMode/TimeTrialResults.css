@@ -119,6 +119,27 @@
   flex: 1;
 }
 
+.time-trial-results-share-message {
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 0.7rem;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.time-trial-results-share-message.success {
+  background-color: rgba(46, 204, 113, 0.2);
+  color: #2ecc71;
+  border: 1px solid #2ecc71;
+}
+
+.time-trial-results-share-message.error {
+  background-color: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 480px) {
   .time-trial-results-stats-container {
