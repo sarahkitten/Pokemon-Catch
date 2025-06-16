@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
 import { formatTime } from '../../hooks/useTimeTrialTimer';
-import type { TimeTrialDifficulty, PokemonCountCategory, TimeTrialShareParams } from '../../types';
+import type { GameState } from '../../hooks/useGameState';
+import type { TimeTrialDifficulty, PokemonCountCategory, TimeTrialShareParams, PokemonData, CaughtPokemon, Pokemon } from '../../types';
 import { encodeTimeTrialChallenge, copyToClipboard } from '../../utils/timeTrialUtils';
+import { PokemonList } from '../PokemonList/PokemonList';
+import { revealRemainingPokemon } from '../../utils/pokemonStateUtils';
 import ultraballIcon from '../../assets/ultraball.svg';
+import xIcon from '../../assets/x.png';
 import './TimeTrialResults.css';
 
 interface TimeTrialResultsProps {
@@ -19,6 +23,10 @@ interface TimeTrialResultsProps {
   onTryAgain: () => void;
   onChangeSettings: () => void;
   onHome: () => void;
+  // New props for revealing Pokemon
+  caughtPokemon: CaughtPokemon[];
+  filteredPokemon: PokemonData[];
+  isMuted: boolean;
 }
 
 export const TimeTrialResults = ({
@@ -30,11 +38,14 @@ export const TimeTrialResults = ({
   challengeParams,
   onTryAgain,
   onChangeSettings,
-  onHome
+  onHome,
+  caughtPokemon,
+  filteredPokemon,
+  isMuted
 }: TimeTrialResultsProps) => {
   const [shareMessage, setShareMessage] = useState<string>('');
-  
-  // Calculate percentage of Pokemon caught
+  const [showPokemonDialog, setShowPokemonDialog] = useState<boolean>(false);
+  const [revealedPokemon, setRevealedPokemon] = useState<Pokemon[]>([]);
   const percentCaught = totalPokemon > 0 ? Math.round((caughtCount / totalPokemon) * 100) : 0;
   const allCaught = caughtCount === totalPokemon;
   
@@ -63,6 +74,27 @@ export const TimeTrialResults = ({
     if (stars >= 2) return "Good effort! Keep practicing!";
     if (stars >= 1) return "Nice try! You can do better!";
     return "Keep trying! You'll improve!";
+  };
+
+  // Handler for revealing all Pokemon
+  const handleRevealPokemon = async () => {
+    if (revealedPokemon.length === 0) {
+      // Create a mock gameState object with the necessary properties
+      const mockGameState: Pick<
+        GameState, 
+        'filteredPokemon' | 'caughtPokemon' | 'setIsGivingUp' | 'setError' | 'setInputValue' | 'setRevealedPokemon'
+      > = {
+        filteredPokemon,
+        caughtPokemon,
+        setIsGivingUp: () => {},
+        setError: () => {},
+        setInputValue: () => {},
+        setRevealedPokemon: (revealed: Pokemon[]) => setRevealedPokemon(revealed)
+      };
+      
+      await revealRemainingPokemon(mockGameState as GameState, () => {});
+    }
+    setShowPokemonDialog(true);
   };
 
   // Handler for sharing the challenge
@@ -168,19 +200,48 @@ export const TimeTrialResults = ({
           <button className="nes-btn is-success" onClick={onTryAgain}>
             Try Again
           </button>
+          <button className="nes-btn is-primary" onClick={handleRevealPokemon}>
+            👁️ Reveal All
+          </button>
           {challengeParams && (
             <button className="nes-btn is-primary" onClick={handleShare}>
-              📋 Share Challenge
+              📋 Share
             </button>
           )}
           <button className="nes-btn is-primary" onClick={onChangeSettings}>
-            Change Settings
+            Settings
           </button>
           <button className="nes-btn is-warning" onClick={onHome}>
             Home
           </button>
         </div>
       </div>
+      
+      {/* Pokemon Reveal Dialog */}
+      {showPokemonDialog && (
+        <div className="dialog-overlay" style={{ zIndex: 1002 }}>
+          <div className="nes-dialog is-rounded pokemon-reveal-dialog">
+            <div className="pokemon-reveal-header">
+              <p className="title">All Pokemon</p>
+              <button 
+                className="nes-btn is-error pokemon-reveal-close" 
+                onClick={() => setShowPokemonDialog(false)}
+                aria-label="Close"
+              >
+                <img src={xIcon} alt="Close" className="close-icon" />
+              </button>
+            </div>
+            
+            <PokemonList
+              caughtPokemon={caughtPokemon}
+              revealedPokemon={revealedPokemon}
+              filteredPokemon={filteredPokemon}
+              isMuted={isMuted}
+              allCaught={false}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -561,6 +561,9 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
         onTryAgain={handleTryAgain}
         onChangeSettings={handleChangeSettings}
         onHome={onBackToModeSelection}
+        caughtPokemon={gameState.caughtPokemon}
+        filteredPokemon={gameState.filteredPokemon}
+        isMuted={gameState.isMuted}
       />
     </div>
   );

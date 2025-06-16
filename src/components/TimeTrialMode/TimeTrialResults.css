@@ -110,13 +110,21 @@
 
 .time-trial-results-actions {
   display: flex;
-  justify-content: space-between;
-  gap: 1rem;
+  justify-content: center;
+  gap: 0.75rem;
   margin-top: 1rem;
+  flex-wrap: wrap;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .time-trial-results-actions button {
-  flex: 1;
+  flex: 0 1 auto;
+  min-width: 140px;
+  max-width: 180px;
+  white-space: nowrap;
+  padding: 0.5rem 0.75rem;
 }
 
 .time-trial-results-share-message {
@@ -152,9 +160,66 @@
   
   .time-trial-results-actions {
     flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  
+  .time-trial-results-actions button {
+    width: 100%;
+    max-width: 300px;
+    min-width: unset;
   }
   
   .time-trial-results-title {
     font-size: 1.2rem;
   }
+}
+
+/* Medium screens - adjust button layout */
+@media (max-width: 768px) and (min-width: 481px) {
+  .time-trial-results-actions {
+    gap: 0.5rem;
+  }
+  
+  .time-trial-results-actions button {
+    min-width: 120px;
+    font-size: 0.7rem;
+  }
+}
+
+/* Pokemon reveal dialog styles */
+.pokemon-reveal-dialog {
+  max-width: 90% !important;
+  width: 800px !important;
+  max-height: 90vh !important;
+  overflow: auto !important;
+}
+
+.pokemon-reveal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.pokemon-reveal-close {
+  width: 40px !important;
+  height: 40px !important;
+  font-size: 1.2rem !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: transform 0.2s ease;
+}
+
+.pokemon-reveal-close:hover {
+  transform: scale(1.1);
+}
+
+.close-icon {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) invert(1); /* Makes the icon white to contrast with the red button */
+  pointer-events: none; /* Ensures clicks go to the button, not the image */
 }
