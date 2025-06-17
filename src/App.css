@@ -30,6 +30,26 @@
   justify-content: center;
 }
 
+/* Mode transition animations */
+.mode-container {
+  width: 100%;
+  min-height: 100vh;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: mode-enter 0.5s ease-out forwards;
+}
+
+@keyframes mode-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .main-content {
   flex: 1;
   transition: margin-left 0.3s ease, width 0.3s ease;
@@ -175,8 +195,21 @@ h2 {
 
 /* For adding future modes */
 .timed-button {
-  background-color: #3498db;
+  background-color: #ff8c42;
   color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.timed-button:hover {
+  background-color: #ff7021;
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(255, 140, 66, 0.4);
+}
+
+.timed-button:active {
+  transform: translateY(-2px) scale(1.01);
+  transition: all 0.1s ease;
 }
 
 .timed-button:hover {
@@ -237,5 +270,21 @@ h2 {
     padding: 15px;
     font-size: 18px;
   }
+}
+
+/* Mode-specific backgrounds with smooth transitions */
+.app.mode-none,
+.app.mode-classic {
+  background: inherit; /* Use default background */
+}
+
+.app.mode-timetrial {
+  background-color: #ff8c42;
+  background-image: url('./assets/bg-orange.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  transition: all 0.8s ease-out;
 }
 

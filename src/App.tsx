@@ -95,8 +95,10 @@ function App() {
   }
 
   return (
-    <div className="app">
-      {renderSelectedMode()}
+    <div className={`app mode-${currentMode}`}>
+      <div className="mode-container">
+        {renderSelectedMode()}
+      </div>
     </div>
   )
 }

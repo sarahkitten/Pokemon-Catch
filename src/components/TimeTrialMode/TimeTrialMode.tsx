@@ -38,6 +38,7 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
   const [showCountdown, setShowCountdown] = useState(false);
   const [timeTrialActive, setTimeTrialActive] = useState(false);
   const [sharedChallenge, setSharedChallenge] = useState<TimeTrialShareParams | null>(null);
+  const [isMounted, setIsMounted] = useState(false); // Track component mount state
   const [timeTrialSettings, setTimeTrialSettings] = useState<{
     difficulty: TimeTrialDifficulty;
     pokemonCountCategory: PokemonCountCategory;
@@ -268,6 +269,11 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     };
   }, []);
 
+  // Set mounted state for entrance animation
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // Check for shared challenge in URL parameters when component mounts
   useEffect(() => {
     if (hasSharedChallenge()) {
@@ -486,7 +492,7 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
   };
 
   return (
-    <div className="time-trial-mode">
+    <div className={`time-trial-mode ${isMounted ? 'mounted' : ''}`}>
       <div className={`main-content ${isSidebarCollapsed ? 'expanded' : ''}`}>
         <div className="title-container clickable" onClick={handleTitleClick}>
           <img src={titleImageFull} alt="Pokemon Catcher Title" className="title-image" />
