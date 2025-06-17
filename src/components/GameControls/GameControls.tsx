@@ -12,7 +12,7 @@ interface GameControlsProps {
 
 export function GameControls({ gameState, onStartOver, onGiveUp, isTimeTrialMode = false }: GameControlsProps) {
   const showControls = gameState.caughtPokemon.length > 0 || gameState.revealedPokemon.length > 0;
-  const showGiveUp = !isTimeTrialMode && gameState.revealedPokemon.length === 0 && gameState.caughtPokemon.length < gameState.totalPokemon;
+  const showGiveUp = gameState.revealedPokemon.length === 0 && gameState.caughtPokemon.length < gameState.totalPokemon;
 
   return (
     <div className="controls">

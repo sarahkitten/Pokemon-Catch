@@ -11,7 +11,7 @@ import PokemonConfetti from '../../PokemonConfetti'
 import { useGameState } from '../../hooks/useGameState'
 import { useTimeTrialTimer, formatTime, getCatchBonusTime, getInitialTimeForDifficulty } from '../../hooks/useTimeTrialTimer'
 import { getFilteredTitle } from '../../utils/pokemonUtils'
-import { submitPokemonGuess, revealRemainingPokemon } from '../../utils/pokemonStateUtils'
+import { submitPokemonGuess } from '../../utils/pokemonStateUtils'
 import { decodeTimeTrialChallenge, hasSharedChallenge, clearChallengeFromUrl } from '../../utils/timeTrialUtils'
 import filterCombinations from '../../data/filterCombinations.json'
 import { GENERATIONS } from '../../constants'
@@ -237,6 +237,26 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     setDialogConfig(prev => ({ ...prev, isOpen: false }));
   };
 
+  const handleTitleClick = () => {
+    // If time trial is active and user hasn't completed the game, show confirmation
+    if (timeTrialActive && !gameEnded) {
+      showConfirmDialog(
+        `Are you sure you want to go back to the home screen? This will end your current time trial and you'll lose your progress.`,
+        () => {
+          // Stop the timer and go back to mode selection
+          pauseTimer();
+          setTimeTrialActive(false);
+          setGameEnded(true);
+          closeDialog();
+          onBackToModeSelection();
+        }
+      );
+    } else {
+      // If no active time trial, go back immediately
+      onBackToModeSelection();
+    }
+  };
+
   useEffect(() => {
     const handleResize = () => {
       setIsSmallScreen(window.innerWidth < 768);
@@ -291,14 +311,19 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     }
 
     showConfirmDialog(
-      `Are you sure you want to give up? This will reveal all remaining Pokémon!`,
+      `Are you sure you want to give up? This will end your time trial and show your results.`,
       async () => {
         // Pause the timer and mark the game as ended when giving up
         if (timeTrialActive) {
           pauseTimer();
           setGameEnded(true);
         }
-        await revealRemainingPokemon(gameState, closeDialog);
+        
+        // Close the confirmation dialog
+        closeDialog();
+        
+        // Show the time trial results screen directly
+        setShowResults(true);
       }
     );
   };
@@ -463,7 +488,7 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
   return (
     <div className="time-trial-mode">
       <div className={`main-content ${isSidebarCollapsed ? 'expanded' : ''}`}>
-        <div className="title-container clickable" onClick={onBackToModeSelection}>
+        <div className="title-container clickable" onClick={handleTitleClick}>
           <img src={titleImageFull} alt="Pokemon Catcher Title" className="title-image" />
           <div className="mode-label time-trial-label">Time Trial</div>
         </div>
