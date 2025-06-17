@@ -4,6 +4,41 @@
     position: relative;
     width: 100%;
     justify-content: center;
+    background-color: #ff8c42; /* Orange fallback color */
+    background-image: url('../../assets/bg-orange.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    transition: background-image 2s ease;
+  }
+
+    
+  /* When all Pokemon are caught, switch to sunset background */
+  #root.all-caught .time-trial-mode {
+    background-image: url('../../assets/bg-sunset.jpeg');
+  }
+  
+  /* Ensure the Time Trial mode background overrides the default app background */
+  .time-trial-mode::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #ff8c42; /* Orange fallback color */
+    background-image: url('../../assets/bg-orange.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -1;
+    transition: background-image 2s ease;
+  }
+
+  /* When all Pokemon are caught, switch the pseudo-element background to sunset */
+  #root.all-caught .time-trial-mode::before {
+    background-image: url('../../assets/bg-sunset.jpeg');
   }
   
   .time-trial-mode .main-content {
