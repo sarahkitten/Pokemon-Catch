@@ -33,6 +33,34 @@
   font-family: 'Press Start 2P', 'Pokemon GB', sans-serif;
 }
 
+/* Special styling for perfect completion */
+.time-trial-results-title.perfect {
+  color: #ffd700; /* Gold color */
+  text-shadow: 
+    1px 1px 0 #000,
+    0 0 10px #ffd700,
+    0 0 20px #ffd700,
+    0 0 30px #ffd700;
+  animation: perfect-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes perfect-glow {
+  from {
+    text-shadow: 
+      1px 1px 0 #000,
+      0 0 10px #ffd700,
+      0 0 20px #ffd700,
+      0 0 30px #ffd700;
+  }
+  to {
+    text-shadow: 
+      1px 1px 0 #000,
+      0 0 15px #ffd700,
+      0 0 25px #ffd700,
+      0 0 40px #ffd700;
+  }
+}
+
 .time-trial-results-content {
   display: flex;
   flex-direction: column;
@@ -62,6 +90,12 @@
   font-size: 1.2rem;
   margin-bottom: 1.5rem;
   font-weight: bold;
+}
+
+.time-trial-results-message.perfect {
+  color: #ffd700;
+  font-weight: bold;
+  text-shadow: 1px 1px 0 #000;
 }
 
 .time-trial-results-stats-container {

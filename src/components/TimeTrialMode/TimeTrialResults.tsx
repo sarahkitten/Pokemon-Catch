@@ -68,7 +68,7 @@ export const TimeTrialResults = ({
   
   // Get message based on performance
   const getMessage = () => {
-    if (allCaught) return "Perfect! You caught them all!";
+    if (allCaught) return "Outstanding! You caught them all! 🎉";
     if (stars >= 4) return "Amazing job! Nearly perfect!";
     if (stars >= 3) return "Great work! Well done!";
     if (stars >= 2) return "Good effort! Keep practicing!";
@@ -138,7 +138,7 @@ export const TimeTrialResults = ({
   return (
     <div className="dialog-overlay time-trial-results-overlay">
       <div className="nes-dialog is-rounded time-trial-results-dialog">
-        <p className="title time-trial-results-title">
+        <p className={`title time-trial-results-title ${allCaught ? 'perfect' : ''}`}>
           {allCaught ? "🏆 Perfect Clear! 🏆" : "Time's Up!"}
         </p>
         
@@ -152,7 +152,7 @@ export const TimeTrialResults = ({
             ))}
           </div>
           
-          <p className="time-trial-results-message">{getMessage()}</p>
+          <p className={`time-trial-results-message ${allCaught ? 'perfect' : ''}`}>{getMessage()}</p>
           
           {/* Stats section */}
           <div className="time-trial-results-stats-container">

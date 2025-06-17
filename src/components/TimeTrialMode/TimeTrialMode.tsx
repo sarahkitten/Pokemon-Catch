@@ -193,11 +193,8 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
       pauseTimer();
       setGameEnded(true);
       
-      // Show success message
-      showConfirmDialog(
-        `Congratulations! You caught all ${gameState.totalPokemon} Pokémon in ${formatTime(elapsedTime)}!`,
-        closeDialog
-      );
+      // Show the results screen directly for perfect completion
+      setShowResults(true);
     }
   }, [
     gameState.caughtPokemon, 
