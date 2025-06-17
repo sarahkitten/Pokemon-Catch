@@ -120,6 +120,10 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
     setGameEnded(false);
     setShowResults(false);
     setTimeTrialActive(false);
+    
+    // Clear shared challenge so we show regular settings instead of challenge accept
+    setSharedChallenge(null);
+    
     setIsOptionsOpen(true);
   }, [gameState, resetTimer]);
 
