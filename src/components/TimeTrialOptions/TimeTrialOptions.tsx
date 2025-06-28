@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { PokemonCountCategory, TimeTrialDifficulty } from '../../types';
 import { TIME_TRIAL } from '../../constants';
 import './TimeTrialOptions.css';
@@ -16,16 +16,37 @@ interface TimeTrialOptionsProps {
     customTimePerCatch?: number;
   }) => void;
   onHome?: () => void; // Added navigation prop
+  // Optional initial settings to autofill the form
+  initialSettings?: {
+    difficulty: TimeTrialDifficulty;
+    pokemonCountCategory: PokemonCountCategory;
+    isEasyMode: boolean;
+    isDevMode?: boolean;
+    customInitialTime?: number;
+    customTimePerCatch?: number;
+  };
 }
 
-export function TimeTrialOptions({ isOpen, onClose, onStart, onHome }: TimeTrialOptionsProps) {
-  // State for the options
-  const [difficulty, setDifficulty] = useState<TimeTrialDifficulty>('medium');
-  const [pokemonCountCategory, setPokemonCountCategory] = useState<PokemonCountCategory>('6-20');
-  const [isEasyMode, setIsEasyMode] = useState(false);
-  const [isDevMode, setIsDevMode] = useState(false);
-  const [customInitialTime, setCustomInitialTime] = useState<number>(90);
-  const [customTimePerCatch, setCustomTimePerCatch] = useState<number>(10);
+export function TimeTrialOptions({ isOpen, onClose, onStart, onHome, initialSettings }: TimeTrialOptionsProps) {
+  // State for the options - use initial settings if provided, otherwise defaults
+  const [difficulty, setDifficulty] = useState<TimeTrialDifficulty>(initialSettings?.difficulty || 'medium');
+  const [pokemonCountCategory, setPokemonCountCategory] = useState<PokemonCountCategory>(initialSettings?.pokemonCountCategory || '6-20');
+  const [isEasyMode, setIsEasyMode] = useState(initialSettings?.isEasyMode || false);
+  const [isDevMode, setIsDevMode] = useState(initialSettings?.isDevMode || false);
+  const [customInitialTime, setCustomInitialTime] = useState<number>(initialSettings?.customInitialTime || 90);
+  const [customTimePerCatch, setCustomTimePerCatch] = useState<number>(initialSettings?.customTimePerCatch || 10);
+
+  // Update state when initialSettings change
+  useEffect(() => {
+    if (initialSettings) {
+      setDifficulty(initialSettings.difficulty || 'medium');
+      setPokemonCountCategory(initialSettings.pokemonCountCategory || '6-20');
+      setIsEasyMode(initialSettings.isEasyMode || false);
+      setIsDevMode(initialSettings.isDevMode || false);
+      setCustomInitialTime(initialSettings.customInitialTime || 90);
+      setCustomTimePerCatch(initialSettings.customTimePerCatch || 10);
+    }
+  }, [initialSettings]);
 
   // If the dialog is not open, don't render anything
   if (!isOpen) return null;

@@ -46,6 +46,15 @@ export const TimeTrialResults = ({
   const [shareMessage, setShareMessage] = useState<string>('');
   const [showPokemonDialog, setShowPokemonDialog] = useState<boolean>(false);
   const [revealedPokemon, setRevealedPokemon] = useState<Pokemon[]>([]);
+  
+  // Reset revealed Pokemon when the component becomes visible or when filteredPokemon changes
+  useEffect(() => {
+    if (isVisible) {
+      setRevealedPokemon([]);
+      setShowPokemonDialog(false);
+    }
+  }, [isVisible, filteredPokemon]);
+  
   const percentCaught = totalPokemon > 0 ? Math.round((caughtCount / totalPokemon) * 100) : 0;
   const allCaught = caughtCount === totalPokemon;
   
@@ -198,19 +207,19 @@ export const TimeTrialResults = ({
         {/* Action buttons */}
         <div className="time-trial-results-actions">
           <button className="nes-btn is-success" onClick={onTryAgain}>
-            Try Again
+            Replay
           </button>
-          <button className="nes-btn is-primary" onClick={handleRevealPokemon}>
-            👁️ Reveal All
+          <button className="nes-btn is-primary" onClick={onChangeSettings}>
+            New Trial
+          </button>
+          <button className="nes-btn" onClick={handleRevealPokemon}>
+            Reveal All
           </button>
           {challengeParams && (
-            <button className="nes-btn is-primary" onClick={handleShare}>
-              📋 Share
+            <button className="nes-btn" onClick={handleShare}>
+              Share
             </button>
           )}
-          <button className="nes-btn is-primary" onClick={onChangeSettings}>
-            Settings
-          </button>
           <button className="nes-btn is-warning" onClick={onHome}>
             Home
           </button>
