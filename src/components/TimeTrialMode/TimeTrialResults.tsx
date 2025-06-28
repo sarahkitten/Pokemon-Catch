@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { formatTime } from '../../hooks/useTimeTrialTimer';
 import type { GameState } from '../../hooks/useGameState';
 import type { TimeTrialDifficulty, PokemonCountCategory, TimeTrialShareParams, PokemonData, CaughtPokemon, Pokemon } from '../../types';
 import { encodeTimeTrialChallenge, copyToClipboard } from '../../utils/timeTrialUtils';
 import { PokemonList } from '../PokemonList/PokemonList';
 import { revealRemainingPokemon } from '../../utils/pokemonStateUtils';
+import { GENERATIONS } from '../../constants';
 import ultraballIcon from '../../assets/ultraball.svg';
 import xIcon from '../../assets/x.png';
 import './TimeTrialResults.css';
@@ -33,7 +33,6 @@ export const TimeTrialResults = ({
   isVisible,
   caughtCount,
   totalPokemon,
-  elapsedTime,
   settings,
   challengeParams,
   onTryAgain,
@@ -59,21 +58,57 @@ export const TimeTrialResults = ({
   const allCaught = caughtCount === totalPokemon;
   
   // Calculate catch rate (Pokemon per minute)
-  const catchesPerMinute = elapsedTime > 0 
-    ? Math.round((caughtCount / elapsedTime) * 60 * 10) / 10
-    : 0;
+  // const catchesPerMinute = elapsedTime > 0 
+  //   ? Math.round((caughtCount / elapsedTime) * 60 * 10) / 10
+  //   : 0;
   
-  // Award performance stars based on percentage caught
+  // Award performance stars based on percentage caught (with half-star support)
   const getPerformanceStars = () => {
     if (percentCaught >= 100) return 5;
+    if (percentCaught >= 90) return 4.5;
     if (percentCaught >= 80) return 4;
+    if (percentCaught >= 70) return 3.5;
     if (percentCaught >= 60) return 3;
+    if (percentCaught >= 50) return 2.5;
     if (percentCaught >= 40) return 2;
+    if (percentCaught >= 30) return 1.5;
     if (percentCaught >= 20) return 1;
+    if (percentCaught >= 10) return 0.5;
     return 0;
   };
   
   const stars = getPerformanceStars();
+  
+  // Helper function to render star icons
+  const renderStars = () => {
+    const starElements = [];
+    const fullStars = Math.floor(stars);
+    const hasHalfStar = stars % 1 !== 0;
+    
+    // Render full stars
+    for (let i = 0; i < fullStars; i++) {
+      starElements.push(
+        <i key={`full-${i}`} className="nes-icon is-medium star"></i>
+      );
+    }
+    
+    // Render half star if needed
+    if (hasHalfStar) {
+      starElements.push(
+        <i key="half" className="nes-icon is-medium star is-half"></i>
+      );
+    }
+    
+    // Render empty stars to complete 5 total
+    const emptyStars = 5 - Math.ceil(stars);
+    for (let i = 0; i < emptyStars; i++) {
+      starElements.push(
+        <i key={`empty-${i}`} className="nes-icon is-medium star is-transparent"></i>
+      );
+    }
+    
+    return starElements;
+  };
   
   // Get message based on performance
   const getMessage = () => {
@@ -147,20 +182,30 @@ export const TimeTrialResults = ({
   return (
     <div className="dialog-overlay time-trial-results-overlay">
       <div className="nes-dialog is-rounded time-trial-results-dialog">
-        <p className={`title time-trial-results-title ${allCaught ? 'perfect' : ''}`}>
-          {allCaught ? "🏆 Perfect Clear! 🏆" : "Time's Up!"}
-        </p>
+        <div className="time-trial-results-header">
+          {/* Compact challenge information */}
+          {challengeParams && (
+            <div className="time-trial-challenge-info-compact">
+              <span className="challenge-info-compact">
+                {GENERATIONS[challengeParams.generationIndex]?.name.replace('Gen ', '').replace(' (', ' (')} • {' '}
+                {challengeParams.type === 'All Types' ? 'All Types' : challengeParams.type} • {' '}
+                {challengeParams.letter === 'All' ? 'Any Letter' : challengeParams.letter.toUpperCase()}
+              </span>
+            </div>
+          )}
+          <div className="time-trial-results-header-main">
+            <p className={`title time-trial-results-title ${allCaught ? 'perfect' : ''}`}>
+              {allCaught ? "🏆 Perfect Clear! 🏆" : "Time's Up!"}
+            </p>
+            
+            {/* Performance stars */}
+            <div className="time-trial-results-stars">
+              {renderStars()}
+            </div>
+          </div>
+        </div>
         
         <div className="time-trial-results-content">
-          {/* Performance stars */}
-          <div className="time-trial-results-stars">
-            {[...Array(5)].map((_, i) => (
-              <span key={i} className={i < stars ? "star filled" : "star"}>
-                ★
-              </span>
-            ))}
-          </div>
-          
           <p className={`time-trial-results-message ${allCaught ? 'perfect' : ''}`}>{getMessage()}</p>
           
           {/* Stats section */}
@@ -174,14 +219,14 @@ export const TimeTrialResults = ({
               <div className="stat-detail">{percentCaught}% complete</div>
             </div>
             
-            <div className="time-trial-results-stat">
+            {/* <div className="time-trial-results-stat">
               <div className="stat-label">Time Elapsed</div>
               <div className="stat-value">
                 <span className="time-icon">⏱️</span>
                 <span>{formatTime(elapsedTime)}</span>
               </div>
               <div className="stat-detail">{catchesPerMinute} catches/min</div>
-            </div>
+            </div> */}
             
             <div className="time-trial-results-stat">
               <div className="stat-label">Difficulty</div>
