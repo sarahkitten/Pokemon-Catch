@@ -153,4 +153,26 @@ describe('GameControls', () => {
     // Check that it renders with the updated state
     expect(screen.getByLabelText(/easy mode/i)).toBeChecked();
   });
+
+  it('hides Start Over button in Time Trial mode', () => {
+    const gameState = createMockGameState({ 
+      caughtPokemon: [
+        { name: 'pikachu', sprite: '/sprites/pikachu.png', types: ['Electric'] }
+      ]
+    });
+    render(<GameControls {...defaultProps} gameState={gameState} isTimeTrialMode={true} />);
+    
+    expect(screen.queryByText('Start Over')).not.toBeInTheDocument();
+  });
+
+  it('shows Start Over button in Classic mode', () => {
+    const gameState = createMockGameState({ 
+      caughtPokemon: [
+        { name: 'pikachu', sprite: '/sprites/pikachu.png', types: ['Electric'] }
+      ]
+    });
+    render(<GameControls {...defaultProps} gameState={gameState} isTimeTrialMode={false} />);
+    
+    expect(screen.getByText('Start Over')).toBeInTheDocument();
+  });
 });

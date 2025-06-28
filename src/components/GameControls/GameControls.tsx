@@ -13,6 +13,7 @@ interface GameControlsProps {
 export function GameControls({ gameState, onStartOver, onGiveUp, isTimeTrialMode = false }: GameControlsProps) {
   const showControls = gameState.caughtPokemon.length > 0 || gameState.revealedPokemon.length > 0;
   const showGiveUp = gameState.revealedPokemon.length === 0 && gameState.caughtPokemon.length < gameState.totalPokemon;
+  const showStartOver = showControls && !isTimeTrialMode; // Don't show Start Over in Time Trial mode
 
   return (
     <div className="controls">
@@ -30,7 +31,7 @@ export function GameControls({ gameState, onStartOver, onGiveUp, isTimeTrialMode
         </p>
       )}
       <div className="button-group">
-        {showControls && (
+        {showStartOver && (
           <button onClick={onStartOver} className="nes-btn is-primary start-over-button">
             Start Over
           </button>
