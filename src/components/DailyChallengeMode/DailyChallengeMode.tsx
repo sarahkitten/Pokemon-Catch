@@ -9,6 +9,7 @@ import { useGameState } from '../../hooks/useGameState'
 import { getFilteredTitle } from '../../utils/pokemonUtils'
 import { submitPokemonGuess, revealRemainingPokemon } from '../../utils/pokemonStateUtils'
 import titleImageFull from '../../assets/PokemonCatcherTitleFull.png'
+import ashImage from '../../assets/ash.png'
 import filterCombinations from '../../data/filterCombinations.json'
 import { GENERATIONS, POKEMON_TYPES } from '../../constants'
 
@@ -41,6 +42,19 @@ const getDailyChallengeFilterCombination = (): FilterCombination | null => {
   }
   
   return combinations[Math.floor(Math.random() * combinations.length)];
+};
+
+// Trainer progression system
+const getTrainerRank = (caught: number, total: number): { rank: string; nextRank: string | null } => {
+  const percentage = total > 0 ? (caught / total) * 100 : 0;
+  
+  if (percentage >= 100) return { rank: 'Professor', nextRank: null };
+  if (percentage >= 80) return { rank: 'Champion', nextRank: 'Professor' };
+  if (percentage >= 60) return { rank: 'Gym Leader', nextRank: 'Champion' };
+  if (percentage >= 40) return { rank: 'Trainer', nextRank: 'Gym Leader' };
+  if (percentage >= 20) return { rank: 'Youngster', nextRank: 'Trainer' };
+  
+  return { rank: 'Rookie', nextRank: 'Youngster' };
 };
 
 export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeModeProps) => {
@@ -196,33 +210,74 @@ export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeMode
           <h1 className="mode-title">Daily Challenge</h1>
           <p className="challenge-date">{currentDate}</p>
           
-          <div className="challenge-criteria">
-            <h3>Today's Challenge Criteria:</h3>
-            <div className="criteria-grid">
-              <div className="criteria-item">
-                <span className="criteria-label">Generation:</span>
-                <span className="criteria-value">{challengeFilters.generation}</span>
+          <div className="trainer-progress">
+            <div className="progress-header">
+              <div className="trainer-rank">
+                <span className="rank-label">{getTrainerRank(gameState.caughtPokemon.length, gameState.totalPokemon).rank}</span>
+                {getTrainerRank(gameState.caughtPokemon.length, gameState.totalPokemon).nextRank && (
+                  <span className="next-rank">→ {getTrainerRank(gameState.caughtPokemon.length, gameState.totalPokemon).nextRank}</span>
+                )}
               </div>
-              <div className="criteria-item">
-                <span className="criteria-label">Type:</span>
-                <span className="criteria-value">{challengeFilters.type}</span>
-              </div>
-              <div className="criteria-item">
-                <span className="criteria-label">Letter:</span>
-                <span className="criteria-value">{challengeFilters.letter}</span>
-              </div>
-              <div className="criteria-item">
-                <span className="criteria-label">Total Pokemon:</span>
-                <span className="criteria-value">{challengeFilters.count}</span>
+              <div className="progress-stats">
+                <span className="caught-count">{gameState.caughtPokemon.length}</span>
+                <span className="total-count">/ {gameState.totalPokemon}</span>
               </div>
             </div>
             
-            <button 
-              className="new-challenge-button"
-              onClick={handleNewChallenge}
-            >
-              🎲 Generate New Challenge
-            </button>
+            <div className="progress-bar-container" onClick={() => setDialogConfig({
+              isOpen: true,
+              message: `Trainer Rank Requirements:\n\n• Rookie: 0 - ${Math.floor(gameState.totalPokemon * 0.19)} Pokemon\n• Youngster: ${Math.floor(gameState.totalPokemon * 0.20)} - ${Math.floor(gameState.totalPokemon * 0.39)} Pokemon\n• Trainer: ${Math.floor(gameState.totalPokemon * 0.40)} - ${Math.floor(gameState.totalPokemon * 0.59)} Pokemon\n• Gym Leader: ${Math.floor(gameState.totalPokemon * 0.60)} - ${Math.floor(gameState.totalPokemon * 0.79)} Pokemon\n• Champion: ${Math.floor(gameState.totalPokemon * 0.80)} - ${Math.floor(gameState.totalPokemon * 0.99)} Pokemon\n• Professor: ${gameState.totalPokemon} Pokemon (100%)`,
+              onConfirm: closeDialog
+            })}>
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill" 
+                  style={{ 
+                    width: `${gameState.totalPokemon > 0 ? (gameState.caughtPokemon.length / gameState.totalPokemon) * 100 : 0}%` 
+                  }}
+                ></div>
+                
+                {/* Rank indicators - vertical ticks only */}
+                <div className="rank-indicators">
+                  <div className="rank-marker" style={{ left: '20%' }} title="Youngster (20%)">
+                    <div className="rank-tick"></div>
+                  </div>
+                  <div className="rank-marker" style={{ left: '40%' }} title="Trainer (40%)">
+                    <div className="rank-tick"></div>
+                  </div>
+                  <div className="rank-marker" style={{ left: '60%' }} title="Gym Leader (60%)">
+                    <div className="rank-tick"></div>
+                  </div>
+                  <div className="rank-marker" style={{ left: '80%' }} title="Champion (80%)">
+                    <div className="rank-tick"></div>
+                  </div>
+                </div>
+                
+                <div 
+                  className="ash-icon" 
+                  style={{ 
+                    left: `${gameState.totalPokemon > 0 ? (gameState.caughtPokemon.length / gameState.totalPokemon) * 100 : 0}%` 
+                  }}
+                >
+                  <img src={ashImage} alt="Ash" className="ash-image" />
+                </div>
+              </div>
+            </div>
+            
+            <div className="challenge-summary">
+              <div className="challenge-criteria-compact">
+                <span className="criteria-compact">
+                  {challengeFilters.generation} • {challengeFilters.type} • Letter {challengeFilters.letter}
+                </span>
+              </div>
+              <button 
+                className="new-challenge-button-compact"
+                onClick={handleNewChallenge}
+                title="Generate New Challenge"
+              >
+                🎲
+              </button>
+            </div>
           </div>
         </div>
 

@@ -61,59 +61,142 @@
   margin-top: 20px;
 }
 
+.trainer-progress {
+  margin-top: 20px;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.trainer-rank {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rank-label {
+  font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
+  font-size: 14px;
+  font-weight: bold;
+  color: #9b59b6;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.next-rank {
+  font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
+  font-size: 10px;
+  color: #7f8c8d;
+  opacity: 0.8;
+}
+
+.progress-stats {
+  font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
+  font-size: 12px;
+  color: #2c3e50;
+}
+
+.caught-count {
+  color: #9b59b6;
+  font-weight: bold;
+}
+
+.total-count {
+  color: #7f8c8d;
+}
+
+.progress-bar-container {
+  margin: 15px 0;
+  position: relative;
+  padding-top: 16px; /* Reduced from 20px since icon is smaller */
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.progress-bar-container:hover {
+  opacity: 0.9;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  background-color: #ecf0f1;
+  border-radius: 6px;
+  position: relative;
+  border: 2px solid #bdc3c7;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f39c12 0%, #e67e22 50%, #d35400 100%);
+  border-radius: 4px;
+  transition: width 0.6s ease-in-out;
+  position: relative;
+}
+
+.ash-icon {
+  position: absolute;
+  top: -24px; /* Adjusted from -16px for smaller icon */
+  transform: translateX(-50%);
+  transition: left 0.6s ease-in-out;
+  z-index: 10;
+  pointer-events: none; /* Prevent any interaction issues */
+}
+
+.ash-image {
+  width: 48px;
+  height: 48px;
+  display: block;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.challenge-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #ecf0f1;
+}
+
+.challenge-criteria-compact {
+  flex: 1;
+}
+
+.criteria-compact {
+  font-size: 12px;
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.new-challenge-button-compact {
+  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(155, 89, 182, 0.3);
+  min-width: 40px;
+}
+
+.new-challenge-button-compact:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(155, 89, 182, 0.4);
+  background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
+}
+
 .challenge-criteria h3 {
   font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
   font-size: 16px;
   color: #2c3e50;
   margin-bottom: 15px;
   text-align: center;
-}
-
-.criteria-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.criteria-item {
-  background-color: #f8f9fa;
-  padding: 15px;
-  border-radius: 8px;
-  border-left: 4px solid #9b59b6;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.criteria-label {
-  font-weight: 600;
-  color: #7f8c8d;
-}
-
-.criteria-value {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-.new-challenge-button {
-  width: 100%;
-  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
-  color: white;
-  border: none;
-  padding: 15px 20px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 8px rgba(155, 89, 182, 0.3);
-}
-
-.new-challenge-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(155, 89, 182, 0.4);
-  background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
 }
 
 .pokemon-section {
@@ -245,6 +328,33 @@
   border-bottom: none;
 }
 
+.rank-indicators {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.rank-marker {
+  position: absolute;
+  top: -8px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 5;
+}
+
+.rank-tick {
+  width: 2px;
+  height: 28px; /* Extends above and below the progress bar */
+  background-color: #7f8c8d;
+  border-radius: 1px;
+  opacity: 0.7;
+}
+
 /* Override global order properties to ensure correct layout */
 .daily-challenge-mode .main-content h1 {
   order: unset;
@@ -272,29 +382,54 @@
     padding: 10px;
   }
   
-  .challenge-card {
+  .challenge-info-card {
     padding: 20px;
     margin: 0 10px;
   }
   
   .mode-title {
-    font-size: 24px;
+    font-size: 20px;
   }
   
   .challenge-date {
     font-size: 16px;
   }
   
-  .challenge-info h2 {
-    font-size: 16px;
+  .rank-label {
+    font-size: 12px;
   }
   
-  .placeholder-content h3 {
-    font-size: 14px;
+  .next-rank {
+    font-size: 8px;
   }
   
-  .challenge-features h3 {
-    font-size: 14px;
+  .progress-stats {
+    font-size: 10px;
+  }
+  
+  .criteria-compact {
+    font-size: 10px;
+  }
+  
+  .ash-image {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .challenge-summary {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  
+  .new-challenge-button-compact {
+    align-self: center;
+    min-width: 120px;
+  }
+  
+  .rank-tick {
+    width: 1px;
+    height: 24px;
   }
 }
 
