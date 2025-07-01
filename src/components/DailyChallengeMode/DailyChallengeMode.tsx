@@ -30,10 +30,31 @@ interface DailyChallengeModeProps {
   onBackToModeSelection: () => void;
 }
 
-// Function to get a random filter combination from the "6-20" or "21-50" categories
-const getDailyChallengeFilterCombination = (): FilterCombination | null => {
+// Function to get today's date in UTC to ensure global consistency
+const getTodayUTC = (): Date => {
+  const now = new Date();
+  return new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+};
+
+// Seeded random function for deterministic "randomness"
+const seededRandom = (seed: number): number => {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+};
+
+// Get daily challenge based on current date (same for all users)
+const getDailyChallenge = (date: Date): FilterCombination | null => {
+  // Create a seed from the date (YYYYMMDD format)
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const dateString = `${year}${month}${day}`;
+  const seed = parseInt(dateString);
+  
+  // Use seed to pick category (6-20 or 21-50)
   const categories = ['6-20', '21-50'] as const;
-  const selectedCategory = categories[Math.floor(Math.random() * categories.length)];
+  const categoryIndex = Math.floor(seededRandom(seed) * categories.length);
+  const selectedCategory = categories[categoryIndex];
   
   const combinations = filterCombinations[selectedCategory] as FilterCombination[];
   
@@ -41,7 +62,39 @@ const getDailyChallengeFilterCombination = (): FilterCombination | null => {
     return null;
   }
   
-  return combinations[Math.floor(Math.random() * combinations.length)];
+  // Use a different seed variation to pick the specific combination
+  const combIndex = Math.floor(seededRandom(seed + 1000) * combinations.length);
+  
+  return combinations[combIndex];
+};
+
+// Updated function to get today's daily challenge with localStorage persistence
+const getDailyChallengeFilterCombination = (): FilterCombination | null => {
+  const today = getTodayUTC();
+  const todayString = today.toISOString().slice(0, 10); // "2025-07-01"
+  
+  // Check if we already have today's challenge stored
+  const storedDate = localStorage.getItem('dailyChallengeDate');
+  const storedChallenge = localStorage.getItem('dailyChallenge');
+  
+  if (storedDate === todayString && storedChallenge) {
+    try {
+      return JSON.parse(storedChallenge);
+    } catch (e) {
+      console.error('Failed to parse stored challenge:', e);
+    }
+  }
+  
+  // Generate new challenge for today
+  const challenge = getDailyChallenge(today);
+  
+  if (challenge) {
+    // Store today's challenge
+    localStorage.setItem('dailyChallengeDate', todayString);
+    localStorage.setItem('dailyChallenge', JSON.stringify(challenge));
+  }
+  
+  return challenge;
 };
 
 // Trainer progression system
@@ -164,11 +217,13 @@ export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeMode
   };
 
   const handleNewChallenge = () => {
+    // For daily challenges, we just reload today's challenge
+    // This is mainly useful for testing or if there was an error
     const filters = getDailyChallengeFilterCombination();
     if (filters) {
       setChallengeFilters(filters);
       
-      // Apply the new filters to the game state
+      // Apply the filters to the game state
       const generationIndex = GENERATIONS.findIndex(gen => gen.name === filters.generation);
       const typeIndex = POKEMON_TYPES.findIndex(type => type === filters.type);
       
@@ -273,9 +328,9 @@ export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeMode
               <button 
                 className="new-challenge-button-compact"
                 onClick={handleNewChallenge}
-                title="Generate New Challenge"
+                title="Refresh Today's Challenge"
               >
-                🎲
+                🔄
               </button>
             </div>
           </div>

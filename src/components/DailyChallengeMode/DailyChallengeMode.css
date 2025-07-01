@@ -1,26 +1,20 @@
 .daily-challenge-mode {
   display: flex;
-  flex-direction: column;
   min-height: 100vh;
-  padding: 0;
   position: relative;
-  max-width: 100%;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  align-items: center;
+  width: 100%;
   justify-content: center;
+  align-items: flex-start;
+  padding: 0;
 }
 
-.main-content {
+.daily-challenge-mode .main-content {
   flex: 1;
-  transition: margin-left 0.3s ease, width 0.3s ease;
-  min-width: 0;
-  width: 100%;
+  padding: 20px;
   max-width: 800px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
   box-sizing: border-box;
 }
 
@@ -449,18 +443,18 @@
 }
 
 /* Override global order properties to ensure correct layout */
-.daily-challenge-mode .main-content h1 {
-  order: unset;
+.daily-challenge-mode .main-content > * {
+  order: unset !important;
 }
 
-.daily-challenge-mode .title-container {
-  order: 1;
+.daily-challenge-mode .main-content .title-container {
+  order: 1 !important;
 }
 
-.daily-challenge-mode .challenge-info-card {
-  order: 2;
+.daily-challenge-mode .main-content .challenge-info-card {
+  order: 2 !important;
 }
 
-.daily-challenge-mode .pokemon-section {
+.daily-challenge-mode .main-content .pokemon-section {
   order: 3 !important;
 }
