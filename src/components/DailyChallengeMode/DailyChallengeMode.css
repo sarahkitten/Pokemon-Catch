@@ -1,0 +1,331 @@
+.daily-challenge-mode {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 0;
+  position: relative;
+  max-width: 100%;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  align-items: center;
+  justify-content: center;
+}
+
+.main-content {
+  flex: 1;
+  transition: margin-left 0.3s ease, width 0.3s ease;
+  min-width: 0;
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Clickable title styling */
+.daily-challenge-mode .title-container.clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.daily-challenge-mode .title-container.clickable:hover {
+  transform: scale(1.02);
+}
+
+.daily-challenge-mode .title-container.clickable:active {
+  transform: scale(0.98);
+}
+
+.daily-challenge-content {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.challenge-info-card {
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border: 3px solid #9b59b6;
+  margin-bottom: 30px;
+  width: 100%;
+  max-width: 800px;
+}
+
+.challenge-criteria {
+  margin-top: 20px;
+}
+
+.challenge-criteria h3 {
+  font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
+  font-size: 16px;
+  color: #2c3e50;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.criteria-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.criteria-item {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid #9b59b6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.criteria-label {
+  font-weight: 600;
+  color: #7f8c8d;
+}
+
+.criteria-value {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.new-challenge-button {
+  width: 100%;
+  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+  color: white;
+  border: none;
+  padding: 15px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 8px rgba(155, 89, 182, 0.3);
+}
+
+.new-challenge-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(155, 89, 182, 0.4);
+  background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
+}
+
+.pokemon-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  border-width: 4px !important;
+}
+
+.section-title {
+  font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
+  margin: 0.85em auto;
+  font-size: clamp(0.9em, 2.5vw, 1.3em);
+  max-width: 800px;
+  text-align: center;
+  color: #2c3e50;
+  line-height: 1.4;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  font-size: 18px;
+  color: #2c3e50;
+}
+
+.challenge-card {
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border: 3px solid #9b59b6;
+  width: 100%;
+  max-width: 700px;
+}
+
+.mode-title {
+  font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
+  font-size: 24px;
+  color: #9b59b6;
+  text-align: center;
+  margin: 0 0 10px 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.challenge-date {
+  font-size: 18px;
+  color: #7f8c8d;
+  text-align: center;
+  margin-bottom: 30px;
+  font-weight: 600;
+}
+
+.challenge-info h2 {
+  font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
+  font-size: 20px;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.challenge-description {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  border-left: 4px solid #9b59b6;
+}
+
+.challenge-description p {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #2c3e50;
+}
+
+.challenge-description p:last-child {
+  margin-bottom: 0;
+}
+
+.challenge-placeholder {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 30px;
+  border-radius: 12px;
+  text-align: center;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.placeholder-content h3 {
+  font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #fff;
+}
+
+.placeholder-content p {
+  margin: 10px 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.challenge-features h3 {
+  font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
+  font-size: 16px;
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.challenge-features ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.challenge-features li {
+  padding: 8px 0;
+  font-size: 16px;
+  color: #2c3e50;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.challenge-features li:last-child {
+  border-bottom: none;
+}
+
+/* Override global order properties to ensure correct layout */
+.daily-challenge-mode .main-content h1 {
+  order: unset;
+}
+
+.daily-challenge-mode .pokemon-section {
+  order: unset;
+}
+
+.daily-challenge-mode .title-container {
+  order: 1;
+}
+
+.daily-challenge-mode .challenge-info-card {
+  order: 2;
+}
+
+.daily-challenge-mode .pokemon-section {
+  order: 3;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .daily-challenge-mode {
+    padding: 10px;
+  }
+  
+  .challenge-card {
+    padding: 20px;
+    margin: 0 10px;
+  }
+  
+  .mode-title {
+    font-size: 24px;
+  }
+  
+  .challenge-date {
+    font-size: 16px;
+  }
+  
+  .challenge-info h2 {
+    font-size: 16px;
+  }
+  
+  .placeholder-content h3 {
+    font-size: 14px;
+  }
+  
+  .challenge-features h3 {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .challenge-card {
+    padding: 15px;
+  }
+  
+  .mode-title {
+    font-size: 20px;
+  }
+  
+  .challenge-description,
+  .challenge-placeholder {
+    padding: 15px;
+  }
+}
+
+/* Override global order properties to ensure correct layout */
+.daily-challenge-mode .main-content h1 {
+  order: unset;
+}
+
+.daily-challenge-mode .title-container {
+  order: 1;
+}
+
+.daily-challenge-mode .challenge-info-card {
+  order: 2;
+}
+
+.daily-challenge-mode .pokemon-section {
+  order: 3 !important;
+}

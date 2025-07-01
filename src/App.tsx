@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import ClassicMode from './components/ClassicMode/ClassicMode'
 import TimeTrialMode from './components/TimeTrialMode/TimeTrialMode'
+import DailyChallengeMode from './components/DailyChallengeMode/DailyChallengeMode'
 import { hasSharedChallenge } from './utils/timeTrialUtils'
 import titleImageFull from './assets/PokemonCatcherTitleFull.png'
 
 // Define available game modes
-type GameMode = 'none' | 'classic' | 'timetrial' // We'll add more modes later
+type GameMode = 'none' | 'classic' | 'timetrial' | 'dailychallenge'
 
 // Key for storing the selected mode in localStorage
 const MODE_STORAGE_KEY = 'pokemonCatcherGameMode'
@@ -67,6 +68,12 @@ function App() {
         <h2>Select Game Mode</h2>
         <div className="mode-buttons">
           <button
+            className="mode-button daily-challenge-button"
+            onClick={() => handleSelectMode('dailychallenge')}
+          >
+            Daily Challenge
+          </button>
+          <button
             className="mode-button classic-button"
             onClick={() => handleSelectMode('classic')}
           >
@@ -89,6 +96,8 @@ function App() {
         return <ClassicMode onBackToModeSelection={handleBackToModeSelection} />
       case 'timetrial':
         return <TimeTrialMode onBackToModeSelection={handleBackToModeSelection} />
+      case 'dailychallenge':
+        return <DailyChallengeMode onBackToModeSelection={handleBackToModeSelection} />
       default:
         return renderModeSelector()
     }

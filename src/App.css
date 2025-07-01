@@ -216,6 +216,24 @@ h2 {
   background-color: #2980b9;
 }
 
+.daily-challenge-button {
+  background-color: #9b59b6;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.daily-challenge-button:hover {
+  background-color: #8e44ad;
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(155, 89, 182, 0.4);
+}
+
+.daily-challenge-button:active {
+  transform: translateY(-2px) scale(1.01);
+  transition: all 0.1s ease;
+}
+
 /* Time Trial mode label styles */
 .mode-label {
   font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
