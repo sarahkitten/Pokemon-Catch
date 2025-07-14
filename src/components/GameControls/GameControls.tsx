@@ -3,15 +3,65 @@ import './GameControls.css';
 import volumeOnImage from '../../assets/volume-on.png';
 import volumeOffImage from '../../assets/volume-off.png';
 
+// Check if running in development mode locally
+const isLocalDevelopment = () => {
+  return import.meta.env.DEV && (
+    window.location.hostname === 'localhost' || 
+    window.location.hostname === '127.0.0.1' ||
+    window.location.hostname === ''
+  );
+};
+
+// Helper function to catch a random uncaught Pokémon
+const catchRandomPokemon = async (gameState: GameState, inputRef: React.RefObject<HTMLInputElement>) => {
+  // Get all uncaught Pokémon from the filtered list
+  const uncaughtPokemon = gameState.filteredPokemon.filter(pokemon => 
+    !gameState.caughtPokemon.some(caught => caught.name === pokemon.name) &&
+    !gameState.revealedPokemon.some(revealed => revealed.name === pokemon.name)
+  );
+  
+  if (uncaughtPokemon.length === 0) {
+    console.log('No uncaught Pokémon available');
+    return;
+  }
+  
+  // Pick a random uncaught Pokémon
+  const randomIndex = Math.floor(Math.random() * uncaughtPokemon.length);
+  const randomPokemon = uncaughtPokemon[randomIndex];
+  
+  console.log(`Dev: Attempting to catch ${randomPokemon.name}`);
+  
+  // Set the input value in React state
+  gameState.setInputValue(randomPokemon.name);
+  
+  // Find the form element and submit it
+  if (inputRef?.current) {
+    const form = inputRef.current.closest('form');
+    if (form) {
+      // Create and dispatch a submit event
+      const submitEvent = new Event('submit', { 
+        bubbles: true, 
+        cancelable: true 
+      });
+      
+      // Wait a moment for the state to update, then submit the form
+      setTimeout(() => {
+        form.dispatchEvent(submitEvent);
+      }, 100);
+    }
+  }
+};
+
 interface GameControlsProps {
   gameState: GameState;
   onStartOver: () => void;
   onGiveUp: () => Promise<void>;
   hideStartOver?: boolean;
   hideEasyMode?: boolean;
+  inputRef?: React.RefObject<HTMLInputElement>;
 }
 
-export function GameControls({ gameState, onStartOver, onGiveUp, hideStartOver = false, hideEasyMode = false }: GameControlsProps) {
+export function GameControls({ gameState, onStartOver, onGiveUp, hideStartOver = false, hideEasyMode = false, inputRef }: GameControlsProps) {
   const showControls = gameState.caughtPokemon.length > 0 || gameState.revealedPokemon.length > 0;
   const showGiveUp = gameState.revealedPokemon.length === 0 && gameState.caughtPokemon.length < gameState.totalPokemon;
   const showStartOver = showControls && !hideStartOver; // Don't show Start Over when hideStartOver is true
@@ -57,6 +107,16 @@ export function GameControls({ gameState, onStartOver, onGiveUp, hideStartOver =
             className="volume-icon" 
           />
         </button>
+        {/* Development-only button */}
+        {isLocalDevelopment() && gameState.filteredPokemon.length > 0 && (
+          <button
+            className="nes-btn dev-button"
+            onClick={() => inputRef && catchRandomPokemon(gameState, inputRef)}
+            title="Development: Catch a random Pokémon"
+          >
+            🔧 Catch Random
+          </button>
+        )}
       </div>
       {!hideEasyMode && (
         <div className="easy-mode-toggle nes-checkbox-container">

@@ -519,6 +519,7 @@ export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => 
             onGiveUp={handleGiveUp}
             hideStartOver={true}
             hideEasyMode={true}
+            inputRef={inputRef}
           />
           <PokemonList
             caughtPokemon={gameState.caughtPokemon}

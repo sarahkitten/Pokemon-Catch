@@ -122,6 +122,7 @@ export const ClassicMode = ({ onBackToModeSelection }: ClassicModeProps) => {
             gameState={gameState}
             onStartOver={handleStartOver}
             onGiveUp={handleGiveUp}
+            inputRef={inputRef}
           />
           <PokemonList
             caughtPokemon={gameState.caughtPokemon}

@@ -347,6 +347,7 @@ export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeMode
             onStartOver={handleStartOver}
             onGiveUp={handleGiveUp}
             hideStartOver={true}
+            inputRef={inputRef}
           />
           
           <PokemonList
