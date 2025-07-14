@@ -216,27 +216,6 @@ export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeMode
     await submitPokemonGuess(gameState, inputRef);
   };
 
-  const handleNewChallenge = () => {
-    // For daily challenges, we just reload today's challenge
-    // This is mainly useful for testing or if there was an error
-    const filters = getDailyChallengeFilterCombination();
-    if (filters) {
-      setChallengeFilters(filters);
-      
-      // Apply the filters to the game state
-      const generationIndex = GENERATIONS.findIndex(gen => gen.name === filters.generation);
-      const typeIndex = POKEMON_TYPES.findIndex(type => type === filters.type);
-      
-      if (generationIndex !== -1 && typeIndex !== -1) {
-        gameState.setSelectedGenerationIndex(generationIndex);
-        gameState.setSelectedType(filters.type);
-        gameState.setSelectedLetter(filters.letter);
-        gameState.resetProgress();
-        gameState.updateTotalCount(GENERATIONS[generationIndex], filters.type, filters.letter);
-      }
-    }
-  };
-
   if (!isInitialized || !challengeFilters) {
     return (
       <div className="daily-challenge-mode">
@@ -259,11 +238,11 @@ export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeMode
       <div className="main-content">
         <div className="title-container clickable" onClick={onBackToModeSelection}>
           <img src={titleImageFull} alt="Pokemon Catcher Title" className="title-image" />
+          <div className="mode-label daily-challenge-label">Daily Challenge</div>
         </div>
         
-        <div className="challenge-info-card">
-          <h1 className="mode-title">Daily Challenge</h1>
-          <p className="challenge-date">{currentDate}</p>
+        <div className="nes-container">
+          <h3 className="daily-challenge-title" dangerouslySetInnerHTML={{ __html: title }}></h3>
           
           <div className="trainer-progress">
             <div className="progress-header">
@@ -319,26 +298,44 @@ export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeMode
               </div>
             </div>
             
+            {/* Next rank progress indicator */}
+            {getTrainerRank(gameState.caughtPokemon.length, gameState.totalPokemon).nextRank && (
+              <div className="next-rank-progress">
+                {(() => {
+                  const currentRank = getTrainerRank(gameState.caughtPokemon.length, gameState.totalPokemon);
+                  const nextRankThresholds = [
+                    { rank: 'Youngster', threshold: 0.20 },
+                    { rank: 'Trainer', threshold: 0.40 },
+                    { rank: 'Gym Leader', threshold: 0.60 },
+                    { rank: 'Champion', threshold: 0.80 },
+                    { rank: 'Professor', threshold: 1.00 }
+                  ];
+                  
+                  const nextThreshold = nextRankThresholds.find(t => t.rank === currentRank.nextRank);
+                  if (nextThreshold) {
+                    const pokemonNeeded = Math.ceil(gameState.totalPokemon * nextThreshold.threshold) - gameState.caughtPokemon.length;
+                    return (
+                      <p className="progress-text">
+                        {pokemonNeeded} more Pokemon to reach <strong>{currentRank.nextRank}</strong>
+                      </p>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
+            )}
+            
             <div className="challenge-summary">
-              <div className="challenge-criteria-compact">
-                <span className="criteria-compact">
-                  {challengeFilters.generation} • {challengeFilters.type} • Letter {challengeFilters.letter}
+              <div className="challenge-date-compact">
+                <span className="date-compact">
+                  {currentDate}
                 </span>
               </div>
-              <button 
-                className="new-challenge-button-compact"
-                onClick={handleNewChallenge}
-                title="Refresh Today's Challenge"
-              >
-                🔄
-              </button>
             </div>
           </div>
         </div>
 
         <div className="pokemon-section">
-          <h2 className="section-title" dangerouslySetInnerHTML={{ __html: title }}></h2>
-          
           <SearchForm 
             gameState={gameState}
             onSubmit={handleInputSubmit}
@@ -349,6 +346,7 @@ export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeMode
             gameState={gameState}
             onStartOver={handleStartOver}
             onGiveUp={handleGiveUp}
+            hideStartOver={true}
           />
           
           <PokemonList

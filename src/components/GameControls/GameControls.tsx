@@ -7,13 +7,14 @@ interface GameControlsProps {
   gameState: GameState;
   onStartOver: () => void;
   onGiveUp: () => Promise<void>;
-  isTimeTrialMode?: boolean;
+  hideStartOver?: boolean;
+  hideEasyMode?: boolean;
 }
 
-export function GameControls({ gameState, onStartOver, onGiveUp, isTimeTrialMode = false }: GameControlsProps) {
+export function GameControls({ gameState, onStartOver, onGiveUp, hideStartOver = false, hideEasyMode = false }: GameControlsProps) {
   const showControls = gameState.caughtPokemon.length > 0 || gameState.revealedPokemon.length > 0;
   const showGiveUp = gameState.revealedPokemon.length === 0 && gameState.caughtPokemon.length < gameState.totalPokemon;
-  const showStartOver = showControls && !isTimeTrialMode; // Don't show Start Over in Time Trial mode
+  const showStartOver = showControls && !hideStartOver; // Don't show Start Over when hideStartOver is true
 
   return (
     <div className="controls">
@@ -57,7 +58,7 @@ export function GameControls({ gameState, onStartOver, onGiveUp, isTimeTrialMode
           />
         </button>
       </div>
-      {!isTimeTrialMode && (
+      {!hideEasyMode && (
         <div className="easy-mode-toggle nes-checkbox-container">
           <label>
             <input

@@ -16,9 +16,23 @@
   flex-direction: column;
   align-items: center;
   box-sizing: border-box;
+  /* Start invisible and animate in */
+  opacity: 0;
+  transform: translateY(10px);
+  animation: daily-content-fade-in 0.6s ease-out 0.1s forwards;
 }
 
-/* Clickable title styling */
+@keyframes daily-content-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .daily-challenge-mode .title-container.clickable {
   cursor: pointer;
   transition: transform 0.2s ease;
@@ -32,6 +46,25 @@
   transform: scale(0.98);
 }
 
+.daily-challenge-mode .title-container {
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  transform: translateY(5px);
+  animation: daily-title-fade-in 0.5s ease-out 0.15s forwards;
+}
+
+@keyframes daily-title-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .daily-challenge-content {
   width: 100%;
   max-width: 1200px;
@@ -40,15 +73,16 @@
   gap: 30px;
 }
 
-.challenge-info-card {
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 16px;
-  padding: 25px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  border: 3px solid #9b59b6;
-  margin-bottom: 30px;
-  width: 100%;
-  max-width: 800px;
+
+
+/* Daily Challenge title styling */
+.daily-challenge-title {
+  font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
+  font-size: 16px;
+  color: #2c3e50;
+  text-align: center;
+  margin: 0 0 15px 0;
+  line-height: 1.4;
 }
 
 .challenge-criteria {
@@ -56,14 +90,14 @@
 }
 
 .trainer-progress {
-  margin-top: 20px;
+  margin-top: 15px;
 }
 
 .progress-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .trainer-rank {
@@ -83,8 +117,8 @@
 .next-rank {
   font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
   font-size: 10px;
-  color: #7f8c8d;
-  opacity: 0.8;
+  color: #2c3e50;
+  opacity: 0.9;
 }
 
 .progress-stats {
@@ -99,13 +133,13 @@
 }
 
 .total-count {
-  color: #7f8c8d;
+  color: #2c3e50;
 }
 
 .progress-bar-container {
   margin: 15px 0;
+  padding: 16px 20px 0 20px; /* Added horizontal padding */
   position: relative;
-  padding-top: 16px; /* Reduced from 20px since icon is smaller */
   cursor: pointer;
   transition: opacity 0.2s ease;
 }
@@ -151,38 +185,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 15px;
-  padding-top: 15px;
+  margin-top: 10px;
+  padding-top: 10px;
   border-top: 1px solid #ecf0f1;
-}
-
-.challenge-criteria-compact {
-  flex: 1;
-}
-
-.criteria-compact {
-  font-size: 12px;
-  color: #7f8c8d;
-  font-weight: 500;
-}
-
-.new-challenge-button-compact {
-  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(155, 89, 182, 0.3);
-  min-width: 40px;
-}
-
-.new-challenge-button-compact:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(155, 89, 182, 0.4);
-  background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
 }
 
 .challenge-criteria h3 {
@@ -200,6 +205,20 @@
   align-items: center;
   gap: 0.5rem;
   border-width: 4px !important;
+  opacity: 0;
+  transform: translateY(5px);
+  animation: daily-section-fade-in 0.5s ease-out 0.35s forwards;
+}
+
+@keyframes daily-section-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .section-title {
@@ -238,14 +257,6 @@
   text-align: center;
   margin: 0 0 10px 0;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.challenge-date {
-  font-size: 18px;
-  color: #7f8c8d;
-  text-align: center;
-  margin-bottom: 30px;
-  font-weight: 600;
 }
 
 .challenge-info h2 {
@@ -344,9 +355,9 @@
 .rank-tick {
   width: 2px;
   height: 28px; /* Extends above and below the progress bar */
-  background-color: #7f8c8d;
+  background-color: #2c3e50;
   border-radius: 1px;
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
 /* Override global order properties to ensure correct layout */
@@ -358,17 +369,7 @@
   order: unset;
 }
 
-.daily-challenge-mode .title-container {
-  order: 1;
-}
 
-.daily-challenge-mode .challenge-info-card {
-  order: 2;
-}
-
-.daily-challenge-mode .pokemon-section {
-  order: 3;
-}
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
@@ -376,17 +377,23 @@
     padding: 10px;
   }
   
-  .challenge-info-card {
-    padding: 20px;
-    margin: 0 10px;
+  .daily-challenge-mode .nes-container {
+    margin: 0 10px 15px 10px;
   }
   
   .mode-title {
     font-size: 20px;
   }
   
-  .challenge-date {
-    font-size: 16px;
+  /* Adjust NES.css title for mobile */
+  .daily-challenge-mode .nes-container.with-title > .title {
+    font-size: 0.8rem !important;
+    margin: -1.2rem 0 0.8rem !important;
+  }
+  
+  .daily-challenge-mode .mode-label {
+    margin-top: 10px;
+    margin-left: 0;
   }
   
   .rank-label {
@@ -401,7 +408,7 @@
     font-size: 10px;
   }
   
-  .criteria-compact {
+  .date-compact {
     font-size: 10px;
   }
   
@@ -416,14 +423,25 @@
     align-items: stretch;
   }
   
-  .new-challenge-button-compact {
-    align-self: center;
-    min-width: 120px;
-  }
-  
   .rank-tick {
     width: 1px;
     height: 24px;
+  }
+  
+  .progress-text {
+    font-size: 8px;
+  }
+  
+  .progress-bar-container {
+    padding: 16px 10px 0 10px; /* Reduced horizontal padding on mobile */
+  }
+  
+  .daily-challenge-title {
+    font-size: 14px;
+  }
+  
+  .date-compact {
+    font-size: 10px;
   }
 }
 
@@ -451,10 +469,141 @@
   order: 1 !important;
 }
 
-.daily-challenge-mode .main-content .challenge-info-card {
+.daily-challenge-mode .main-content .nes-container {
   order: 2 !important;
 }
 
 .daily-challenge-mode .main-content .pokemon-section {
   order: 3 !important;
+}
+
+@media (min-width: 768px) {
+  .daily-challenge-mode .title-container {
+    flex-direction: row;
+  }
+  
+  .daily-challenge-mode .mode-label {
+    margin-top: 0;
+    margin-left: 10px;
+  }
+}
+
+.progress-text {
+  font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
+  font-size: 10px;
+  color: #2c3e50;
+  margin: 8px 0 0 0;
+  text-align: center;
+}
+
+/* Date compact styling */
+.date-compact {
+  font-size: 12px;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+/* Animation system similar to TimeTrialMode */
+.daily-challenge-mode .main-content {
+  /* Start invisible and animate in */
+  opacity: 0;
+  transform: translateY(10px);
+  animation: daily-content-fade-in 0.6s ease-out 0.1s forwards;
+}
+
+@keyframes daily-content-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.daily-challenge-mode .title-container {
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  transform: translateY(5px);
+  animation: daily-title-fade-in 0.5s ease-out 0.15s forwards;
+}
+
+@keyframes daily-title-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* NES.css container styling with animation */
+.daily-challenge-mode .nes-container {
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 800px;
+  background-image: url('../../assets/pbg4.avif');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  /* Animation */
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+  animation: daily-container-fade-in 0.6s ease-out 0.25s forwards;
+}
+
+@keyframes daily-container-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.daily-challenge-mode .nes-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: inherit;
+  z-index: 1;
+}
+
+.daily-challenge-mode .nes-container > * {
+  position: relative;
+  z-index: 2;
+}
+
+.daily-challenge-mode .pokemon-section {
+  opacity: 0;
+  transform: translateY(5px);
+  animation: daily-section-fade-in 0.5s ease-out 0.35s forwards;
+}
+
+@keyframes daily-section-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Layout styling */
+.daily-challenge-mode .mode-label {
+  margin-top: 10px;
+  margin-left: 0;
 }
