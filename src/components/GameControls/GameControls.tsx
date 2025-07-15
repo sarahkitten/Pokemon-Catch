@@ -5,11 +5,16 @@ import volumeOffImage from '../../assets/volume-off.png';
 
 // Check if running in development mode locally
 const isLocalDevelopment = () => {
-  return import.meta.env.DEV && (
-    window.location.hostname === 'localhost' || 
-    window.location.hostname === '127.0.0.1' ||
-    window.location.hostname === ''
-  );
+  try {
+    return import.meta.env?.DEV && (
+      window.location.hostname === 'localhost' || 
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname === ''
+    );
+  } catch {
+    // Fallback for test environment
+    return false;
+  }
 };
 
 // Helper function to catch a random uncaught Pokémon
@@ -58,6 +63,7 @@ interface GameControlsProps {
   onGiveUp: () => Promise<void>;
   hideStartOver?: boolean;
   hideEasyMode?: boolean;
+  isTimeTrialMode?: boolean;
   inputRef?: React.RefObject<HTMLInputElement>;
 }
 

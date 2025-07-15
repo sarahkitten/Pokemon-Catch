@@ -154,25 +154,47 @@ describe('GameControls', () => {
     expect(screen.getByLabelText(/easy mode/i)).toBeChecked();
   });
 
-  it('hides Start Over button in Time Trial mode', () => {
+  it('hides Start Over button when hideStartOver is true', () => {
     const gameState = createMockGameState({ 
       caughtPokemon: [
         { name: 'pikachu', sprite: '/sprites/pikachu.png', types: ['Electric'] }
       ]
     });
-    render(<GameControls {...defaultProps} gameState={gameState} isTimeTrialMode={true} />);
+    render(<GameControls {...defaultProps} gameState={gameState} hideStartOver={true} />);
     
     expect(screen.queryByText('Start Over')).not.toBeInTheDocument();
   });
 
-  it('shows Start Over button in Classic mode', () => {
+  it('shows Start Over button when hideStartOver is false', () => {
     const gameState = createMockGameState({ 
       caughtPokemon: [
         { name: 'pikachu', sprite: '/sprites/pikachu.png', types: ['Electric'] }
       ]
     });
-    render(<GameControls {...defaultProps} gameState={gameState} isTimeTrialMode={false} />);
+    render(<GameControls {...defaultProps} gameState={gameState} hideStartOver={false} />);
     
     expect(screen.getByText('Start Over')).toBeInTheDocument();
+  });
+
+  it('hides Easy Mode toggle when hideEasyMode is true', () => {
+    const gameState = createMockGameState({ 
+      caughtPokemon: [
+        { name: 'pikachu', sprite: '/sprites/pikachu.png', types: ['Electric'] }
+      ]
+    });
+    render(<GameControls {...defaultProps} gameState={gameState} hideEasyMode={true} />);
+    
+    expect(screen.queryByText('Easy Mode (Accept close spellings)')).not.toBeInTheDocument();
+  });
+
+  it('shows Easy Mode toggle when hideEasyMode is false', () => {
+    const gameState = createMockGameState({ 
+      caughtPokemon: [
+        { name: 'pikachu', sprite: '/sprites/pikachu.png', types: ['Electric'] }
+      ]
+    });
+    render(<GameControls {...defaultProps} gameState={gameState} hideEasyMode={false} />);
+    
+    expect(screen.getByText('Easy Mode (Accept close spellings)')).toBeInTheDocument();
   });
 });
