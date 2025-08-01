@@ -146,10 +146,21 @@ export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeMode
         const typeIndex = POKEMON_TYPES.findIndex(type => type === filters.type);
         
         if (generationIndex !== -1 && typeIndex !== -1) {
+          // Check if this is a new challenge (different filters than current state)
+          const isNewChallenge = 
+            gameState.selectedGenerationIndex !== generationIndex ||
+            gameState.selectedType !== filters.type ||
+            gameState.selectedLetter !== filters.letter;
+          
           gameState.setSelectedGenerationIndex(generationIndex);
           gameState.setSelectedType(filters.type);
           gameState.setSelectedLetter(filters.letter);
-          gameState.resetProgress();
+          
+          // Only reset progress if this is a new challenge
+          if (isNewChallenge) {
+            gameState.resetProgress();
+          }
+          
           gameState.updateTotalCount(GENERATIONS[generationIndex], filters.type, filters.letter);
         }
         
@@ -214,6 +225,11 @@ export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeMode
   const handleInputSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await submitPokemonGuess(gameState, inputRef);
+  };
+
+  const handleReset = () => {
+    // Reset only the progress, keeping the daily challenge filters
+    gameState.resetProgress();
   };
 
   if (!isInitialized || !challengeFilters) {
@@ -348,6 +364,7 @@ export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeMode
             onGiveUp={handleGiveUp}
             hideStartOver={true}
             inputRef={inputRef}
+            onReset={handleReset}
           />
           
           <PokemonList

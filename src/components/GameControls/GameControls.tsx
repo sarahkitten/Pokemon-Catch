@@ -65,9 +65,10 @@ interface GameControlsProps {
   hideEasyMode?: boolean;
   isTimeTrialMode?: boolean;
   inputRef?: React.RefObject<HTMLInputElement>;
+  onReset?: () => void; // Optional reset function for development
 }
 
-export function GameControls({ gameState, onStartOver, onGiveUp, hideStartOver = false, hideEasyMode = false, inputRef }: GameControlsProps) {
+export function GameControls({ gameState, onStartOver, onGiveUp, hideStartOver = false, hideEasyMode = false, inputRef, onReset }: GameControlsProps) {
   const showControls = gameState.caughtPokemon.length > 0 || gameState.revealedPokemon.length > 0;
   const showGiveUp = gameState.revealedPokemon.length === 0 && gameState.caughtPokemon.length < gameState.totalPokemon;
   const showStartOver = showControls && !hideStartOver; // Don't show Start Over when hideStartOver is true
@@ -113,7 +114,7 @@ export function GameControls({ gameState, onStartOver, onGiveUp, hideStartOver =
             className="volume-icon" 
           />
         </button>
-        {/* Development-only button */}
+        {/* Development-only buttons */}
         {isLocalDevelopment() && gameState.filteredPokemon.length > 0 && (
           <button
             className="nes-btn dev-button"
@@ -121,6 +122,15 @@ export function GameControls({ gameState, onStartOver, onGiveUp, hideStartOver =
             title="Development: Catch a random Pokémon"
           >
             🔧 Catch Random
+          </button>
+        )}
+        {isLocalDevelopment() && onReset && (
+          <button
+            className="nes-btn is-error dev-button"
+            onClick={onReset}
+            title="Development: Reset game state"
+          >
+            🔧 Reset
           </button>
         )}
       </div>
