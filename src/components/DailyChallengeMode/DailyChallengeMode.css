@@ -609,9 +609,32 @@
   opacity: 1 !important;
 }
 
+.daily-challenge-mode .caught-list.is-success .pokemon-card:hover {
+  transform: translateY(-2px) !important;
+  animation: none !important;
+}
+
 .daily-challenge-mode .caught-list.is-success .pokemon-list {
   position: relative;
   z-index: 10;
+}
+
+/* Ensure Pokemon cards have proper transition for hover effects */
+.daily-challenge-mode .caught-list .pokemon-card {
+  transition: transform 0.2s ease !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Ensure normal hover effects work for Pokemon cards during gameplay */
+.daily-challenge-mode .caught-list .pokemon-card:hover {
+  transform: translateY(-2px) !important;
+  transition: transform 0.2s ease !important;
+  z-index: 2;
+}
+
+.daily-challenge-mode .caught-list .pokemon-card:active {
+  transform: translateY(0) !important;
 }
 
 /* Layout styling */
