@@ -1,0 +1,17 @@
+/* Shared styles across all game modes */
+
+/* Title hover effects - used by all modes */
+.title-container.clickable {
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.title-container.clickable:hover {
+  transform: scale(1.05) translateY(-3px) !important;
+  filter: brightness(1.1) drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+}
+
+.title-container.clickable:active {
+  transform: scale(1.02) translateY(-1px) !important;
+  filter: brightness(1.05) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+}

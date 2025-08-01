@@ -33,19 +33,6 @@
   }
 }
 
-.daily-challenge-mode .title-container.clickable {
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.daily-challenge-mode .title-container.clickable:hover {
-  transform: scale(1.02);
-}
-
-.daily-challenge-mode .title-container.clickable:active {
-  transform: scale(0.98);
-}
-
 .daily-challenge-mode .title-container {
   flex-direction: column;
   align-items: center;

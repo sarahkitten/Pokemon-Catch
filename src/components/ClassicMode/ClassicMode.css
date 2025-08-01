@@ -55,19 +55,6 @@
   }
 }
 
-.classic-mode .title-container.clickable {
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.classic-mode .title-container.clickable:hover {
-  transform: scale(1.02);
-}
-
-.classic-mode .title-container.clickable:active {
-  transform: scale(0.98);
-}
-
 .classic-mode .pokemon-section {
   opacity: 0;
   transform: translateY(5px);
