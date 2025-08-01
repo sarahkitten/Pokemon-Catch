@@ -98,6 +98,17 @@ function App() {
             Time Trial Mode
           </button>
         </div>
+        <footer className="app-footer">
+          <a 
+            href="https://github.com/sarahkitten/Pokemon-Catch" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="github-link"
+          >
+            <i className="nes-icon github is-small"></i>
+            <span>View on GitHub</span>
+          </a>
+        </footer>
       </div>
     )
   }
