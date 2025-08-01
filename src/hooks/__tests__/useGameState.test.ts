@@ -724,7 +724,7 @@ describe('useGameState', () => {
     });
 
     it('restores state from localStorage on initialization', () => {
-      const savedState = {
+      const savedModeState = {
         caughtPokemon: [{
           name: 'Pikachu',
           sprite: '/sprites/pikachu.png',
@@ -732,21 +732,25 @@ describe('useGameState', () => {
         }],
         selectedGenerationIndex: 1,
         selectedType: 'Electric',
-        selectedLetter: 'P',
+        selectedLetter: 'P'
+      };
+
+      const savedGlobalSettings = {
         isMuted: true,
         isEasyMode: true
       };
 
-      localStorage.setItem('pokemonCatcherState', JSON.stringify(savedState));
+      localStorage.setItem('pokemonCatcherState_classic', JSON.stringify(savedModeState));
+      localStorage.setItem('pokemonCatcherGlobalSettings', JSON.stringify(savedGlobalSettings));
 
-      const { result } = renderHook(() => useGameState());
+      const { result } = renderHook(() => useGameState('classic'));
       
-      expect(result.current.caughtPokemon).toEqual(savedState.caughtPokemon);
-      expect(result.current.selectedGenerationIndex).toBe(savedState.selectedGenerationIndex);
-      expect(result.current.selectedType).toBe(savedState.selectedType);
-      expect(result.current.selectedLetter).toBe(savedState.selectedLetter);
-      expect(result.current.isMuted).toBe(savedState.isMuted);
-      expect(result.current.isEasyMode).toBe(savedState.isEasyMode);
+      expect(result.current.caughtPokemon).toEqual(savedModeState.caughtPokemon);
+      expect(result.current.selectedGenerationIndex).toBe(savedModeState.selectedGenerationIndex);
+      expect(result.current.selectedType).toBe(savedModeState.selectedType);
+      expect(result.current.selectedLetter).toBe(savedModeState.selectedLetter);
+      expect(result.current.isMuted).toBe(savedGlobalSettings.isMuted);
+      expect(result.current.isEasyMode).toBe(savedGlobalSettings.isEasyMode);
     });
 
     it('handles corrupted localStorage data gracefully', () => {
@@ -754,9 +758,10 @@ describe('useGameState', () => {
       const originalConsoleError = console.error;
       console.error = jest.fn();
 
-      localStorage.setItem('pokemonCatcherState', 'invalid json{');
+      localStorage.setItem('pokemonCatcherState_classic', 'invalid json{');
+      localStorage.setItem('pokemonCatcherGlobalSettings', 'invalid json{');
 
-      const { result } = renderHook(() => useGameState());
+      const { result } = renderHook(() => useGameState('classic'));
       
       // Should fall back to defaults
       expect(result.current.caughtPokemon).toEqual([]);
@@ -771,7 +776,7 @@ describe('useGameState', () => {
     });
 
     it('persists state changes to localStorage', async () => {
-      const { result } = renderHook(() => useGameState());
+      const { result } = renderHook(() => useGameState('classic'));
 
       // Make some state changes
       await act(async () => {
@@ -786,12 +791,13 @@ describe('useGameState', () => {
       });
 
       // Get saved state from localStorage
-      const savedState = JSON.parse(localStorage.getItem('pokemonCatcherState') || '{}');
+      const savedModeState = JSON.parse(localStorage.getItem('pokemonCatcherState_classic') || '{}');
+      const savedGlobalSettings = JSON.parse(localStorage.getItem('pokemonCatcherGlobalSettings') || '{}');
       
-      expect(savedState.selectedGenerationIndex).toBe(1);
-      expect(savedState.selectedType).toBe('Electric');
-      expect(savedState.isMuted).toBe(true);
-      expect(savedState.caughtPokemon).toEqual([{
+      expect(savedModeState.selectedGenerationIndex).toBe(1);
+      expect(savedModeState.selectedType).toBe('Electric');
+      expect(savedGlobalSettings.isMuted).toBe(true);
+      expect(savedModeState.caughtPokemon).toEqual([{
         name: 'Pikachu',
         sprite: '/sprites/pikachu.png',
         types: ['Electric']
@@ -800,18 +806,16 @@ describe('useGameState', () => {
 
     it('updates total count when restoring saved filters', async () => {
       // Save state with non-default filters
-      const savedState = {
+      const savedModeState = {
         caughtPokemon: [],
         selectedGenerationIndex: 1,
         selectedType: 'Electric',
-        selectedLetter: 'P',
-        isMuted: false,
-        isEasyMode: false
+        selectedLetter: 'P'
       };
 
-      localStorage.setItem('pokemonCatcherState', JSON.stringify(savedState));
+      localStorage.setItem('pokemonCatcherState_classic', JSON.stringify(savedModeState));
 
-      const { result } = renderHook(() => useGameState());
+      const { result } = renderHook(() => useGameState('classic'));
 
       // Wait for any async updates
       await act(async () => {
@@ -832,6 +836,75 @@ describe('useGameState', () => {
         pokemon.id <= GENERATIONS[1].endId &&
         pokemon.types.some(type => type.toLowerCase() === 'electric')
       )).toBe(true);
+    });
+
+    it('maintains separate state for different modes', async () => {
+      // Set up state for classic mode
+      const { result: classicResult } = renderHook(() => useGameState('classic'));
+      
+      await act(async () => {
+        await classicResult.current.changeGeneration(1);
+        classicResult.current.setCaughtPokemon([{
+          name: 'Pikachu',
+          sprite: '/sprites/pikachu.png',
+          types: ['Electric']
+        }]);
+      });
+
+      // Set up state for time trial mode
+      const { result: timeTrialResult } = renderHook(() => useGameState('timetrial'));
+      
+      await act(async () => {
+        await timeTrialResult.current.changeGeneration(2);
+        timeTrialResult.current.setCaughtPokemon([{
+          name: 'Chikorita',
+          sprite: '/sprites/chikorita.png',
+          types: ['Grass']
+        }]);
+      });
+
+      // Set global settings
+      await act(async () => {
+        classicResult.current.setIsMuted(true);
+        classicResult.current.setIsEasyMode(true);
+      });
+
+      // Verify classic mode state
+      expect(classicResult.current.selectedGenerationIndex).toBe(1);
+      expect(classicResult.current.caughtPokemon).toHaveLength(1);
+      expect(classicResult.current.caughtPokemon[0].name).toBe('Pikachu');
+
+      // Verify time trial mode state is different
+      expect(timeTrialResult.current.selectedGenerationIndex).toBe(2);
+      expect(timeTrialResult.current.caughtPokemon).toHaveLength(1);
+      expect(timeTrialResult.current.caughtPokemon[0].name).toBe('Chikorita');
+
+      // Verify global settings are persisted (they won't be automatically synced between hook instances in tests)
+      expect(classicResult.current.isMuted).toBe(true);
+      expect(classicResult.current.isEasyMode).toBe(true);
+
+      // Verify localStorage contains separate entries for mode-specific state
+      const classicState = JSON.parse(localStorage.getItem('pokemonCatcherState_classic') || '{}');
+      const timeTrialState = JSON.parse(localStorage.getItem('pokemonCatcherState_timetrial') || '{}');
+      const globalSettings = JSON.parse(localStorage.getItem('pokemonCatcherGlobalSettings') || '{}');
+
+      expect(classicState.selectedGenerationIndex).toBe(1);
+      expect(classicState.caughtPokemon[0].name).toBe('Pikachu');
+      expect(timeTrialState.selectedGenerationIndex).toBe(2);
+      expect(timeTrialState.caughtPokemon[0].name).toBe('Chikorita');
+      expect(globalSettings.isMuted).toBe(true);
+      expect(globalSettings.isEasyMode).toBe(true);
+
+      // Verify that creating a new hook instance loads the correct state for each mode
+      const { result: newClassicResult } = renderHook(() => useGameState('classic'));
+      const { result: newTimeTrialResult } = renderHook(() => useGameState('timetrial'));
+
+      expect(newClassicResult.current.selectedGenerationIndex).toBe(1);
+      expect(newClassicResult.current.caughtPokemon[0].name).toBe('Pikachu');
+      expect(newTimeTrialResult.current.selectedGenerationIndex).toBe(2);
+      expect(newTimeTrialResult.current.caughtPokemon[0].name).toBe('Chikorita');
+      expect(newClassicResult.current.isMuted).toBe(true);
+      expect(newTimeTrialResult.current.isMuted).toBe(true);
     });
   });
 });
