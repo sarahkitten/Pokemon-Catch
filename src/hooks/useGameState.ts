@@ -178,22 +178,12 @@ export function useGameState(mode: string = 'classic'): GameState {
     localStorage.setItem(GLOBAL_SETTINGS_KEY, JSON.stringify(globalSettingsToSave));
   }, [isMuted, isEasyMode]);
 
-  // Restore total count when loading saved state
+  // Initialize total count on mount based on loaded filters
   useEffect(() => {
-    const savedModeState = loadModeState();
-    const hasNonDefaultFilters = 
-      savedModeState.selectedGenerationIndex !== 0 || 
-      savedModeState.selectedType !== POKEMON_TYPES[0] || 
-      savedModeState.selectedLetter !== "All";
-    
-    if (hasNonDefaultFilters) {
-      updateTotalCount(
-        GENERATIONS[savedModeState.selectedGenerationIndex],
-        savedModeState.selectedType,
-        savedModeState.selectedLetter
-      );
-    }
-  }, [updateTotalCount]); // Only depends on updateTotalCount
+    const generation = GENERATIONS[modeState.selectedGenerationIndex];
+    updateTotalCount(generation, modeState.selectedType, modeState.selectedLetter);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
 
   const resetProgress = () => {
     setCaughtPokemon([]);
