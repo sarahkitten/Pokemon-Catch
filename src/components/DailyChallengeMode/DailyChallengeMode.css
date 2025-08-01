@@ -568,7 +568,7 @@
   }
 }
 
-.daily-challenge-mode .nes-container::before {
+.daily-challenge-mode .nes-container:not(.caught-list)::before {
   content: '';
   position: absolute;
   top: 0;
@@ -580,7 +580,7 @@
   z-index: 1;
 }
 
-.daily-challenge-mode .nes-container > * {
+.daily-challenge-mode .nes-container:not(.caught-list) > * {
   position: relative;
   z-index: 2;
 }
@@ -600,6 +600,18 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Ensure Pokemon cards are visible in Daily Challenge mode when all caught */
+.daily-challenge-mode .caught-list.is-success .pokemon-card {
+  position: relative;
+  z-index: 10;
+  opacity: 1 !important;
+}
+
+.daily-challenge-mode .caught-list.is-success .pokemon-list {
+  position: relative;
+  z-index: 10;
 }
 
 /* Layout styling */
