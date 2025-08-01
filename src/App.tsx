@@ -5,12 +5,43 @@ import TimeTrialMode from './components/TimeTrialMode/TimeTrialMode'
 import DailyChallengeMode from './components/DailyChallengeMode/DailyChallengeMode'
 import { hasSharedChallenge } from './utils/timeTrialUtils'
 import titleImageFull from './assets/PokemonCatcherTitleFull.png'
+import fireIcon from './assets/fire.ico'
 
 // Define available game modes
 type GameMode = 'none' | 'classic' | 'timetrial' | 'dailychallenge'
 
 // Key for storing the selected mode in localStorage
 const MODE_STORAGE_KEY = 'pokemonCatcherGameMode'
+
+// Daily challenge stats interface and functions
+interface DailyChallengeStats {
+  totalCompleted: number;
+  currentStreak: number;
+  longestStreak: number;
+  lastCompletedDate: string | null;
+  completedDates: string[];
+}
+
+const getDailyChallengeStats = (): DailyChallengeStats => {
+  const defaultStats: DailyChallengeStats = {
+    totalCompleted: 0,
+    currentStreak: 0,
+    longestStreak: 0,
+    lastCompletedDate: null,
+    completedDates: []
+  };
+
+  try {
+    const stored = localStorage.getItem('dailyChallengeStats');
+    if (stored) {
+      return { ...defaultStats, ...JSON.parse(stored) };
+    }
+  } catch (e) {
+    console.error('Failed to parse daily challenge stats:', e);
+  }
+
+  return defaultStats;
+};
 
 function App() {
   // Initialize state from localStorage if available, otherwise default to 'none'
@@ -60,6 +91,8 @@ function App() {
   }
 
   const renderModeSelector = () => {
+    const dailyStats = getDailyChallengeStats();
+    
     return (
       <div className="mode-selector">
         <div className="title-container">
@@ -71,7 +104,15 @@ function App() {
             className="mode-button daily-challenge-button"
             onClick={() => handleSelectMode('dailychallenge')}
           >
-            Daily Challenge
+            <div className="button-content">
+              <span className="button-text">Daily Challenge</span>
+              {dailyStats.currentStreak > 0 && (
+                <div className="streak-indicator">
+                  <img src={fireIcon} alt="Streak" className="fire-icon" />
+                  <span className="streak-number">{dailyStats.currentStreak}</span>
+                </div>
+              )}
+            </div>
           </button>
           <button
             className="mode-button classic-button"

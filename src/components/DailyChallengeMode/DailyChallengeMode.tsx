@@ -110,12 +110,90 @@ const getTrainerRank = (caught: number, total: number): { rank: string; nextRank
   return { rank: 'Rookie', nextRank: 'Youngster' };
 };
 
+// Daily challenge completion tracking
+interface DailyChallengeStats {
+  totalCompleted: number;
+  currentStreak: number;
+  longestStreak: number;
+  lastCompletedDate: string | null;
+  completedDates: string[];
+}
+
+const getDailyChallengeStats = (): DailyChallengeStats => {
+  const defaultStats: DailyChallengeStats = {
+    totalCompleted: 0,
+    currentStreak: 0,
+    longestStreak: 0,
+    lastCompletedDate: null,
+    completedDates: []
+  };
+
+  try {
+    const stored = localStorage.getItem('dailyChallengeStats');
+    if (stored) {
+      return { ...defaultStats, ...JSON.parse(stored) };
+    }
+  } catch (e) {
+    console.error('Failed to parse daily challenge stats:', e);
+  }
+
+  return defaultStats;
+};
+
+const saveDailyChallengeStats = (stats: DailyChallengeStats): void => {
+  try {
+    localStorage.setItem('dailyChallengeStats', JSON.stringify(stats));
+  } catch (e) {
+    console.error('Failed to save daily challenge stats:', e);
+  }
+};
+
+const markDailyChallengeCompleted = (): DailyChallengeStats => {
+  const today = getTodayUTC();
+  const todayString = today.toISOString().slice(0, 10); // "2025-08-01"
+  const stats = getDailyChallengeStats();
+
+  // Don't mark as completed if already completed today
+  if (stats.completedDates.includes(todayString)) {
+    return stats;
+  }
+
+  // Add today to completed dates
+  const newCompletedDates = [...stats.completedDates, todayString].sort();
+  
+  // Calculate new streak
+  let newCurrentStreak = 1;
+  if (stats.lastCompletedDate) {
+    const lastDate = new Date(stats.lastCompletedDate);
+    const yesterday = new Date(today);
+    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+    
+    // Check if last completion was yesterday (consecutive days)
+    if (lastDate.toISOString().slice(0, 10) === yesterday.toISOString().slice(0, 10)) {
+      newCurrentStreak = stats.currentStreak + 1;
+    }
+    // If there's a gap, streak resets to 1
+  }
+
+  const newStats: DailyChallengeStats = {
+    totalCompleted: stats.totalCompleted + 1,
+    currentStreak: newCurrentStreak,
+    longestStreak: Math.max(stats.longestStreak, newCurrentStreak),
+    lastCompletedDate: todayString,
+    completedDates: newCompletedDates
+  };
+
+  saveDailyChallengeStats(newStats);
+  return newStats;
+};
+
 export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeModeProps) => {
   const gameState = useGameState('dailychallenge');
   const inputRef = useRef<HTMLInputElement>(null);
   const [currentDate, setCurrentDate] = useState<string>('')
   const [challengeFilters, setChallengeFilters] = useState<FilterCombination | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [dailyStats, setDailyStats] = useState<DailyChallengeStats>(getDailyChallengeStats());
   const [dialogConfig, setDialogConfig] = useState<DialogConfig>({
     isOpen: false,
     message: '',
@@ -180,6 +258,26 @@ export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeMode
       }
     }
   }, [gameState.allCaught]);
+
+  // Handle daily challenge completion
+  useEffect(() => {
+    if (gameState.allCaught && isInitialized) {
+      const today = getTodayUTC().toISOString().slice(0, 10);
+      const currentStats = getDailyChallengeStats();
+      
+      // Only mark as completed if not already completed today
+      if (!currentStats.completedDates.includes(today)) {
+        const newStats = markDailyChallengeCompleted();
+        setDailyStats(newStats);
+      }
+    }
+  }, [gameState.allCaught, isInitialized]);
+
+  // Check if today's challenge is completed
+  const todayCompleted = (() => {
+    const today = getTodayUTC().toISOString().slice(0, 10);
+    return dailyStats.completedDates.includes(today);
+  })();
 
   const showConfirmDialog = (message: string, onConfirm: () => void) => {
     setDialogConfig({
@@ -347,6 +445,29 @@ export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeMode
                   {currentDate}
                 </span>
               </div>
+              
+              <div className="daily-stats">
+                <div className="stat-item">
+                  <span className="stat-value">{dailyStats.currentStreak}</span>
+                  <span className="stat-label">Current Streak</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-value">{dailyStats.totalCompleted}</span>
+                  <span className="stat-label">Total Completed</span>
+                </div>
+                {dailyStats.longestStreak > dailyStats.currentStreak && (
+                  <div className="stat-item">
+                    <span className="stat-value">{dailyStats.longestStreak}</span>
+                    <span className="stat-label">Best Streak</span>
+                  </div>
+                )}
+              </div>
+              
+              {todayCompleted && !gameState.allCaught && (
+                <div className="completion-badge">
+                  <span className="completion-text">✅ Today's Challenge Complete!</span>
+                </div>
+              )}
             </div>
           </div>
         </div>

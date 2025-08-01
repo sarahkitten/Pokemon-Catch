@@ -223,15 +223,39 @@ h2 {
   overflow: hidden;
 }
 
-.daily-challenge-button:hover {
-  background-color: #8e44ad;
-  transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 12px 24px rgba(155, 89, 182, 0.4);
+.daily-challenge-button .button-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
 }
 
-.daily-challenge-button:active {
-  transform: translateY(-2px) scale(1.01);
-  transition: all 0.1s ease;
+.daily-challenge-button .button-text {
+  flex: 1;
+  white-space: nowrap;
+  font-size: 20px;
+}
+
+.daily-challenge-button .streak-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 10px;
+}
+
+.daily-challenge-button .fire-icon {
+  width: 16px;
+  height: 16px;
+  filter: brightness(1.2);
+}
+
+.daily-challenge-button .streak-number {
+  font-family: 'Press Start 2P', 'Pokemon GB', system-ui;
+  font-size: 12px;
+  font-weight: bold;
+  color: #FFD700;
+  text-shadow: 1px 1px 0 #000;
 }
 
 /* Time Trial mode label styles */
@@ -293,6 +317,52 @@ h2 {
   .mode-button {
     padding: 15px;
     font-size: 18px;
+  }
+  
+  .daily-challenge-button .button-content {
+    gap: 6px;
+  }
+  
+  .daily-challenge-button .button-text {
+    font-size: 16px;
+  }
+  
+  .daily-challenge-button .streak-indicator {
+    gap: 3px;
+    margin-left: 0;
+    flex-shrink: 0;
+  }
+  
+  .daily-challenge-button .fire-icon {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .daily-challenge-button .streak-number {
+    font-size: 10px;
+  }
+}
+
+/* Very small screens - allow button content to stack if absolutely necessary */
+@media (max-width: 320px) {
+  .daily-challenge-button .button-text {
+    font-size: 14px;
+    text-align: center;
+  }
+  
+  .daily-challenge-button .button-content {
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+  
+  .daily-challenge-button .streak-indicator {
+    margin-left: 0;
+  }
+  
+  .mode-button {
+    font-size: 16px;
+    padding: 12px;
   }
 }
 
