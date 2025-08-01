@@ -111,7 +111,7 @@ const getTrainerRank = (caught: number, total: number): { rank: string; nextRank
 };
 
 export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeModeProps) => {
-  const gameState = useGameState();
+  const gameState = useGameState('dailychallenge');
   const inputRef = useRef<HTMLInputElement>(null);
   const [currentDate, setCurrentDate] = useState<string>('')
   const [challengeFilters, setChallengeFilters] = useState<FilterCombination | null>(null);

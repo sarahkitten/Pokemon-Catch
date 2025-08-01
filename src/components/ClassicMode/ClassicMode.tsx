@@ -24,7 +24,7 @@ interface ClassicModeProps {
 }
 
 export const ClassicMode = ({ onBackToModeSelection }: ClassicModeProps) => {
-  const gameState = useGameState();
+  const gameState = useGameState('classic');
   const inputRef = useRef<HTMLInputElement>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);

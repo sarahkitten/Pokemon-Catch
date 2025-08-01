@@ -6,13 +6,18 @@ import { POKEMON_DATA } from '../data/pokemonData';
 import { getRandomValue, findRandomValidCombination, isValidCombination } from '../utils/pokemonUtils';
 import { createPokemonFilters, areAllPokemonCaught } from '../utils/pokemonStateUtils';
 
-const STORAGE_KEY = 'pokemonCatcherState';
+// Storage keys for different game modes
+const getStorageKey = (mode: string) => `pokemonCatcherState_${mode}`;
+const GLOBAL_SETTINGS_KEY = 'pokemonCatcherGlobalSettings';
 
-interface StoredState {
+interface StoredModeState {
   caughtPokemon: CaughtPokemon[];
   selectedGenerationIndex: number;
   selectedType: string;
   selectedLetter: string;
+}
+
+interface GlobalSettings {
   isMuted: boolean;
   isEasyMode: boolean;
 }
@@ -55,6 +60,7 @@ export interface GameState {
   setIsLoading: (value: boolean) => void;
   setIsTotalLoading: (value: boolean) => void;
   resetProgress: () => void;
+  resetModeState: () => void;
   updateTotalCount: (generation: Generation, type: string, letter: string) => Promise<void>;
   changeFilters: (newGenIndex: number, newType: string, newLetter: string) => Promise<void>;
   changeGeneration: (newIndex: number) => Promise<void>;
@@ -71,42 +77,58 @@ export interface GameState {
   getValidOptions: (filterType: 'generation' | 'type' | 'letter') => (number | string)[];
 }
 
-export function useGameState(): GameState {
-  const loadInitialState = (): StoredState => {
-    const savedState = localStorage.getItem(STORAGE_KEY);
+export function useGameState(mode: string = 'classic'): GameState {
+  const modeStorageKey = getStorageKey(mode);
+  
+  const loadModeState = (): StoredModeState => {
+    const savedState = localStorage.getItem(modeStorageKey);
     if (savedState) {
       try {
         return JSON.parse(savedState);
       } catch (e) {
-        console.error('Failed to parse saved state:', e);
+        console.error('Failed to parse saved mode state:', e);
       }
     }
     return {
       caughtPokemon: [],
       selectedGenerationIndex: 0,
       selectedType: POKEMON_TYPES[0],
-      selectedLetter: "All",
+      selectedLetter: "All"
+    };
+  };
+
+  const loadGlobalSettings = (): GlobalSettings => {
+    const savedSettings = localStorage.getItem(GLOBAL_SETTINGS_KEY);
+    if (savedSettings) {
+      try {
+        return JSON.parse(savedSettings);
+      } catch (e) {
+        console.error('Failed to parse saved global settings:', e);
+      }
+    }
+    return {
       isMuted: false,
       isEasyMode: false
     };
   };
 
-  const initialState = loadInitialState();
+  const modeState = loadModeState();
+  const globalSettings = loadGlobalSettings();
 
-  const [caughtPokemon, setCaughtPokemon] = useState<CaughtPokemon[]>(initialState.caughtPokemon);
+  const [caughtPokemon, setCaughtPokemon] = useState<CaughtPokemon[]>(modeState.caughtPokemon);
   const [inputValue, setInputValue] = useState('');
   const [confettiProps, setConfettiProps] = useState<{ sprite: string; position: { x: number; y: number } } | null>(null);
-  const [selectedGenerationIndex, setSelectedGenerationIndex] = useState<number>(initialState.selectedGenerationIndex);
+  const [selectedGenerationIndex, setSelectedGenerationIndex] = useState<number>(modeState.selectedGenerationIndex);
   const selectedGeneration = GENERATIONS[selectedGenerationIndex];
-  const [selectedType, setSelectedType] = useState<string>(initialState.selectedType);
-  const [selectedLetter, setSelectedLetter] = useState<string>(initialState.selectedLetter);
+  const [selectedType, setSelectedType] = useState<string>(modeState.selectedType);
+  const [selectedLetter, setSelectedLetter] = useState<string>(modeState.selectedLetter);
   const [totalPokemon, setTotalPokemon] = useState<number>(GENERATIONS[0].total);
   const [isGivingUp, setIsGivingUp] = useState(false);
   const [revealedPokemon, setRevealedPokemon] = useState<Pokemon[]>([]);
   const [filteredPokemon, setFilteredPokemon] = useState<PokemonData[]>(POKEMON_DATA);
   const [isFetchingData, setIsFetchingData] = useState(false);
-  const [isMuted, setIsMuted] = useState(initialState.isMuted);
-  const [isEasyMode, setIsEasyMode] = useState(initialState.isEasyMode);
+  const [isMuted, setIsMuted] = useState(globalSettings.isMuted);
+  const [isEasyMode, setIsEasyMode] = useState(globalSettings.isEasyMode);
   const [noResults, setNoResults] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -136,31 +158,39 @@ export function useGameState(): GameState {
     }
   }, []);
 
+  // Save mode-specific state
   useEffect(() => {
-    const stateToSave: StoredState = {
+    const modeStateToSave: StoredModeState = {
       caughtPokemon,
       selectedGenerationIndex,
       selectedType,
-      selectedLetter,
+      selectedLetter
+    };
+    localStorage.setItem(modeStorageKey, JSON.stringify(modeStateToSave));
+  }, [caughtPokemon, selectedGenerationIndex, selectedType, selectedLetter, modeStorageKey]);
+
+  // Save global settings separately
+  useEffect(() => {
+    const globalSettingsToSave: GlobalSettings = {
       isMuted,
       isEasyMode
     };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
-  }, [caughtPokemon, selectedGenerationIndex, selectedType, selectedLetter, isMuted, isEasyMode]);
+    localStorage.setItem(GLOBAL_SETTINGS_KEY, JSON.stringify(globalSettingsToSave));
+  }, [isMuted, isEasyMode]);
 
   // Restore total count when loading saved state
   useEffect(() => {
-    const savedState = loadInitialState();
+    const savedModeState = loadModeState();
     const hasNonDefaultFilters = 
-      savedState.selectedGenerationIndex !== 0 || 
-      savedState.selectedType !== POKEMON_TYPES[0] || 
-      savedState.selectedLetter !== "All";
+      savedModeState.selectedGenerationIndex !== 0 || 
+      savedModeState.selectedType !== POKEMON_TYPES[0] || 
+      savedModeState.selectedLetter !== "All";
     
     if (hasNonDefaultFilters) {
       updateTotalCount(
-        GENERATIONS[savedState.selectedGenerationIndex],
-        savedState.selectedType,
-        savedState.selectedLetter
+        GENERATIONS[savedModeState.selectedGenerationIndex],
+        savedModeState.selectedType,
+        savedModeState.selectedLetter
       );
     }
   }, [updateTotalCount]); // Only depends on updateTotalCount
@@ -170,6 +200,20 @@ export function useGameState(): GameState {
     setInputValue('');
     setError('');
     setRevealedPokemon([]);
+  };
+
+  const resetModeState = () => {
+    setCaughtPokemon([]);
+    setInputValue('');
+    setError('');
+    setRevealedPokemon([]);
+    setSelectedGenerationIndex(0);
+    setSelectedType(POKEMON_TYPES[0]);
+    setSelectedLetter("All");
+    setTotalPokemon(GENERATIONS[0].total);
+    setFilteredPokemon(POKEMON_DATA);
+    setNoResults(false);
+    setIsGivingUp(false);
   };
 
   const changeFilters = async (newGenIndex: number, newType: string, newLetter: string) => {
@@ -333,6 +377,7 @@ export function useGameState(): GameState {
     setIsLoading,
     setIsTotalLoading,
     resetProgress,
+    resetModeState,
     updateTotalCount,
     changeFilters,
     changeGeneration,

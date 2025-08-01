@@ -30,7 +30,7 @@ interface TimeTrialModeProps {
 }
 
 export const TimeTrialMode = ({ onBackToModeSelection }: TimeTrialModeProps) => {
-  const gameState = useGameState();
+  const gameState = useGameState('timetrial');
   const inputRef = useRef<HTMLInputElement>(null);
   const [isSidebarCollapsed] = useState(true);
   const [_isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
