@@ -4,6 +4,7 @@ import ClassicMode from './components/ClassicMode/ClassicMode'
 import TimeTrialMode from './components/TimeTrialMode/TimeTrialMode'
 import DailyChallengeMode from './components/DailyChallengeMode/DailyChallengeMode'
 import { hasSharedChallenge } from './utils/timeTrialUtils'
+import { getDailyChallengeStats } from './utils/dailyChallengeUtils'
 import titleImageFull from './assets/PokemonCatcherTitleFull.png'
 import fireIcon from './assets/fire.ico'
 
@@ -12,36 +13,6 @@ type GameMode = 'none' | 'classic' | 'timetrial' | 'dailychallenge'
 
 // Key for storing the selected mode in localStorage
 const MODE_STORAGE_KEY = 'pokemonCatcherGameMode'
-
-// Daily challenge stats interface and functions
-interface DailyChallengeStats {
-  totalCompleted: number;
-  currentStreak: number;
-  longestStreak: number;
-  lastCompletedDate: string | null;
-  completedDates: string[];
-}
-
-const getDailyChallengeStats = (): DailyChallengeStats => {
-  const defaultStats: DailyChallengeStats = {
-    totalCompleted: 0,
-    currentStreak: 0,
-    longestStreak: 0,
-    lastCompletedDate: null,
-    completedDates: []
-  };
-
-  try {
-    const stored = localStorage.getItem('dailyChallengeStats');
-    if (stored) {
-      return { ...defaultStats, ...JSON.parse(stored) };
-    }
-  } catch (e) {
-    console.error('Failed to parse daily challenge stats:', e);
-  }
-
-  return defaultStats;
-};
 
 function App() {
   // Initialize state from localStorage if available, otherwise default to 'none'

@@ -6,6 +6,8 @@ import { PokemonList } from '../PokemonList/PokemonList'
 import { ConfirmDialog } from '../Dialog/ConfirmDialog'
 import PokemonConfetti from '../../PokemonConfetti'
 import { useGameState } from '../../hooks/useGameState'
+import { useNextChallengeCountdown } from '../../hooks/useNextChallengeCountdown'
+import { getDailyChallengeStats, markDailyChallengeCompleted, getTodayPacific, type DailyChallengeStats } from '../../utils/dailyChallengeUtils'
 import { getFilteredTitle } from '../../utils/pokemonUtils'
 import { submitPokemonGuess, revealRemainingPokemon } from '../../utils/pokemonStateUtils'
 import titleImageFull from '../../assets/PokemonCatcherTitleFull.png'
@@ -30,12 +32,6 @@ interface DailyChallengeModeProps {
   onBackToModeSelection: () => void;
 }
 
-// Function to get today's date in UTC to ensure global consistency
-const getTodayUTC = (): Date => {
-  const now = new Date();
-  return new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-};
-
 // Seeded random function for deterministic "randomness"
 const seededRandom = (seed: number): number => {
   const x = Math.sin(seed) * 10000;
@@ -45,9 +41,9 @@ const seededRandom = (seed: number): number => {
 // Get daily challenge based on current date (same for all users)
 const getDailyChallenge = (date: Date): FilterCombination | null => {
   // Create a seed from the date (YYYYMMDD format)
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(date.getUTCDate()).padStart(2, '0');
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
   const dateString = `${year}${month}${day}`;
   const seed = parseInt(dateString);
   
@@ -70,7 +66,7 @@ const getDailyChallenge = (date: Date): FilterCombination | null => {
 
 // Updated function to get today's daily challenge with localStorage persistence
 const getDailyChallengeFilterCombination = (): FilterCombination | null => {
-  const today = getTodayUTC();
+  const today = getTodayPacific();
   const todayString = today.toISOString().slice(0, 10); // "2025-07-01"
   
   // Check if we already have today's challenge stored
@@ -110,85 +106,9 @@ const getTrainerRank = (caught: number, total: number): { rank: string; nextRank
   return { rank: 'Rookie', nextRank: 'Youngster' };
 };
 
-// Daily challenge completion tracking
-interface DailyChallengeStats {
-  totalCompleted: number;
-  currentStreak: number;
-  longestStreak: number;
-  lastCompletedDate: string | null;
-  completedDates: string[];
-}
-
-const getDailyChallengeStats = (): DailyChallengeStats => {
-  const defaultStats: DailyChallengeStats = {
-    totalCompleted: 0,
-    currentStreak: 0,
-    longestStreak: 0,
-    lastCompletedDate: null,
-    completedDates: []
-  };
-
-  try {
-    const stored = localStorage.getItem('dailyChallengeStats');
-    if (stored) {
-      return { ...defaultStats, ...JSON.parse(stored) };
-    }
-  } catch (e) {
-    console.error('Failed to parse daily challenge stats:', e);
-  }
-
-  return defaultStats;
-};
-
-const saveDailyChallengeStats = (stats: DailyChallengeStats): void => {
-  try {
-    localStorage.setItem('dailyChallengeStats', JSON.stringify(stats));
-  } catch (e) {
-    console.error('Failed to save daily challenge stats:', e);
-  }
-};
-
-const markDailyChallengeCompleted = (): DailyChallengeStats => {
-  const today = getTodayUTC();
-  const todayString = today.toISOString().slice(0, 10); // "2025-08-01"
-  const stats = getDailyChallengeStats();
-
-  // Don't mark as completed if already completed today
-  if (stats.completedDates.includes(todayString)) {
-    return stats;
-  }
-
-  // Add today to completed dates
-  const newCompletedDates = [...stats.completedDates, todayString].sort();
-  
-  // Calculate new streak
-  let newCurrentStreak = 1;
-  if (stats.lastCompletedDate) {
-    const lastDate = new Date(stats.lastCompletedDate);
-    const yesterday = new Date(today);
-    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-    
-    // Check if last completion was yesterday (consecutive days)
-    if (lastDate.toISOString().slice(0, 10) === yesterday.toISOString().slice(0, 10)) {
-      newCurrentStreak = stats.currentStreak + 1;
-    }
-    // If there's a gap, streak resets to 1
-  }
-
-  const newStats: DailyChallengeStats = {
-    totalCompleted: stats.totalCompleted + 1,
-    currentStreak: newCurrentStreak,
-    longestStreak: Math.max(stats.longestStreak, newCurrentStreak),
-    lastCompletedDate: todayString,
-    completedDates: newCompletedDates
-  };
-
-  saveDailyChallengeStats(newStats);
-  return newStats;
-};
-
 export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeModeProps) => {
   const gameState = useGameState('dailychallenge');
+  const { timeLeft, formatTime } = useNextChallengeCountdown();
   const inputRef = useRef<HTMLInputElement>(null);
   const [currentDate, setCurrentDate] = useState<string>('')
   const [challengeFilters, setChallengeFilters] = useState<FilterCombination | null>(null);
@@ -262,7 +182,7 @@ export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeMode
   // Handle daily challenge completion
   useEffect(() => {
     if (gameState.allCaught && isInitialized) {
-      const today = getTodayUTC().toISOString().slice(0, 10);
+      const today = getTodayPacific().toISOString().slice(0, 10);
       const currentStats = getDailyChallengeStats();
       
       // Only mark as completed if not already completed today
@@ -275,7 +195,7 @@ export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeMode
 
   // Check if today's challenge is completed
   const todayCompleted = (() => {
-    const today = getTodayUTC().toISOString().slice(0, 10);
+    const today = getTodayPacific().toISOString().slice(0, 10);
     return dailyStats.completedDates.includes(today);
   })();
 
@@ -444,6 +364,10 @@ export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeMode
                 <span className="date-compact">
                   {currentDate}
                 </span>
+                <div className="countdown-container">
+                  <span className="countdown-label">Next Challenge:</span>
+                  <span className="countdown-time">{formatTime(timeLeft)}</span>
+                </div>
               </div>
               
               <div className="daily-stats">
