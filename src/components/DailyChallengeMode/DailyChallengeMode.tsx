@@ -230,7 +230,7 @@ export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeMode
   };
 
   const handleGiveUp = async () => {
-    if (gameState.allCaught || gameState.caughtPokemon.length === 0) return;
+    if (gameState.allCaught) return;
     
     showConfirmDialog(
       "Are you sure you want to give up? This will reveal all remaining Pokémon.",
@@ -401,6 +401,7 @@ export const DailyChallengeMode = ({ onBackToModeSelection }: DailyChallengeMode
             gameState={gameState}
             onSubmit={handleInputSubmit}
             inputRef={inputRef}
+            isDailyChallenge={true}
           />
           
           <GameControls

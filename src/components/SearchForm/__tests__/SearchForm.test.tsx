@@ -110,4 +110,13 @@ describe('SearchForm', () => {
     
     expect(screen.getByText("Click 'Start Over' to try catching Pokémon again!")).toBeInTheDocument();
   });
+
+  it('shows daily challenge message when Pokemon are revealed and isDailyChallenge is true', () => {
+    const gameState = createMockGameState({ 
+      revealedPokemon: [{ id: 25, name: 'pikachu', sprite: '/sprites/pikachu.png', types: ['Electric'] }]
+    });
+    render(<SearchForm {...defaultProps} gameState={gameState} isDailyChallenge={true} />);
+    
+    expect(screen.getByText("Try again tomorrow!")).toBeInTheDocument();
+  });
 });

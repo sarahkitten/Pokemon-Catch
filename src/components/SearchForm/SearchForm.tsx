@@ -7,9 +7,10 @@ interface SearchFormProps {
   gameState: GameState;
   onSubmit: (e: FormEvent) => Promise<void>;
   inputRef: React.RefObject<HTMLInputElement>;
+  isDailyChallenge?: boolean;
 }
 
-export function SearchForm({ gameState, onSubmit, inputRef }: SearchFormProps) {
+export function SearchForm({ gameState, onSubmit, inputRef, isDailyChallenge = false }: SearchFormProps) {
   return (
     <>
       <form onSubmit={onSubmit} className="nes-field search-form">
@@ -49,7 +50,9 @@ export function SearchForm({ gameState, onSubmit, inputRef }: SearchFormProps) {
         )}
         {gameState.noResults && <p className="nes-text is-error error">No Pokémon found matching these filters!</p>}
         {gameState.revealedPokemon.length > 0 && (
-          <p className="nes-text is-success info">Click 'Start Over' to try catching Pokémon again!</p>
+          <p className="nes-text is-success info">
+            {isDailyChallenge ? "Try again tomorrow!" : "Click 'Start Over' to try catching Pokémon again!"}
+          </p>
         )}
       </div>
     </>
