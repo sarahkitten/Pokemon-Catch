@@ -14,7 +14,7 @@ export interface Generation {
 }
 
 export const GENERATIONS: Generation[] = [
-  { name: "All Generations", startId: 1, endId: 1008, total: 1008 },
+  { name: "All Generations", startId: 1, endId: 1025, total: 1025 },
   { name: "Gen 1 (Kanto)", startId: 1, endId: 151, total: 151 },
   { name: "Gen 2 (Johto)", startId: 152, endId: 251, total: 100 },
   { name: "Gen 3 (Hoenn)", startId: 252, endId: 386, total: 135 },
@@ -23,7 +23,7 @@ export const GENERATIONS: Generation[] = [
   { name: "Gen 6 (Kalos)", startId: 650, endId: 721, total: 72 },
   { name: "Gen 7 (Alola)", startId: 722, endId: 809, total: 88 },
   { name: "Gen 8 (Galar)", startId: 810, endId: 905, total: 96 },
-  { name: "Gen 9 (Paldea)", startId: 906, endId: 1008, total: 103 },
+  { name: "Gen 9 (Paldea)", startId: 906, endId: 1025, total: 120 },
 ];
 
 export const UI_CONSTANTS = {
